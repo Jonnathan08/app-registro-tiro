@@ -1,0 +1,139 @@
+/* Componentes Material 3 hechos a mano sobre los tokens de tema.css */
+:root {
+  --font: Roboto, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --shape-xs: 4px; --shape-s: 8px; --shape-m: 12px; --shape-l: 16px; --shape-xl: 28px; --shape-full: 999px;
+  /* Diana World Archery: colores fijos, no dependen del tema */
+  --diana-blanco: #ffffff; --diana-negro: #231f20; --diana-azul: #00a3da; --diana-rojo: #e8403d; --diana-oro: #ffe14d;
+  --diana-tinta: #231f20;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  font: 16px/24px var(--font);
+  -webkit-tap-highlight-color: transparent;
+}
+button, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--md-sys-color-primary); outline-offset: 2px; }
+[hidden] { display: none !important; }
+.num { font-variant-numeric: tabular-nums; }
+svg.ic { width: 24px; height: 24px; fill: currentColor; flex: none; }
+
+/* Tipografía MD3 */
+.t-display { font-size: 45px; line-height: 52px; font-weight: 400; }
+.t-headline { font-size: 24px; line-height: 32px; font-weight: 400; }
+.t-title-l { font-size: 22px; line-height: 28px; font-weight: 400; }
+.t-title-m { font-size: 16px; line-height: 24px; font-weight: 500; letter-spacing: .15px; }
+.t-label { font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: .5px; }
+.t-body-s { font-size: 14px; line-height: 20px; color: var(--md-sys-color-on-surface-variant); }
+
+/* Capa de estado al pasar o presionar */
+.estado { position: relative; overflow: hidden; }
+.estado::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background: currentColor; opacity: 0; transition: opacity .15s; pointer-events: none;
+}
+.estado:hover::after { opacity: .08; }
+.estado:active::after { opacity: .12; }
+.estado:disabled::after { opacity: 0; }
+
+/* Botones */
+.btn {
+  height: 40px; padding: 0 24px; border-radius: var(--shape-full); border: 0;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
+  font-size: 14px; font-weight: 500; letter-spacing: .1px; white-space: nowrap;
+}
+.btn:has(> svg) { padding-left: 16px; }
+.btn svg { width: 18px; height: 18px; fill: currentColor; }
+.btn.lleno { background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); }
+.btn.tonal { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+.btn.contorno { background: transparent; border: 1px solid var(--md-sys-color-outline); color: var(--md-sys-color-primary); }
+.btn.texto { background: transparent; color: var(--md-sys-color-primary); padding: 0 12px; }
+.btn.peligro { color: var(--md-sys-color-error); }
+.btn:disabled {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+  border-color: transparent; cursor: default;
+}
+.btn.texto:disabled { background: transparent; }
+
+.icbtn {
+  width: 48px; height: 48px; border: 0; background: transparent; border-radius: var(--shape-full);
+  display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Botón segmentado */
+.seg { display: flex; width: 100%; }
+.seg button {
+  flex: 1; height: 40px; min-width: 0;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border: 1px solid var(--md-sys-color-outline); background: transparent;
+  color: var(--md-sys-color-on-surface);
+  font-size: 14px; font-weight: 500; letter-spacing: .1px; cursor: pointer; padding: 0 8px;
+}
+.seg button + button { margin-left: -1px; }
+.seg button:first-child { border-radius: var(--shape-full) 0 0 var(--shape-full); }
+.seg button:last-child { border-radius: 0 var(--shape-full) var(--shape-full) 0; }
+.seg button[aria-pressed="true"] { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+.seg button svg { width: 18px; height: 18px; fill: currentColor; }
+
+/* Chips de filtro / sugerencia */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  height: 32px; padding: 0 16px; border-radius: var(--shape-s);
+  border: 1px solid var(--md-sys-color-outline); background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 14px; font-weight: 500; letter-spacing: .1px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.chip[aria-pressed="true"] {
+  background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container);
+  border-color: transparent;
+}
+
+/* Campos de texto con contorno */
+.campo { position: relative; display: flex; flex-direction: column; }
+.campo input, .campo textarea {
+  width: 100%; border: 1px solid var(--md-sys-color-outline); border-radius: var(--shape-xs);
+  background: transparent; color: var(--md-sys-color-on-surface);
+  font: 16px/24px var(--font); padding: 15px 16px;
+}
+.campo textarea { min-height: 96px; resize: vertical; }
+.campo input:focus, .campo textarea:focus { outline: none; border: 2px solid var(--md-sys-color-primary); padding: 14px 15px; }
+.campo label {
+  position: absolute; left: 12px; top: -8px; padding: 0 4px;
+  background: var(--fondo-campo, var(--md-sys-color-surface)); font-size: 12px; line-height: 16px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.campo:focus-within label { color: var(--md-sys-color-primary); }
+.campo .sufijo { position: absolute; right: 16px; top: 16px; color: var(--md-sys-color-on-surface-variant); pointer-events: none; }
+.campo .apoyo { font-size: 12px; line-height: 16px; letter-spacing: .4px; color: var(--md-sys-color-on-surface-variant); padding: 4px 16px 0; }
+
+/* Tarjetas */
+.tarjeta { border-radius: var(--shape-m); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.tarjeta.contorno { border: 1px solid var(--md-sys-color-outline-variant); }
+.tarjeta.relleno { background: var(--md-sys-color-surface-container-highest); }
+
+/* Chips de flecha (color del anillo) */
+.z-oro { background: var(--diana-oro); color: var(--diana-tinta); }
+.z-rojo { background: var(--diana-rojo); color: #fff; }
+.z-azul { background: var(--diana-azul); color: var(--diana-tinta); }
+.z-negro { background: var(--diana-negro); color: #fff; }
+.z-blanco { background: var(--diana-blanco); color: var(--diana-tinta); box-shadow: inset 0 0 0 1px #bdbdbd; }
+.z-fuera { background: var(--md-sys-color-surface-container-highest); color: var(--md-sys-color-on-surface-variant); }
+
+/* Hoja de puntuación */
+.hoja { border-radius: var(--shape-m); background: var(--md-sys-color-surface-container-low); overflow-x: auto; }
+.hoja table { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 20px; }
+.hoja th { text-align: left; font-size: 12px; font-weight: 500; letter-spacing: .5px; color: var(--md-sys-color-on-surface-variant); padding: 10px 12px 6px; }
+.hoja td { padding: 8px 12px; border-top: 1px solid var(--md-sys-color-outline-variant); white-space: nowrap; }
+.hoja .r { text-align: right; }
+.hoja td.acum { font-weight: 500; }
+.mini { display: inline-flex; gap: 3px; }
+.mini span { width: 22px; height: 22px; border-radius: var(--shape-full); display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; }
+
+h2.sec { font-size: 14px; line-height: 20px; font-weight: 500; letter-spacing: .1px; margin: 8px 0 0; color: var(--md-sys-color-on-surface-variant); }
