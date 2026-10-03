@@ -9,7 +9,7 @@ App web instalable para registrar sesiones de tiro con arco recurvo. Funciona si
 - Distancia de tiro y diana de 122, 80 o 40 cm.
 - Registro flecha a flecha tocando la diana (con lupa y regla de la línea) o con teclado manual.
 - Hoja de puntuación, total, X, 10+X, promedio y centro del grupo.
-- Edición de rondas ya guardadas durante la sesión en curso (lápiz en la hoja): corregir el valor con el teclado (conserva la posición) o volver a marcar en la diana.
+- Edición de rondas ya guardadas durante la sesión en curso (lápiz en la hoja): corregir el valor con el teclado (descarta la posición) o volver a marcar en la diana (reemplaza posición y valor).
 - Notas personales y notas del entrenador.
 - Exportación a CSV completo con el menú de compartir del teléfono (Drive, correo…). Nombre: `tiro_<fecha>_<distancia>m_<id>.csv`.
 
@@ -41,7 +41,7 @@ Una fila por flecha; los datos de la sesión y las notas se repiten en cada fila
 | `ronda`, `flecha` | Posición en la hoja (desde 1) |
 | `valor`, `puntaje`, `es_x` | `X`/`10`…`1`/`M`; puntaje numérico (M = 0) |
 | `x_mm`, `y_mm` | Impacto en mm desde el centro, x a la derecha, y hacia arriba; vacío si se ingresó a mano |
-| `corregida` | 1 si el valor se corrigió a mano después de marcarla |
+| `corregida` | 1 si el valor se corrigió con el teclado después de registrarla; en ese caso `x_mm` y `y_mm` quedan vacíos |
 | `notas_personales`, `notas_entrenador` | Notas de la sesión |
 
 Se usa CSV porque los navegadores basados en Chromium (Chrome, Brave) no permiten compartir archivos `.json`.
