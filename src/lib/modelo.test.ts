@@ -37,9 +37,13 @@ describe('ordenHoja y centroGrupo', () => {
 });
 
 describe('corregir', () => {
-  it('cambia el valor, conserva la posición y marca la flecha', () => {
+  it('cambia el valor, descarta la posición y marca la flecha', () => {
     const c = corregir(f(9, false, { x: 60, y: 10 }), 10, false);
-    expect(c).toEqual({ puntaje: 10, x: false, pos: { x: 60, y: 10 }, corregida: true });
+    expect(c).toEqual({ puntaje: 10, x: false, pos: null, corregida: true });
+  });
+  it('una flecha corregida no cuenta para el centro del grupo', () => {
+    const fl = [f(9, false, { x: 10, y: 0 }), corregir(f(8, false, { x: 200, y: 0 }), 10, false)];
+    expect(centroGrupo(fl)).toEqual({ x: 10, y: 0 });
   });
   it('si el valor no cambia, no la marca como corregida', () => {
     const o = f(9);

@@ -77,7 +77,11 @@
         <button type="button" class="tecla estado num z-{zona(k.puntaje)}" onclick={() => tecla(k.puntaje, !!k.x)}>{k.t}</button>
       {/each}
     </div>
-    <p class="t-body-s">Cambia el valor de la flecha {sel + 1} y conserva su posición en la diana.</p>
+    {#if copia[sel].pos}
+      <p class="aviso">Corregir con el teclado quita la flecha {sel + 1} de la diana. Para conservar su posición, márcala de nuevo en <b>Diana</b>.</p>
+    {:else}
+      <p class="t-body-s">Cambia el valor de la flecha {sel + 1}.</p>
+    {/if}
   {:else}
     <Diana {dianaCm} actuales={copia} seleccionada={sel} interactiva alMarcar={(f) => (copia[sel] = f)} />
     <p class="t-body-s">Marca de nuevo la flecha {sel + 1}: reemplaza su posición y su valor.</p>
@@ -120,5 +124,9 @@
   .teclado { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
   .tecla { height: 52px; border-radius: var(--shape-m); border: 0; font-size: 20px; font-weight: 500; cursor: pointer; }
   p { margin: 0; }
+  .aviso {
+    font-size: 14px; line-height: 20px; padding: 12px 16px; border-radius: var(--shape-m);
+    background: var(--md-sys-color-tertiary-container); color: var(--md-sys-color-on-tertiary-container);
+  }
   .acciones { display: flex; justify-content: flex-end; gap: 8px; }
 </style>

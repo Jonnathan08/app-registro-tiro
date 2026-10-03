@@ -10,7 +10,7 @@ export const CONTROL = { rondas: 12, flechasPorRonda: 6 } as const;
 export interface Flecha extends Impacto {
   /** Posición en mm desde el centro (x a la derecha, y hacia arriba). null si se ingresó a mano. */
   pos: { x: number; y: number } | null;
-  /** El valor se corrigió a mano después de marcarla; la posición se conserva para el análisis de grupo. */
+  /** El valor se corrigió con el teclado después de registrarla. Su posición se descarta (pos = null). */
   corregida?: boolean;
 }
 
@@ -98,10 +98,13 @@ export const numeroRonda = (s: Sesion) => s.registro.length + 1;
 export const rondaLlena = (s: Sesion) => s.enCurso.length >= s.flechasPorRonda;
 export const todasGuardadas = (s: Sesion) => s.registro.length >= s.rondas;
 
-/** Cambia el valor de una flecha ya registrada sin perder su posición. */
+/**
+ * Corrige el valor de una flecha con el teclado. La posición se descarta porque ya no
+ * coincidiría con el valor; para conservarla hay que volver a marcar la flecha en la diana.
+ */
 export function corregir(f: Flecha, puntaje: number, x: boolean): Flecha {
   if (f.puntaje === puntaje && f.x === x) return f;
-  return { ...f, puntaje, x, corregida: true };
+  return { puntaje, x, pos: null, corregida: true };
 }
 
 /** Orden de hoja de puntuación: de mayor a menor, X antes que 10. */
