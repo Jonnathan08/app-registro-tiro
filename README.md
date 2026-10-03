@@ -17,7 +17,7 @@ App web instalable para registrar sesiones de tiro con arco recurvo. Funciona si
 - Los datos viven en IndexedDB del teléfono; solo salen si los compartes tú.
 - Dependencias con versión fija y `ignore-scripts` en `.npmrc` (ningún paquete ejecuta código al instalarse).
 - Acciones de GitHub fijadas por hash de commit.
-- El build de CI corre `npm audit`, pruebas y chequeo de tipos antes de publicar.
+- CI (GitHub Actions): cada pull request a `main` corre `npm audit`, pruebas, chequeo de tipos y compilación; al integrar en `main` se publica en GitHub Pages.
 
 ## Desarrollo
 Requiere Node 24 (`nvm use 24`).
@@ -32,3 +32,9 @@ npm run build     # compila a dist/
 
 ## Formato de datos
 Coordenadas en mm desde el centro de la diana, x hacia la derecha, y hacia arriba. `puntaje` 0 = M. Ver `src/lib/modelo.ts`.
+
+## Flujo de trabajo
+1. Crear una rama desde `main`: `feature/<nombre>` o `fix/<nombre>`.
+2. Hacer commits y subir la rama.
+3. Abrir un pull request a `main`; esperar a que pase la verificación.
+4. Integrar (merge) el PR; GitHub Actions publica la nueva versión.
