@@ -7,12 +7,14 @@
     anteriores = [],
     actuales = [],
     interactiva = false,
+    seleccionada = -1,
     alMarcar,
   }: {
     dianaCm: TipoDiana;
     anteriores?: Flecha[];
     actuales?: Flecha[];
     interactiva?: boolean;
+    seleccionada?: number;
     alMarcar?: (f: Flecha) => void;
   } = $props();
 
@@ -90,6 +92,9 @@
   {/each}
   {#each actuales as f, i (i)}
     {#if f.pos}
+      {#if i === seleccionada}
+        <circle cx={f.pos.x} cy={-f.pos.y} r={tamMarca * 1.6} fill="none" class="sel" stroke-width={tamMarca * 0.3} />
+      {/if}
       <circle cx={f.pos.x} cy={-f.pos.y} r={tamMarca} fill="#231f20" stroke="#fff" stroke-width={tamMarca * 0.2} />
       <text x={f.pos.x} y={-f.pos.y + tamMarca * 0.42} text-anchor="middle" font-size={tamMarca * 1.2} font-weight="700" fill="#fff">{i + 1}</text>
     {/if}
@@ -151,6 +156,7 @@
   }
   .interactiva { touch-action: none; cursor: crosshair; }
   .centro { stroke: var(--md-sys-color-tertiary); stroke-linecap: round; fill: none; }
+  .sel { stroke: var(--md-sys-color-tertiary); }
   .borde-lupa { stroke: var(--md-sys-color-primary); }
   .pastilla { fill: var(--md-sys-color-inverse-surface); }
   .pastilla-txt { fill: var(--md-sys-color-inverse-on-surface); }

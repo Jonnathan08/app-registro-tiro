@@ -6,7 +6,7 @@
   import Notas from '../componentes/Notas.svelte';
   import Resumen from '../componentes/Resumen.svelte';
   import { estado } from '../lib/estado.svelte';
-  import { aCSV, aJSON, compartir, nombreArchivo } from '../lib/exportar';
+  import { aCSV, compartir, idCorto, nombreArchivo } from '../lib/exportar';
   import type { Sesion } from '../lib/modelo';
 
   let { sesion }: { sesion: Sesion } = $props();
@@ -15,10 +15,8 @@
   const fecha = new Intl.DateTimeFormat('es', { dateStyle: 'full', timeStyle: 'short' });
   const flechas = $derived(sesion.registro.flatMap((r) => r.flechas));
 
-  async function exportar(tipo: 'json' | 'csv') {
-    const r = tipo === 'json'
-      ? await compartir(aJSON(sesion), nombreArchivo(sesion, 'json'), 'application/json')
-      : await compartir(aCSV(sesion), nombreArchivo(sesion, 'csv'), 'text/csv');
+  async function exportar() {
+    const r = await compartir(aCSV(sesion), nombreArchivo(sesion));
     if (r === 'descargado') estado.avisar('Archivo descargado');
   }
 </script>
@@ -27,17 +25,14 @@
   <button type="button" class="icbtn estado" aria-label="Volver al historial" onclick={() => (estado.detalle = null)}><Icono nombre="volver" /></button>
   <div class="titulo">
     <h1 class="t-title-l">{sesion.distanciaM} m · {sesion.perfil === 'control' ? 'Control' : 'Abierto'}</h1>
-    <small>{fecha.format(new Date(sesion.fecha))}</small>
+    <small>{fecha.format(new Date(sesion.fecha))} · {idCorto(sesion)}</small>
   </div>
 </header>
 
 <div class="cuerpo">
   <Resumen {sesion} />
 
-  <div class="acciones">
-    <button type="button" class="btn lleno estado" onclick={() => exportar('json')}><Icono nombre="compartir" />Compartir JSON</button>
-    <button type="button" class="btn contorno estado" onclick={() => exportar('csv')}><Icono nombre="compartir" />CSV</button>
-  </div>
+  <button type="button" class="btn lleno estado" onclick={exportar}><Icono nombre="compartir" />Compartir sesión (CSV)</button>
 
   {#if flechas.some((f) => f.pos)}
     <Diana dianaCm={sesion.dianaCm} anteriores={flechas} />
@@ -62,7 +57,5 @@
   h1 { margin: 0; }
   small { font-size: 12px; line-height: 16px; letter-spacing: .4px; color: var(--md-sys-color-on-surface-variant); }
   .cuerpo { display: flex; flex-direction: column; gap: 16px; padding: 4px 16px 24px; }
-  .acciones { display: flex; gap: 8px; flex-wrap: wrap; }
-  .acciones .lleno { flex: 1; }
   .borrar { align-self: flex-start; }
 </style>

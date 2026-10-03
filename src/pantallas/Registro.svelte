@@ -1,6 +1,7 @@
 <script lang="ts">
   import Diana from '../componentes/Diana.svelte';
   import Dialogo from '../componentes/Dialogo.svelte';
+  import EditarRonda from '../componentes/EditarRonda.svelte';
   import Hoja from '../componentes/Hoja.svelte';
   import Icono from '../componentes/Icono.svelte';
   import Notas from '../componentes/Notas.svelte';
@@ -16,6 +17,7 @@
   let menu = $state(false);
   let confirmarTerminar = $state(false);
   let confirmarDescartar = $state(false);
+  let editando = $state<number | null>(null);
 
   const completa = $derived(todasGuardadas(sesion));
   const llena = $derived(rondaLlena(sesion));
@@ -102,11 +104,23 @@
 
   {#if sesion.registro.length}
     <h2 class="sec">Hoja de puntuación</h2>
-    <Hoja registro={sesion.registro} />
+    <Hoja registro={sesion.registro} alEditar={(i) => (editando = i)} />
   {/if}
 
   <Notas {sesion} alCambiar={() => estado.notas()} />
 </div>
+
+{#if editando !== null}
+  {#key editando}
+    <EditarRonda
+      numero={editando + 1}
+      flechas={sesion.registro[editando].flechas}
+      dianaCm={sesion.dianaCm}
+      alGuardar={(f) => estado.editarRonda(editando!, f)}
+      alCerrar={() => (editando = null)}
+    />
+  {/key}
+{/if}
 
 <Dialogo bind:abierto={confirmarTerminar} titulo="¿Terminar la sesión?" texto="Se guarda con las rondas registradas hasta ahora. La ronda a medias también se guarda." confirmar="Terminar" alConfirmar={() => estado.terminar()} />
 <Dialogo bind:abierto={confirmarDescartar} titulo="¿Descartar la sesión?" texto="Se borran todas las flechas y notas de esta sesión. No se puede deshacer." confirmar="Descartar" peligro alConfirmar={() => estado.descartar()} />
