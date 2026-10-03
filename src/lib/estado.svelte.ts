@@ -72,6 +72,15 @@ class Estado {
     this.avisar(`Ronda ${n} guardada · ${pts} puntos`);
   }
 
+  /** Reemplaza las flechas de una ronda ya guardada (solo en la sesión en curso). */
+  async editarRonda(indice: number, flechas: Flecha[]) {
+    const s = this.activa;
+    if (!s || !s.registro[indice] || flechas.length !== s.registro[indice].flechas.length) return;
+    s.registro[indice] = { flechas };
+    await this.persistir();
+    this.avisar(`Ronda ${indice + 1} actualizada · ${flechas.reduce((a, f) => a + f.puntaje, 0)} puntos`);
+  }
+
   async notas() {
     await this.persistir();
   }

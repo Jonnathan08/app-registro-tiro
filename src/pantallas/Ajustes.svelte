@@ -2,7 +2,7 @@
   import Icono from '../componentes/Icono.svelte';
   import Segmentado from '../componentes/Segmentado.svelte';
   import { estado } from '../lib/estado.svelte';
-  import { compartir } from '../lib/exportar';
+  import { aCSV, compartir } from '../lib/exportar';
   import { aplicarTema, guardarAjustes, leerAjustes, type Contraste, type Modo } from '../lib/tema';
 
   const ajustes = $state(leerAjustes());
@@ -12,8 +12,7 @@
   }
 
   async function exportarTodo() {
-    const datos = JSON.stringify({ exportado: new Date().toISOString(), sesiones: estado.historial }, null, 2);
-    const r = await compartir(datos, `tiro_todo_${new Date().toISOString().slice(0, 10)}.json`, 'application/json');
+    const r = await compartir(aCSV(estado.historial), `tiro_todo_${new Date().toISOString().slice(0, 10)}.csv`);
     if (r === 'descargado') estado.avisar('Archivo descargado');
   }
 </script>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { aCSV, nombreArchivo } from './exportar';
-import { centroGrupo, nuevaSesion, ordenHoja, resumen, type Flecha } from './modelo';
+import { aCSV, celda, nombreArchivo } from './exportar';
+import { centroGrupo, corregir, nuevaSesion, ordenHoja, resumen, type Flecha } from './modelo';
 
 const f = (puntaje: number, x = false, pos: Flecha['pos'] = null): Flecha => ({ puntaje, x, pos });
 const fecha = new Date('2026-10-04T09:30:00Z');
@@ -36,14 +36,53 @@ describe('ordenHoja y centroGrupo', () => {
   });
 });
 
+describe('corregir', () => {
+  it('cambia el valor, conserva la posición y marca la flecha', () => {
+    const c = corregir(f(9, false, { x: 60, y: 10 }), 10, false);
+    expect(c).toEqual({ puntaje: 10, x: false, pos: { x: 60, y: 10 }, corregida: true });
+  });
+  it('si el valor no cambia, no la marca como corregida', () => {
+    const o = f(9);
+    expect(corregir(o, 9, false)).toBe(o);
+  });
+});
+
 describe('exportar', () => {
-  it('CSV con una fila por flecha y nombre con fecha y distancia', () => {
+  const sesion = () => {
     const s = nuevaSesion({ perfil: 'abierto', distanciaM: 30, dianaCm: 80, rondas: 1, flechasPorRonda: 2 }, fecha);
-    s.registro.push({ flechas: [f(10, true, { x: 1.23, y: -4.56 }), f(0)] });
-    const lineas = aCSV(s).trim().split('\n');
-    expect(lineas).toHaveLength(3);
-    expect(lineas[1].endsWith(',1,1,X,10,1,1.2,-4.6')).toBe(true);
-    expect(lineas[2].endsWith(',1,2,M,0,0,,')).toBe(true);
-    expect(nombreArchivo(s, 'csv')).toBe('tiro_2026-10-04_30m.csv');
+    s.registro.push({ flechas: [f(10, true, { x: 1.23, y: -4.56 }), { ...f(0), corregida: true }] });
+    s.notasPersonales = 'Viento, ráfagas';
+    s.notasEntrenador = 'Dijo "anclaje"\nmás bajo';
+    return s;
+  };
+
+  it('cabecera con datos de sesión, flecha y notas', () => {
+    expect(aCSV(sesion()).split('\n')[0]).toBe(
+      'sesion_id,fecha,perfil,distancia_m,diana_cm,rondas,flechas_por_ronda,total_sesion,ronda,flecha,valor,puntaje,es_x,x_mm,y_mm,corregida,notas_personales,notas_entrenador',
+    );
+  });
+
+  it('una fila por flecha, con las notas escapadas', () => {
+    const csv = aCSV(sesion());
+    expect(csv).toContain(',abierto,30,80,1,2,10,1,1,X,10,1,1.2,-4.6,0,"Viento, ráfagas","Dijo ""anclaje""\nmás bajo"\n');
+    expect(csv).toContain(',1,2,M,0,0,,,1,');
+  });
+
+  it('varias sesiones comparten una sola cabecera', () => {
+    const cabeceras = aCSV([sesion(), sesion()]).split('\n').filter((l) => l.startsWith('sesion_id'));
+    expect(cabeceras).toHaveLength(1);
+  });
+
+  it('escapa comas, comillas y saltos de línea', () => {
+    expect(celda('a,b')).toBe('"a,b"');
+    expect(celda('di "x"')).toBe('"di ""x"""');
+    expect(celda('l1\nl2')).toBe('"l1\nl2"');
+    expect(celda(7)).toBe('7');
+    expect(celda(null)).toBe('');
+  });
+
+  it('nombre con fecha, distancia e id corto', () => {
+    const s = sesion();
+    expect(nombreArchivo(s)).toBe(`tiro_2026-10-04_30m_${s.id.slice(0, 8)}.csv`);
   });
 });
