@@ -72,9 +72,9 @@
 </header>
 
 <div class="pestanas" role="tablist" aria-label="Páginas de la sesión">
-  <button type="button" role="tab" id="tab-anotar" aria-controls="pag-anotar" aria-selected={pagina === 'anotar'} class="estado" onclick={() => ir('anotar')}>Anotar</button>
+  <button type="button" role="tab" id="tab-anotar" aria-controls="pag-anotar" aria-selected={pagina === 'anotar'} class="estado" onclick={() => ir('anotar')}>Ronda</button>
   <button type="button" role="tab" id="tab-hoja" aria-controls="pag-hoja" aria-selected={pagina === 'hoja'} class="estado" onclick={() => ir('hoja')}>
-    Hoja{#if sesion.registro.length}<span class="insignia num">{sesion.registro.length}</span>{/if}
+    Sesión{#if sesion.registro.length}<span class="insignia num">{sesion.registro.length}</span>{/if}
   </button>
 </div>
 
@@ -129,9 +129,9 @@
       {:else}
         <section class="tarjeta relleno">
           <span class="t-title-m">Terminaste las {sesion.rondas} rondas</span>
-          <p class="t-body-s">Agrega las notas en la <b>Hoja</b> y guarda la sesión: después quedan bloqueadas. Podrás exportarla desde el historial.</p>
+          <p class="t-body-s">Agrega las notas en la pestaña <b>Sesión</b> y termina: después quedan bloqueadas. Podrás exportarla desde el historial.</p>
           <div class="acciones">
-            <button type="button" class="btn tonal estado" onclick={() => ir('hoja')}>Ver hoja y notas</button>
+            <button type="button" class="btn tonal estado" onclick={() => ir('hoja')}>Ir a las notas</button>
             <button type="button" class="btn lleno estado crece" onclick={() => estado.terminar()}><Icono nombre="check" />Terminar y guardar</button>
           </div>
         </section>
