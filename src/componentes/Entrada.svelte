@@ -1,6 +1,6 @@
 <script lang="ts">
   // Animación de entrada: arranca idéntica a la pantalla de inicio que dibuja Android con
-  // icono-512-mask (diana a color, pequeña y más arriba), se acerca y pasa a gris; dos flechas
+  // icono-512-mask-v2 (diana a color, pequeña y más arriba), se acerca y pasa a gris; dos flechas
   // fallan el centro, la tercera acierta y los colores se expanden anillo por anillo hacia afuera.
   // Solo al abrir la app; un toque la salta.
   let visible = $state(!matchMedia('(prefers-reduced-motion: reduce)').matches);
