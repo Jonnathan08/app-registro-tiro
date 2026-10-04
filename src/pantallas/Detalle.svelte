@@ -41,7 +41,7 @@
   <h2 class="sec">Hoja de puntuación</h2>
   <Hoja registro={sesion.registro} />
 
-  <Notas {sesion} alCambiar={() => estado.guardarDetalle()} />
+  <Notas {sesion} bloqueadas />
 
   <button type="button" class="btn texto peligro estado borrar" onclick={() => (confirmarBorrar = true)}><Icono nombre="borrar" />Borrar sesión</button>
 </div>

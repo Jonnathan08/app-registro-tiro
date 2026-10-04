@@ -83,7 +83,7 @@
       <p class="t-body-s">Cambia el valor de la flecha {sel + 1}.</p>
     {/if}
   {:else}
-    <Diana {dianaCm} actuales={copia} seleccionada={sel} interactiva alMarcar={(f) => (copia[sel] = f)} />
+    <Diana {dianaCm} actuales={copia} seleccionada={sel} interactiva ampliable alMarcar={(f) => (copia[sel] = f)} />
     <p class="t-body-s">Marca de nuevo la flecha {sel + 1}: reemplaza su posición y su valor.</p>
   {/if}
 

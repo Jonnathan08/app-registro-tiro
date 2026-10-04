@@ -7,6 +7,7 @@
   import Notas from '../componentes/Notas.svelte';
   import Resumen from '../componentes/Resumen.svelte';
   import Segmentado from '../componentes/Segmentado.svelte';
+  import { fly } from 'svelte/transition';
   import { etiqueta, zona } from '../lib/diana';
   import { estado } from '../lib/estado.svelte';
   import { numeroRonda, rondaLlena, todasGuardadas, type Sesion } from '../lib/modelo';
@@ -18,6 +19,28 @@
   let confirmarTerminar = $state(false);
   let confirmarDescartar = $state(false);
   let editando = $state<number | null>(null);
+  let pagina = $state<'anotar' | 'hoja'>('anotar');
+
+  function ir(p: 'anotar' | 'hoja') {
+    if (p === pagina) return;
+    pagina = p;
+    scrollTo(0, 0);
+  }
+
+  // Deslizamiento horizontal: al menos 60 px de lado y más horizontal que vertical
+  let deslizar: { x: number; y: number } | null = null;
+  function inicioDeslizar(e: TouchEvent) {
+    const t = e.target as Element;
+    deslizar = e.touches.length > 1 || t.closest('.marco, textarea, input, .hoja') ? null : { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }
+  function finDeslizar(e: TouchEvent) {
+    if (!deslizar) return;
+    const p = e.changedTouches[0];
+    const dx = p.clientX - deslizar.x, dy = p.clientY - deslizar.y;
+    deslizar = null;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    ir(dx < 0 ? 'hoja' : 'anotar');
+  }
 
   const completa = $derived(todasGuardadas(sesion));
   const llena = $derived(rondaLlena(sesion));
@@ -48,66 +71,90 @@
   </div>
 </header>
 
-<div class="cuerpo">
-  <Resumen {sesion} />
+<div class="pestanas" role="tablist" aria-label="Páginas de la sesión">
+  <button type="button" role="tab" id="tab-anotar" aria-controls="pag-anotar" aria-selected={pagina === 'anotar'} class="estado" onclick={() => ir('anotar')}>Ronda</button>
+  <button type="button" role="tab" id="tab-hoja" aria-controls="pag-hoja" aria-selected={pagina === 'hoja'} class="estado" onclick={() => ir('hoja')}>
+    Sesión{#if sesion.registro.length}<span class="insignia num">{sesion.registro.length}</span>{/if}
+  </button>
+</div>
 
-  {#if !completa}
-    <Segmentado
-      etiqueta="Forma de registro"
-      bind:valor={entrada}
-      opciones={[{ valor: 'diana' as const, texto: 'Diana' }, { valor: 'manual' as const, texto: 'Manual' }]}
-    />
+<!-- Deslizar de lado cambia de página (salvo sobre la diana, que usa los gestos para marcar). Es un atajo: las pestañas son la vía accesible. -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="cuerpo" ontouchstart={inicioDeslizar} ontouchend={finDeslizar} ontouchcancel={() => (deslizar = null)}>
+  {#if pagina === 'anotar'}
+    <div id="pag-anotar" role="tabpanel" aria-labelledby="tab-anotar" class="pagina" in:fly={{ x: -40, duration: 150 }}>
+      {#if !completa}
+        <section class="tarjeta contorno" aria-label="Ronda actual">
+          <div class="cab">
+            <span class="t-title-m">Ronda {numeroRonda(sesion)}</span>
+            <span class="t-body-s num">{sumaActual} pts</span>
+          </div>
+          <div class="flechas num" style:--cols={Math.min(sesion.flechasPorRonda, 6)}>
+            {#each { length: sesion.flechasPorRonda } as _, i (i)}
+              {@const f = sesion.enCurso[i]}
+              {#if f}
+                <span class="flecha z-{zona(f.puntaje)}">{etiqueta(f)}</span>
+              {:else}
+                <span class="flecha vacia">{i + 1}</span>
+              {/if}
+            {/each}
+          </div>
+          <div class="acciones">
+            <button type="button" class="btn tonal estado" disabled={!sesion.enCurso.length} onclick={() => estado.deshacer()}><Icono nombre="deshacer" />Deshacer</button>
+            <button type="button" class="btn lleno estado crece" disabled={!llena} onclick={() => estado.guardarRonda()}><Icono nombre="check" />Guardar ronda</button>
+          </div>
+        </section>
 
-    {#if entrada === 'diana'}
-      <div class="diana-wrap">
-        <Diana dianaCm={sesion.dianaCm} {anteriores} actuales={sesion.enCurso} interactiva={!llena} alMarcar={(f) => estado.marcar(f)} />
-        <p class="ayuda">
-          <span>Mantén presionado, ajusta con la lupa y suelta.</span>
-          <span class="leyenda"><i class="tenue"></i>Rondas anteriores <i class="cruz">×</i>Centro del grupo</span>
-        </p>
-      </div>
-    {:else}
-      <div class="teclado">
-        {#each TECLAS as k (k.t)}
-          <button type="button" class="tecla estado num z-{zona(k.puntaje)}" disabled={llena} onclick={() => estado.marcar({ puntaje: k.puntaje, x: !!k.x, pos: null })}>{k.t}</button>
-        {/each}
-      </div>
-    {/if}
+        <Segmentado
+          etiqueta="Forma de registro"
+          bind:valor={entrada}
+          opciones={[{ valor: 'diana' as const, texto: 'Diana' }, { valor: 'manual' as const, texto: 'Manual' }]}
+        />
 
-    <section class="tarjeta contorno" aria-label="Ronda actual">
-      <div class="cab">
-        <span class="t-title-m">Ronda {numeroRonda(sesion)}</span>
-        <span class="t-body-s num">{sumaActual} pts</span>
-      </div>
-      <div class="flechas num" style:--cols={Math.min(sesion.flechasPorRonda, 6)}>
-        {#each { length: sesion.flechasPorRonda } as _, i (i)}
-          {@const f = sesion.enCurso[i]}
-          {#if f}
-            <span class="flecha z-{zona(f.puntaje)}">{etiqueta(f)}</span>
-          {:else}
-            <span class="flecha vacia">{i + 1}</span>
-          {/if}
-        {/each}
-      </div>
-      <div class="acciones">
-        <button type="button" class="btn tonal estado" disabled={!sesion.enCurso.length} onclick={() => estado.deshacer()}><Icono nombre="deshacer" />Deshacer</button>
-        <button type="button" class="btn lleno estado crece" disabled={!llena} onclick={() => estado.guardarRonda()}><Icono nombre="check" />Guardar ronda</button>
-      </div>
-    </section>
+        {#if entrada === 'diana'}
+          <div class="diana-wrap">
+            <Diana dianaCm={sesion.dianaCm} {anteriores} actuales={sesion.enCurso} interactiva={!llena} ampliable alMarcar={(f) => estado.marcar(f)} />
+            <p class="ayuda">
+              <span>Mantén presionado, ajusta con la lupa y suelta. Pellizca para acercar.</span>
+              <span class="leyenda"><i class="tenue"></i>Rondas anteriores <i class="cruz">×</i>Centro del grupo</span>
+            </p>
+          </div>
+        {:else}
+          <div class="teclado">
+            {#each TECLAS as k (k.t)}
+              <button type="button" class="tecla estado num z-{zona(k.puntaje)}" disabled={llena} onclick={() => estado.marcar({ puntaje: k.puntaje, x: !!k.x, pos: null })}>{k.t}</button>
+            {/each}
+          </div>
+        {/if}
+      {:else}
+        <section class="tarjeta relleno">
+          <span class="t-title-m">Terminaste las {sesion.rondas} rondas</span>
+          <p class="t-body-s">Agrega las notas en la pestaña <b>Sesión</b> y termina: después quedan bloqueadas. Podrás exportarla desde el historial.</p>
+          <div class="acciones">
+            <button type="button" class="btn tonal estado" onclick={() => ir('hoja')}>Ir a las notas</button>
+            <button type="button" class="btn lleno estado crece" onclick={() => estado.terminar()}><Icono nombre="check" />Terminar y guardar</button>
+          </div>
+        </section>
+      {/if}
+    </div>
   {:else}
-    <section class="tarjeta relleno">
-      <span class="t-title-m">Terminaste las {sesion.rondas} rondas</span>
-      <p class="t-body-s">Agrega las notas y guarda la sesión. Después podrás exportarla desde el historial.</p>
-      <button type="button" class="btn lleno estado" onclick={() => estado.terminar()}><Icono nombre="check" />Terminar y guardar</button>
-    </section>
-  {/if}
+    <div id="pag-hoja" role="tabpanel" aria-labelledby="tab-hoja" class="pagina" in:fly={{ x: 40, duration: 150 }}>
+      <Resumen {sesion} />
 
-  {#if sesion.registro.length}
-    <h2 class="sec">Hoja de puntuación</h2>
-    <Hoja registro={sesion.registro} alEditar={(i) => (editando = i)} />
-  {/if}
+      <h2 class="sec">Hoja de puntuación</h2>
+      {#if sesion.registro.length}
+        <Hoja registro={sesion.registro} alEditar={(i) => (editando = i)} />
+      {:else}
+        <p class="t-body-s vacio">Todavía no hay rondas guardadas.</p>
+      {/if}
 
-  <Notas {sesion} alCambiar={() => estado.notas()} />
+      <Notas {sesion} alCambiar={() => estado.notas()} />
+
+      {#if completa}
+        <button type="button" class="btn lleno estado" onclick={() => estado.terminar()}><Icono nombre="check" />Terminar y guardar</button>
+      {/if}
+    </div>
+  {/if}
 </div>
 
 {#if editando !== null}
@@ -122,7 +169,7 @@
   {/key}
 {/if}
 
-<Dialogo bind:abierto={confirmarTerminar} titulo="¿Terminar la sesión?" texto="Se guarda con las rondas registradas hasta ahora. La ronda a medias también se guarda." confirmar="Terminar" alConfirmar={() => estado.terminar()} />
+<Dialogo bind:abierto={confirmarTerminar} titulo="¿Terminar la sesión?" texto="Se guarda con las rondas registradas hasta ahora. La ronda a medias también se guarda. Después las notas ya no se pueden cambiar." confirmar="Terminar" alConfirmar={() => estado.terminar()} />
 <Dialogo bind:abierto={confirmarDescartar} titulo="¿Descartar la sesión?" texto="Se borran todas las flechas y notas de esta sesión. No se puede deshacer." confirmar="Descartar" peligro alConfirmar={() => estado.descartar()} />
 
 <style>
@@ -143,7 +190,29 @@
   }
   .menu button { height: 48px; padding: 0 12px; border: 0; background: none; text-align: left; font-size: 14px; cursor: pointer; }
 
-  .cuerpo { display: flex; flex-direction: column; gap: 16px; padding: 4px 16px 24px; }
+  .pestanas {
+    display: grid; grid-template-columns: 1fr 1fr;
+    position: sticky; top: calc(env(safe-area-inset-top, 0px) + 64px); z-index: 4;
+    background: var(--md-sys-color-surface); border-bottom: 1px solid var(--md-sys-color-surface-variant);
+  }
+  .pestanas button {
+    height: 48px; border: 0; background: none; cursor: pointer; position: relative;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    font-size: 14px; font-weight: 500; letter-spacing: .1px; color: var(--md-sys-color-on-surface-variant);
+  }
+  .pestanas button[aria-selected="true"] { color: var(--md-sys-color-primary); }
+  .pestanas button[aria-selected="true"]::after {
+    content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 64px; height: 3px; border-radius: 3px 3px 0 0; background: var(--md-sys-color-primary);
+  }
+  .insignia {
+    min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--shape-full);
+    font-size: 11px; line-height: 20px; background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container);
+  }
+
+  .cuerpo { padding: 12px 16px 24px; min-height: 60dvh; }
+  .pagina { display: flex; flex-direction: column; gap: 16px; }
+  .vacio { margin: 0; color: var(--md-sys-color-on-surface-variant); }
   .diana-wrap { display: flex; flex-direction: column; gap: 8px; }
   .ayuda { margin: 0; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; font-size: 12px; line-height: 16px; letter-spacing: .4px; color: var(--md-sys-color-on-surface-variant); }
   .leyenda { display: inline-flex; align-items: center; gap: 6px; }
