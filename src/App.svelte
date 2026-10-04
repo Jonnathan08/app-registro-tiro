@@ -1,5 +1,6 @@
 <script lang="ts">
   import Aviso from './componentes/Aviso.svelte';
+  import Entrada from './componentes/Entrada.svelte';
   import Icono, { type NombreIcono } from './componentes/Icono.svelte';
   import { estado, type Pantalla } from './lib/estado.svelte';
   import Ajustes from './pantallas/Ajustes.svelte';
@@ -42,6 +43,7 @@
 </main>
 
 <Aviso />
+<Entrada />
 
 <nav aria-label="Navegación principal">
   {#each DESTINOS as d (d.p)}
