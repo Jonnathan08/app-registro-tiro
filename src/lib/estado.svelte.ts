@@ -107,10 +107,6 @@ class Estado {
     this.avisar('Sesión descartada');
   }
 
-  async guardarDetalle() {
-    if (this.detalle) await almacen.guardar(this.detalle);
-  }
-
   async borrarDetalle() {
     const s = this.detalle;
     if (!s) return;

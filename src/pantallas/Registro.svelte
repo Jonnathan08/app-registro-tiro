@@ -60,9 +60,9 @@
 
     {#if entrada === 'diana'}
       <div class="diana-wrap">
-        <Diana dianaCm={sesion.dianaCm} {anteriores} actuales={sesion.enCurso} interactiva={!llena} alMarcar={(f) => estado.marcar(f)} />
+        <Diana dianaCm={sesion.dianaCm} {anteriores} actuales={sesion.enCurso} interactiva={!llena} ampliable alMarcar={(f) => estado.marcar(f)} />
         <p class="ayuda">
-          <span>Mantén presionado, ajusta con la lupa y suelta.</span>
+          <span>Mantén presionado, ajusta con la lupa y suelta. Pellizca para acercar.</span>
           <span class="leyenda"><i class="tenue"></i>Rondas anteriores <i class="cruz">×</i>Centro del grupo</span>
         </p>
       </div>
@@ -97,7 +97,7 @@
   {:else}
     <section class="tarjeta relleno">
       <span class="t-title-m">Terminaste las {sesion.rondas} rondas</span>
-      <p class="t-body-s">Agrega las notas y guarda la sesión. Después podrás exportarla desde el historial.</p>
+      <p class="t-body-s">Agrega las notas y guarda la sesión: después quedan bloqueadas. Podrás exportarla desde el historial.</p>
       <button type="button" class="btn lleno estado" onclick={() => estado.terminar()}><Icono nombre="check" />Terminar y guardar</button>
     </section>
   {/if}
@@ -122,7 +122,7 @@
   {/key}
 {/if}
 
-<Dialogo bind:abierto={confirmarTerminar} titulo="¿Terminar la sesión?" texto="Se guarda con las rondas registradas hasta ahora. La ronda a medias también se guarda." confirmar="Terminar" alConfirmar={() => estado.terminar()} />
+<Dialogo bind:abierto={confirmarTerminar} titulo="¿Terminar la sesión?" texto="Se guarda con las rondas registradas hasta ahora. La ronda a medias también se guarda. Después las notas ya no se pueden cambiar." confirmar="Terminar" alConfirmar={() => estado.terminar()} />
 <Dialogo bind:abierto={confirmarDescartar} titulo="¿Descartar la sesión?" texto="Se borran todas las flechas y notas de esta sesión. No se puede deshacer." confirmar="Descartar" peligro alConfirmar={() => estado.descartar()} />
 
 <style>
