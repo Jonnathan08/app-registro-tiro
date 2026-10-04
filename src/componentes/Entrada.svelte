@@ -3,7 +3,8 @@
   // icono-512-mask-v2 (diana a color, pequeña y más arriba), se acerca y pasa a gris; dos flechas
   // fallan el centro, la tercera acierta y los colores se expanden anillo por anillo hacia afuera.
   // Solo al abrir la app; un toque la salta.
-  let visible = $state(!matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const animar = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let visible = $state(animar);
 
   // Del centro hacia afuera: el oro aparece primero
   const ANILLOS = [
@@ -35,17 +36,46 @@
   const PASO_COLOR = 90;
   const SALIDA = INICIO + 2350;
 
+  // En el primer cuadro Brave todavía está ajustando el tamaño de la ventana: la diana salía
+  // más arriba y se veía la barra de navegación (grabación del 2026-10-03). La app queda oculta
+  // hasta que empieza la salida, y la diana espera a que el alto de la ventana se estabilice.
+  let estable = $state(false);
+  if (animar) document.body.classList.add('entrando');
+
+  function mostrarApp() {
+    document.body.classList.remove('entrando');
+  }
+
   function terminar() {
     visible = false;
+    mostrarApp();
   }
 
   $effect(() => {
     if (!visible) return;
     // Respaldo por si animationend no llega (pestaña en segundo plano, etc.)
     const t = setTimeout(terminar, SALIDA + 1500);
+    const salida = setTimeout(mostrarApp, SALIDA);
     addEventListener('keydown', terminar, { once: true });
+
+    const desde = performance.now();
+    let alto = innerHeight;
+    let cuadrosIguales = 0;
+    let cuadro = requestAnimationFrame(function medir(ahora) {
+      if (innerHeight === alto) {
+        cuadrosIguales++;
+      } else {
+        alto = innerHeight;
+        cuadrosIguales = 0;
+      }
+      if (cuadrosIguales >= 2 || ahora - desde > 150) estable = true;
+      else cuadro = requestAnimationFrame(medir);
+    });
+
     return () => {
       clearTimeout(t);
+      clearTimeout(salida);
+      cancelAnimationFrame(cuadro);
       removeEventListener('keydown', terminar);
     };
   });
@@ -63,7 +93,7 @@
     onpointerdown={terminar}
     onanimationend={(e) => e.target === e.currentTarget && terminar()}
   >
-    <svg viewBox="-40 -40 592 592">
+    <svg viewBox="-40 -40 592 592" class:oculta={!estable}>
       <!-- Un grupo por flecha para que la diana se sacuda en cada impacto -->
       <g class="acercar">
         <g class="golpe" style:--t="{FLECHAS[0].impacto}ms">
@@ -110,6 +140,8 @@
     animation: salir 300ms ease-in var(--salida) forwards;
   }
   svg { width: min(60vw, 260px); overflow: visible; }
+  .oculta { opacity: 0; }
+  :global(body.entrando #app > :not(.entrada)) { visibility: hidden; }
   .borde { stroke: var(--md-sys-color-outline-variant); stroke-width: 2; }
 
   /* Los tiempos (--t, --vuelo, --salida, etc.) vienen del script. La flecha es invisible
