@@ -165,8 +165,8 @@
 
       {#if completa}
         <button type="button" class="btn lleno estado" onclick={() => estado.terminar()}><Icono nombre="check" />Terminar y guardar</button>
-      {:else if libre}
-        <button type="button" class="btn lleno estado" onclick={() => (confirmarTerminar = true)}><Icono nombre="check" />Terminar sesión</button>
+      {:else}
+        <button type="button" class="btn tonal estado" onclick={() => (confirmarTerminar = true)}><Icono nombre="check" />Terminar sesión</button>
       {/if}
     </div>
   {/if}
@@ -184,7 +184,7 @@
   {/key}
 {/if}
 
-<Dialogo bind:abierto={confirmarTerminar} titulo="¿Terminar la sesión?" texto="Se guarda con las rondas registradas hasta ahora. La ronda a medias también se guarda. Después las notas ya no se pueden cambiar." confirmar="Terminar" alConfirmar={() => estado.terminar()} secundario="Ir a notas" alSecundario={irANotas} />
+<Dialogo bind:abierto={confirmarTerminar} titulo="¿Terminar la sesión?" texto="Se guarda con las rondas registradas hasta ahora. La ronda a medias también se guarda. Después las notas ya no se pueden cambiar." confirmar="Terminar" alConfirmar={() => estado.terminar()} />
 <Dialogo bind:abierto={confirmarDescartar} titulo="¿Descartar la sesión?" texto="Se borran todas las flechas y notas de esta sesión. No se puede deshacer." confirmar="Descartar" peligro alConfirmar={() => estado.descartar()} />
 
 <style>
