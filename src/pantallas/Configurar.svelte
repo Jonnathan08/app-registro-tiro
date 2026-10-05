@@ -14,7 +14,7 @@
 
   const rondas = $derived(c.perfil === 'control' ? CONTROL.rondas : c.rondas);
   const flechas = $derived(c.perfil === 'control' ? CONTROL.flechasPorRonda : c.flechasPorRonda);
-  const valida = $derived(c.distanciaM >= 1 && c.distanciaM <= 150 && rondas >= 1 && flechas >= 1);
+  const valida = $derived(c.distanciaM >= 1 && c.distanciaM <= 150 && (c.perfil === 'libre' || (rondas >= 1 && flechas >= 1)));
 
   const FORMATO: { clave: 'rondas' | 'flechasPorRonda'; texto: string; max: number }[] = [
     { clave: 'rondas', texto: 'Rondas', max: 36 },
@@ -34,13 +34,15 @@
     <Segmentado
       etiqueta="Perfil de sesión"
       bind:valor={c.perfil}
-      opciones={[{ valor: 'control' as Perfil, texto: 'Control' }, { valor: 'abierto' as Perfil, texto: 'Abierto' }]}
+      opciones={[{ valor: 'control' as Perfil, texto: 'Control' }, { valor: 'abierto' as Perfil, texto: 'Abierto' }, { valor: 'libre' as Perfil, texto: 'Libre' }]}
     />
     <p class="t-body-s">
       {#if c.perfil === 'control'}
         Formato fijo de {CONTROL.rondas} rondas de {CONTROL.flechasPorRonda} flechas, como una ronda clasificatoria. Sirve para comparar sesiones entre sí.
-      {:else}
+      {:else if c.perfil === 'abierto'}
         Eliges el número de rondas y de flechas por ronda.
+      {:else}
+        Sin formato: tiras las rondas que quieras, cada una con las flechas que quieras, hasta terminar la sesión. Para calentar, practicar técnica o ajustar la mira.
       {/if}
     </p>
   </section>
@@ -86,7 +88,13 @@
   {/if}
 
   <div class="pie">
-    <p class="t-body-s num">{rondas} rondas × {flechas} flechas = {rondas * flechas} flechas · máximo {rondas * flechas * 10} puntos</p>
+    <p class="t-body-s num">
+      {#if c.perfil === 'libre'}
+        Rondas y flechas libres hasta que termines la sesión
+      {:else}
+        {rondas} rondas × {flechas} flechas = {rondas * flechas} flechas · máximo {rondas * flechas * 10} puntos
+      {/if}
+    </p>
     <button type="button" class="btn lleno estado ancho" disabled={!valida} onclick={() => estado.empezar({ ...c, distanciaM: limitar(c.distanciaM, 1, 150) })}>
       <Icono nombre="bandera" />Empezar sesión
     </button>

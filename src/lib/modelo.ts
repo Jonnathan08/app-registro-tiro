@@ -2,10 +2,17 @@ import type { Impacto, TipoDiana } from './diana';
 
 export const VERSION_DATOS = 1;
 
-export type Perfil = 'control' | 'abierto';
+export type Perfil = 'control' | 'abierto' | 'libre';
 
 /** Perfil Control: formato fijo de 12 rondas de 6 flechas (72 flechas, como la ronda clasificatoria). */
 export const CONTROL = { rondas: 12, flechasPorRonda: 6 } as const;
+
+/** Perfil Libre: sin número de rondas ni de flechas por ronda (se guardan como 0). Tope de seguridad por ronda. */
+export const LIBRE_MAX_FLECHAS = 24;
+
+export const NOMBRE_PERFIL: Record<Perfil, string> = { control: 'Control', abierto: 'Abierto', libre: 'Libre' };
+
+export const esLibre = (s: { perfil: Perfil }) => s.perfil === 'libre';
 
 export interface Flecha extends Impacto {
   /** Posición en mm desde el centro (x a la derecha, y hacia arriba). null si se ingresó a mano. */
@@ -44,7 +51,7 @@ export interface Configuracion {
 }
 
 export function nuevaSesion(c: Configuracion, ahora = new Date()): Sesion {
-  const formato = c.perfil === 'control' ? CONTROL : { rondas: c.rondas, flechasPorRonda: c.flechasPorRonda };
+  const formato = c.perfil === 'control' ? CONTROL : c.perfil === 'libre' ? { rondas: 0, flechasPorRonda: 0 } : { rondas: c.rondas, flechasPorRonda: c.flechasPorRonda };
   const iso = ahora.toISOString();
   return {
     version: VERSION_DATOS,
@@ -75,7 +82,7 @@ export function resumen(s: Sesion) {
   const total = fl.reduce((a, f) => a + f.puntaje, 0);
   return {
     total,
-    maximo: s.rondas * s.flechasPorRonda * 10,
+    maximo: (esLibre(s) ? fl.length : s.rondas * s.flechasPorRonda) * 10,
     flechas: fl.length,
     x: fl.filter((f) => f.x).length,
     dieces: fl.filter((f) => f.puntaje === 10).length,
@@ -95,8 +102,10 @@ export function centroGrupo(fl: Flecha[]): { x: number; y: number } | null {
 
 /** Número (desde 1) de la ronda en curso. */
 export const numeroRonda = (s: Sesion) => s.registro.length + 1;
-export const rondaLlena = (s: Sesion) => s.enCurso.length >= s.flechasPorRonda;
-export const todasGuardadas = (s: Sesion) => s.registro.length >= s.rondas;
+export const rondaLlena = (s: Sesion) => s.enCurso.length >= (esLibre(s) ? LIBRE_MAX_FLECHAS : s.flechasPorRonda);
+export const todasGuardadas = (s: Sesion) => !esLibre(s) && s.registro.length >= s.rondas;
+/** Se puede guardar la ronda: llena o, en Libre, con al menos una flecha. */
+export const rondaGuardable = (s: Sesion) => (esLibre(s) ? s.enCurso.length > 0 : rondaLlena(s));
 
 /**
  * Corrige el valor de una flecha con el teclado. La posición se descarta porque ya no

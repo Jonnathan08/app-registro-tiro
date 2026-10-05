@@ -1,7 +1,7 @@
 <script lang="ts">
   import Icono from '../componentes/Icono.svelte';
   import { estado } from '../lib/estado.svelte';
-  import { resumen } from '../lib/modelo';
+  import { NOMBRE_PERFIL, resumen } from '../lib/modelo';
 
   const fecha = new Intl.DateTimeFormat('es', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
   const prom = new Intl.NumberFormat('es', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -25,7 +25,7 @@
             <span class="total num">{r.total}</span>
             <span class="txt">
               <span class="t-title-m">{fecha.format(new Date(s.fecha))}</span>
-              <span class="t-body-s num">{s.distanciaM} m · {s.perfil === 'control' ? 'Control' : 'Abierto'} · {r.flechas} flechas · prom. {prom.format(r.promedio)}</span>
+              <span class="t-body-s num">{s.distanciaM} m · {NOMBRE_PERFIL[s.perfil]} · {r.flechas} flechas · prom. {prom.format(r.promedio)}</span>
             </span>
             <Icono nombre="flecha" />
           </button>

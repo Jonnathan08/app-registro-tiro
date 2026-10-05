@@ -1,6 +1,6 @@
 import * as almacen from './almacen';
 import type { TipoDiana } from './diana';
-import { nuevaSesion, rondaLlena, todasGuardadas, type Configuracion, type Flecha, type Sesion } from './modelo';
+import { nuevaSesion, rondaGuardable, rondaLlena, todasGuardadas, type Configuracion, type Flecha, type Sesion } from './modelo';
 
 export type Pantalla = 'sesion' | 'historial' | 'ajustes';
 
@@ -63,7 +63,7 @@ class Estado {
 
   async guardarRonda() {
     const s = this.activa;
-    if (!s || !rondaLlena(s)) return;
+    if (!s || !rondaGuardable(s)) return;
     const n = s.registro.length + 1;
     const pts = s.enCurso.reduce((a, f) => a + f.puntaje, 0);
     s.registro.push({ flechas: s.enCurso });

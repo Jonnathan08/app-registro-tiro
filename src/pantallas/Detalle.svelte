@@ -7,7 +7,7 @@
   import Resumen from '../componentes/Resumen.svelte';
   import { estado } from '../lib/estado.svelte';
   import { aCSV, compartir, idCorto, nombreArchivo } from '../lib/exportar';
-  import type { Sesion } from '../lib/modelo';
+  import { NOMBRE_PERFIL, type Sesion } from '../lib/modelo';
 
   let { sesion }: { sesion: Sesion } = $props();
   let confirmarBorrar = $state(false);
@@ -24,7 +24,7 @@
 <header class="barra">
   <button type="button" class="icbtn estado" aria-label="Volver al historial" onclick={() => (estado.detalle = null)}><Icono nombre="volver" /></button>
   <div class="titulo">
-    <h1 class="t-title-l">{sesion.distanciaM} m · {sesion.perfil === 'control' ? 'Control' : 'Abierto'}</h1>
+    <h1 class="t-title-l">{sesion.distanciaM} m · {NOMBRE_PERFIL[sesion.perfil]}</h1>
     <small>{fecha.format(new Date(sesion.fecha))} · {idCorto(sesion)}</small>
   </div>
 </header>

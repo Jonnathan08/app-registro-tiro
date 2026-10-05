@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { aCSV, celda, nombreArchivo } from './exportar';
-import { centroGrupo, corregir, nuevaSesion, ordenHoja, resumen, type Flecha } from './modelo';
+import { centroGrupo, corregir, LIBRE_MAX_FLECHAS, nuevaSesion, ordenHoja, resumen, rondaGuardable, rondaLlena, todasGuardadas, type Flecha } from './modelo';
 
 const f = (puntaje: number, x = false, pos: Flecha['pos'] = null): Flecha => ({ puntaje, x, pos });
 const fecha = new Date('2026-10-04T09:30:00Z');
@@ -14,6 +14,17 @@ describe('nuevaSesion', () => {
     const s = nuevaSesion({ perfil: 'abierto', distanciaM: 18, dianaCm: 40, rondas: 10, flechasPorRonda: 3 }, fecha);
     expect([s.rondas, s.flechasPorRonda, s.distanciaM]).toEqual([10, 3, 18]);
   });
+  it('perfil Libre no tiene formato: rondas de cualquier tamaño y sin fin', () => {
+    const s = nuevaSesion({ perfil: 'libre', distanciaM: 30, dianaCm: 80, rondas: 6, flechasPorRonda: 6 }, fecha);
+    expect([s.rondas, s.flechasPorRonda]).toEqual([0, 0]);
+    expect(rondaGuardable(s)).toBe(false);
+    s.enCurso.push(f(9));
+    expect([rondaGuardable(s), rondaLlena(s)]).toEqual([true, false]);
+    for (let i = 0; i < 40; i++) s.registro.push({ flechas: [f(8)] });
+    expect(todasGuardadas(s)).toBe(false);
+    s.enCurso = Array.from({ length: LIBRE_MAX_FLECHAS }, () => f(7));
+    expect(rondaLlena(s)).toBe(true);
+  });
 });
 
 describe('resumen', () => {
@@ -24,6 +35,11 @@ describe('resumen', () => {
     const r = resumen(s);
     expect(r).toMatchObject({ total: 63, maximo: 720, flechas: 8, x: 1, dieces: 3 });
     expect(r.promedio).toBeCloseTo(7.875);
+  });
+  it('en Libre el máximo sale de las flechas tiradas', () => {
+    const s = nuevaSesion({ perfil: 'libre', distanciaM: 30, dianaCm: 80, rondas: 0, flechasPorRonda: 0 }, fecha);
+    s.registro.push({ flechas: [f(10), f(9), f(8)] }, { flechas: [f(7)] });
+    expect(resumen(s)).toMatchObject({ total: 34, maximo: 40, flechas: 4 });
   });
 });
 
@@ -70,6 +86,12 @@ describe('exportar', () => {
     const csv = aCSV(sesion());
     expect(csv).toContain(',abierto,30,80,1,2,10,1,1,X,10,1,1.2,-4.6,0,"Viento, ráfagas","Dijo ""anclaje""\nmás bajo"\n');
     expect(csv).toContain(',1,2,M,0,0,,,1,');
+  });
+
+  it('en Libre exporta las rondas tiradas y deja vacío flechas_por_ronda', () => {
+    const s = nuevaSesion({ perfil: 'libre', distanciaM: 30, dianaCm: 80, rondas: 0, flechasPorRonda: 0 }, fecha);
+    s.registro.push({ flechas: [f(9), f(8), f(7)] }, { flechas: [f(10)] });
+    expect(aCSV(s)).toContain(',libre,30,80,2,,34,2,1,10,10,');
   });
 
   it('varias sesiones comparten una sola cabecera', () => {

@@ -10,7 +10,7 @@
   import { fly } from 'svelte/transition';
   import { etiqueta, zona } from '../lib/diana';
   import { estado } from '../lib/estado.svelte';
-  import { numeroRonda, rondaLlena, todasGuardadas, type Sesion } from '../lib/modelo';
+  import { esLibre, NOMBRE_PERFIL, numeroRonda, rondaGuardable, rondaLlena, todasGuardadas, type Sesion } from '../lib/modelo';
 
   let { sesion }: { sesion: Sesion } = $props();
 
@@ -46,7 +46,10 @@
   const llena = $derived(rondaLlena(sesion));
   const anteriores = $derived(sesion.registro.flatMap((r) => r.flechas));
   const sumaActual = $derived(sesion.enCurso.reduce((a, f) => a + f.puntaje, 0));
-  const perfil = $derived(sesion.perfil === 'control' ? 'Control' : 'Abierto');
+  const perfil = $derived(NOMBRE_PERFIL[sesion.perfil]);
+  const libre = $derived(esLibre(sesion));
+  // En Libre se muestran las flechas tiradas más un hueco para la siguiente
+  const huecos = $derived(libre ? sesion.enCurso.length + (llena ? 0 : 1) : sesion.flechasPorRonda);
 
   const TECLAS: { t: string; puntaje: number; x?: boolean }[] = [
     { t: 'X', puntaje: 10, x: true }, { t: '10', puntaje: 10 }, { t: '9', puntaje: 9 }, { t: '8', puntaje: 8 },
@@ -57,7 +60,7 @@
 
 <header class="barra">
   <div class="titulo">
-    <h1 class="t-title-l">{completa ? 'Rondas completas' : `Ronda ${numeroRonda(sesion)} de ${sesion.rondas}`}</h1>
+    <h1 class="t-title-l">{completa ? 'Rondas completas' : libre ? `Ronda ${numeroRonda(sesion)}` : `Ronda ${numeroRonda(sesion)} de ${sesion.rondas}`}</h1>
     <small class="num">{sesion.distanciaM} m · Diana {sesion.dianaCm} cm · {perfil}</small>
   </div>
   <div class="menu-ancla">
@@ -89,8 +92,8 @@
             <span class="t-title-m">Ronda {numeroRonda(sesion)}</span>
             <span class="t-body-s num">{sumaActual} pts</span>
           </div>
-          <div class="flechas num" style:--cols={Math.min(sesion.flechasPorRonda, 6)}>
-            {#each { length: sesion.flechasPorRonda } as _, i (i)}
+          <div class="flechas num" style:--cols={libre ? 6 : Math.min(sesion.flechasPorRonda, 6)}>
+            {#each { length: huecos } as _, i (i)}
               {@const f = sesion.enCurso[i]}
               {#if f}
                 <span class="flecha z-{zona(f.puntaje)}">{etiqueta(f)}</span>
@@ -101,7 +104,7 @@
           </div>
           <div class="acciones">
             <button type="button" class="btn tonal estado" disabled={!sesion.enCurso.length} onclick={() => estado.deshacer()}><Icono nombre="deshacer" />Deshacer</button>
-            <button type="button" class="btn lleno estado crece" disabled={!llena} onclick={() => estado.guardarRonda()}><Icono nombre="check" />Guardar ronda</button>
+            <button type="button" class="btn lleno estado crece" disabled={!rondaGuardable(sesion)} onclick={() => estado.guardarRonda()}><Icono nombre="check" />Guardar ronda</button>
           </div>
         </section>
 
@@ -152,6 +155,8 @@
 
       {#if completa}
         <button type="button" class="btn lleno estado" onclick={() => estado.terminar()}><Icono nombre="check" />Terminar y guardar</button>
+      {:else if libre}
+        <button type="button" class="btn lleno estado" onclick={() => (confirmarTerminar = true)}><Icono nombre="check" />Terminar sesión</button>
       {/if}
     </div>
   {/if}
