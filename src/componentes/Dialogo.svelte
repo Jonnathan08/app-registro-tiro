@@ -6,6 +6,8 @@
     confirmar,
     peligro = false,
     alConfirmar,
+    secundario,
+    alSecundario,
   }: {
     abierto: boolean;
     titulo: string;
@@ -13,6 +15,9 @@
     confirmar: string;
     peligro?: boolean;
     alConfirmar: () => void;
+    /** Acción alternativa opcional, a la izquierda de Cancelar. */
+    secundario?: string;
+    alSecundario?: () => void;
   } = $props();
 
   const id = $props.id();
@@ -27,6 +32,9 @@
   <h2 id="{id}-titulo" class="t-headline">{titulo}</h2>
   <p>{texto}</p>
   <div class="acciones">
+    {#if secundario}
+      <button type="button" class="btn texto estado otra" onclick={() => { abierto = false; alSecundario?.(); }}>{secundario}</button>
+    {/if}
     <button type="button" class="btn texto estado" onclick={() => (abierto = false)}>Cancelar</button>
     <button type="button" class="btn texto estado" class:peligro onclick={() => { abierto = false; alConfirmar(); }}>{confirmar}</button>
   </div>
@@ -41,5 +49,6 @@
   dialog::backdrop { background: rgb(0 0 0 / .32); }
   h2 { margin: 0 0 16px; }
   p { margin: 0 0 24px; font-size: 14px; line-height: 20px; color: var(--md-sys-color-on-surface-variant); }
-  .acciones { display: flex; justify-content: flex-end; gap: 8px; }
+  .acciones { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
+  .otra { margin-right: auto; }
 </style>

@@ -7,6 +7,7 @@
   import Notas from '../componentes/Notas.svelte';
   import Resumen from '../componentes/Resumen.svelte';
   import Segmentado from '../componentes/Segmentado.svelte';
+  import { tick } from 'svelte';
   import { fly } from 'svelte/transition';
   import { etiqueta, zona } from '../lib/diana';
   import { estado } from '../lib/estado.svelte';
@@ -20,6 +21,15 @@
   let confirmarDescartar = $state(false);
   let editando = $state<number | null>(null);
   let pagina = $state<'anotar' | 'hoja'>('anotar');
+
+  // Abre la pestaña Sesión y baja hasta las notas
+  async function irANotas() {
+    ir('hoja');
+    await tick();
+    const n = document.getElementById('notas-personales');
+    n?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    n?.focus({ preventScroll: true });
+  }
 
   function ir(p: 'anotar' | 'hoja') {
     if (p === pagina) return;
@@ -134,7 +144,7 @@
           <span class="t-title-m">Terminaste las {sesion.rondas} rondas</span>
           <p class="t-body-s">Agrega las notas en la pestaña <b>Sesión</b> y termina: después quedan bloqueadas. Podrás exportarla desde el historial.</p>
           <div class="acciones">
-            <button type="button" class="btn tonal estado" onclick={() => ir('hoja')}>Ir a las notas</button>
+            <button type="button" class="btn tonal estado" onclick={irANotas}>Ir a las notas</button>
             <button type="button" class="btn lleno estado crece" onclick={() => estado.terminar()}><Icono nombre="check" />Terminar y guardar</button>
           </div>
         </section>
@@ -174,7 +184,7 @@
   {/key}
 {/if}
 
-<Dialogo bind:abierto={confirmarTerminar} titulo="¿Terminar la sesión?" texto="Se guarda con las rondas registradas hasta ahora. La ronda a medias también se guarda. Después las notas ya no se pueden cambiar." confirmar="Terminar" alConfirmar={() => estado.terminar()} />
+<Dialogo bind:abierto={confirmarTerminar} titulo="¿Terminar la sesión?" texto="Se guarda con las rondas registradas hasta ahora. La ronda a medias también se guarda. Después las notas ya no se pueden cambiar." confirmar="Terminar" alConfirmar={() => estado.terminar()} secundario="Ir a notas" alSecundario={irANotas} />
 <Dialogo bind:abierto={confirmarDescartar} titulo="¿Descartar la sesión?" texto="Se borran todas las flechas y notas de esta sesión. No se puede deshacer." confirmar="Descartar" peligro alConfirmar={() => estado.descartar()} />
 
 <style>
