@@ -8,7 +8,7 @@
 
 <section class="resumen" aria-label="Resumen de la sesión">
   <div>
-    <div class="t-label">Total</div>
+    <div class="t-label">Total <span class="flechas num">· {r.flechas} {r.flechas === 1 ? 'flecha' : 'flechas'}</span></div>
     <div class="t-display num">{r.total}<small> / {r.maximo}</small></div>
   </div>
   <div class="stats num">
@@ -24,6 +24,7 @@
     border-radius: var(--shape-l); padding: 16px;
     display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 4px 16px;
   }
+  .flechas { font-weight: 400; opacity: .8; }
   small { font-size: 16px; line-height: 24px; opacity: .8; }
   .stats { display: flex; gap: 16px; text-align: right; }
   .stats div { display: flex; flex-direction: column; }
