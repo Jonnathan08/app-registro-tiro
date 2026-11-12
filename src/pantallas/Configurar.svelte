@@ -3,7 +3,7 @@
   import Segmentado from '../componentes/Segmentado.svelte';
   import { DIANAS, type TipoDiana } from '../lib/diana';
   import { estado } from '../lib/estado.svelte';
-  import { CONTROL, type Configuracion, type Perfil } from '../lib/modelo';
+  import { CONTROL, LIMITES, type Configuracion, type Perfil } from '../lib/modelo';
 
   const c = $state<Configuracion>({ ...estado.config });
 
@@ -14,14 +14,16 @@
 
   const rondas = $derived(c.perfil === 'control' ? CONTROL.rondas : c.rondas);
   const flechas = $derived(c.perfil === 'control' ? CONTROL.flechasPorRonda : c.flechasPorRonda);
-  const valida = $derived(c.distanciaM >= 1 && c.distanciaM <= 150 && (c.perfil === 'libre' || (rondas >= 1 && flechas >= 1)));
+  const D = LIMITES.distanciaM;
+  const valida = $derived(c.distanciaM >= D.min && c.distanciaM <= D.max && (c.perfil === 'libre' || (rondas >= 1 && flechas >= 1)));
 
-  const FORMATO: { clave: 'rondas' | 'flechasPorRonda'; texto: string; max: number }[] = [
-    { clave: 'rondas', texto: 'Rondas', max: 36 },
-    { clave: 'flechasPorRonda', texto: 'Flechas por ronda', max: 12 },
+  const FORMATO: { clave: 'rondas' | 'flechasPorRonda'; texto: string }[] = [
+    { clave: 'rondas', texto: 'Rondas' },
+    { clave: 'flechasPorRonda', texto: 'Flechas por ronda' },
   ];
 
   const limitar = (v: number, min: number, max: number) => Math.min(max, Math.max(min, Math.round(v) || min));
+  const sumar = (k: 'rondas' | 'flechasPorRonda', d: number) => (c[k] = limitar(c[k] + d, LIMITES[k].min, LIMITES[k].max));
 </script>
 
 <header class="barra">
@@ -50,7 +52,7 @@
   <section class="grupo">
     <h2 class="sec">Distancia</h2>
     <div class="campo">
-      <input id="distancia" type="number" inputmode="numeric" min="1" max="150" bind:value={c.distanciaM} />
+      <input id="distancia" type="number" inputmode="numeric" min={D.min} max={D.max} bind:value={c.distanciaM} />
       <label for="distancia">Distancia de tiro</label>
       <span class="sufijo">m</span>
     </div>
@@ -79,9 +81,9 @@
       {#each FORMATO as campo (campo.clave)}
         <div class="contador">
           <span class="t-title-m">{campo.texto}</span>
-          <button type="button" class="icbtn estado" aria-label="Menos {campo.texto.toLowerCase()}" onclick={() => (c[campo.clave] = limitar(c[campo.clave] - 1, 1, campo.max))}><Icono nombre="menos" /></button>
+          <button type="button" class="icbtn estado" aria-label="Menos {campo.texto.toLowerCase()}" onclick={() => sumar(campo.clave, -1)}><Icono nombre="menos" /></button>
           <span class="valor num" aria-live="polite">{c[campo.clave]}</span>
-          <button type="button" class="icbtn estado" aria-label="Más {campo.texto.toLowerCase()}" onclick={() => (c[campo.clave] = limitar(c[campo.clave] + 1, 1, campo.max))}><Icono nombre="sumar" /></button>
+          <button type="button" class="icbtn estado" aria-label="Más {campo.texto.toLowerCase()}" onclick={() => sumar(campo.clave, 1)}><Icono nombre="sumar" /></button>
         </div>
       {/each}
     </section>
@@ -95,7 +97,7 @@
         {rondas} rondas × {flechas} flechas = {rondas * flechas} flechas · máximo {rondas * flechas * 10} puntos
       {/if}
     </p>
-    <button type="button" class="btn lleno estado ancho" disabled={!valida} onclick={() => estado.empezar({ ...c, distanciaM: limitar(c.distanciaM, 1, 150) })}>
+    <button type="button" class="btn lleno estado ancho" disabled={!valida} onclick={() => estado.empezar({ ...c, distanciaM: limitar(c.distanciaM, D.min, D.max) })}>
       <Icono nombre="bandera" />Empezar sesión
     </button>
   </div>

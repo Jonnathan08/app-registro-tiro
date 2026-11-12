@@ -5,11 +5,32 @@
   let { sesion, alCambiar, bloqueadas = false }: { sesion: Sesion; alCambiar?: () => void; bloqueadas?: boolean } = $props();
 
   // Guarda medio segundo después de dejar de escribir
-  let espera: ReturnType<typeof setTimeout>;
+  let espera: ReturnType<typeof setTimeout> | undefined;
   function cambio() {
     clearTimeout(espera);
-    espera = setTimeout(() => alCambiar?.(), 500);
+    espera = setTimeout(guardarYa, 500);
   }
+
+  /** Guarda en el momento si hay cambios pendientes. */
+  function guardarYa() {
+    if (espera === undefined) return;
+    clearTimeout(espera);
+    espera = undefined;
+    alCambiar?.();
+  }
+
+  // Android puede cerrar la app en segundo plano sin que el campo pierda el foco:
+  // se guarda al ocultarla y al desmontar el componente
+  $effect(() => {
+    const alOcultar = () => document.visibilityState === 'hidden' && guardarYa();
+    addEventListener('visibilitychange', alOcultar);
+    addEventListener('pagehide', guardarYa);
+    return () => {
+      removeEventListener('visibilitychange', alOcultar);
+      removeEventListener('pagehide', guardarYa);
+      guardarYa();
+    };
+  });
 </script>
 
 <section class="notas" aria-label="Notas">
@@ -25,11 +46,11 @@
     </div>
   {:else}
     <div class="campo">
-      <textarea id="notas-personales" bind:value={sesion.notasPersonales} oninput={cambio} onblur={() => alCambiar?.()} placeholder="Sensaciones, técnica, condiciones…"></textarea>
+      <textarea id="notas-personales" bind:value={sesion.notasPersonales} oninput={cambio} onblur={guardarYa} placeholder="Sensaciones, técnica, condiciones…"></textarea>
       <label for="notas-personales">Notas personales</label>
     </div>
     <div class="campo">
-      <textarea id="notas-entrenador" bind:value={sesion.notasEntrenador} oninput={cambio} onblur={() => alCambiar?.()} placeholder="Correcciones y tareas del entrenador"></textarea>
+      <textarea id="notas-entrenador" bind:value={sesion.notasEntrenador} oninput={cambio} onblur={guardarYa} placeholder="Correcciones y tareas del entrenador"></textarea>
       <label for="notas-entrenador">Notas del entrenador</label>
     </div>
   {/if}

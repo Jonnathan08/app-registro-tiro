@@ -10,9 +10,16 @@ const CLAVE = 'registro-tiro:ajustes';
 const DEFECTO: Ajustes = { modo: 'sistema', contraste: 'medio' };
 const SUFIJO: Record<Contraste, string> = { estandar: '', medio: '-medium-contrast', alto: '-high-contrast' };
 
+const MODOS: Modo[] = ['sistema', 'claro', 'oscuro'];
+
+/** Ajustes guardados; cada valor desconocido o ausente toma el de por defecto. */
 export function leerAjustes(): Ajustes {
   try {
-    return { ...DEFECTO, ...JSON.parse(localStorage.getItem(CLAVE) ?? '{}') };
+    const g = JSON.parse(localStorage.getItem(CLAVE) ?? '{}') ?? {};
+    return {
+      modo: MODOS.includes(g.modo) ? g.modo : DEFECTO.modo,
+      contraste: Object.hasOwn(SUFIJO, g.contraste) ? g.contraste : DEFECTO.contraste,
+    };
   } catch {
     return { ...DEFECTO };
   }

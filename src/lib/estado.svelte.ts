@@ -1,17 +1,15 @@
 import * as almacen from './almacen';
-import type { TipoDiana } from './diana';
-import { nuevaSesion, rondaGuardable, rondaLlena, todasGuardadas, type Configuracion, type Flecha, type Sesion } from './modelo';
+import { nuevaSesion, rondaGuardable, rondaLlena, todasGuardadas, validarConfig, type Configuracion, type Flecha, type Sesion } from './modelo';
 
 export type Pantalla = 'sesion' | 'historial' | 'ajustes';
 
 const CLAVE_CONFIG = 'registro-tiro:ultima-config';
 
 function leerConfig(): Configuracion {
-  const defecto: Configuracion = { perfil: 'control', distanciaM: 70, dianaCm: 122 as TipoDiana, rondas: 6, flechasPorRonda: 6 };
   try {
-    return { ...defecto, ...JSON.parse(localStorage.getItem(CLAVE_CONFIG) ?? '{}') };
+    return validarConfig(JSON.parse(localStorage.getItem(CLAVE_CONFIG) ?? '{}'));
   } catch {
-    return defecto;
+    return validarConfig({});
   }
 }
 
@@ -23,20 +21,37 @@ class Estado {
   aviso = $state<{ texto: string; n: number } | null>(null);
   config = $state<Configuracion>(leerConfig());
   cargado = $state(false);
+  /** Error al abrir el almacenamiento: la app no puede funcionar sin él. */
+  error = $state<string | null>(null);
 
   async cargar() {
-    const todas = await almacen.listar();
-    this.activa = todas.find((s) => !s.terminada) ?? null;
-    this.historial = todas.filter((s) => s.terminada);
-    this.cargado = true;
+    this.error = null;
+    try {
+      const todas = await almacen.listar();
+      this.activa = todas.find((s) => !s.terminada) ?? null;
+      this.historial = todas.filter((s) => s.terminada);
+      this.cargado = true;
+    } catch (e) {
+      console.error(e);
+      this.error = 'No se pudo abrir el almacenamiento del navegador. Si estás en una ventana privada, abre la app en una normal; si no, revisa el espacio libre del teléfono.';
+    }
   }
 
   avisar(texto: string) {
     this.aviso = { texto, n: (this.aviso?.n ?? 0) + 1 };
   }
 
-  private async persistir() {
-    if (this.activa) await almacen.guardar(this.activa);
+  /** Guarda la sesión activa. Si falla, avisa y devuelve false (lo hecho sigue en pantalla). */
+  private async persistir(): Promise<boolean> {
+    if (!this.activa) return true;
+    try {
+      await almacen.guardar($state.snapshot(this.activa));
+      return true;
+    } catch (e) {
+      console.error(e);
+      this.avisar('No se pudo guardar. Revisa el espacio libre del teléfono.');
+      return false;
+    }
   }
 
   async empezar(c: Configuracion) {
@@ -68,8 +83,7 @@ class Estado {
     const pts = s.enCurso.reduce((a, f) => a + f.puntaje, 0);
     s.registro.push({ flechas: s.enCurso });
     s.enCurso = [];
-    await this.persistir();
-    this.avisar(`Ronda ${n} guardada · ${pts} puntos`);
+    if (await this.persistir()) this.avisar(`Ronda ${n} guardada · ${pts} puntos`);
   }
 
   /** Reemplaza las flechas de una ronda ya guardada (solo en la sesión en curso). */
@@ -77,8 +91,7 @@ class Estado {
     const s = this.activa;
     if (!s || !s.registro[indice] || flechas.length !== s.registro[indice].flechas.length) return;
     s.registro[indice] = { flechas };
-    await this.persistir();
-    this.avisar(`Ronda ${indice + 1} actualizada · ${flechas.reduce((a, f) => a + f.puntaje, 0)} puntos`);
+    if (await this.persistir()) this.avisar(`Ronda ${indice + 1} actualizada · ${flechas.reduce((a, f) => a + f.puntaje, 0)} puntos`);
   }
 
   async notas() {
@@ -91,8 +104,8 @@ class Estado {
     // Una ronda a medias se guarda tal cual al terminar
     if (s.enCurso.length) { s.registro.push({ flechas: s.enCurso }); s.enCurso = []; }
     s.terminada = true;
-    await this.persistir();
-    const plano: Sesion = JSON.parse(JSON.stringify(s));
+    if (!(await this.persistir())) { s.terminada = false; return; }
+    const plano = $state.snapshot(s);
     this.historial = [plano, ...this.historial];
     this.activa = null;
     this.detalle = plano;
@@ -100,17 +113,27 @@ class Estado {
     this.avisar('Sesión guardada');
   }
 
+  /** Borra una sesión del almacenamiento; si falla, avisa y devuelve false. */
+  private async borrar(id: string): Promise<boolean> {
+    try {
+      await almacen.borrar(id);
+      return true;
+    } catch (e) {
+      console.error(e);
+      this.avisar('No se pudo borrar la sesión. Inténtalo de nuevo.');
+      return false;
+    }
+  }
+
   async descartar() {
-    if (!this.activa) return;
-    await almacen.borrar(this.activa.id);
+    if (!this.activa || !(await this.borrar(this.activa.id))) return;
     this.activa = null;
     this.avisar('Sesión descartada');
   }
 
   async borrarDetalle() {
     const s = this.detalle;
-    if (!s) return;
-    await almacen.borrar(s.id);
+    if (!s || !(await this.borrar(s.id))) return;
     this.historial = this.historial.filter((h) => h.id !== s.id);
     this.detalle = null;
     this.avisar('Sesión borrada');
