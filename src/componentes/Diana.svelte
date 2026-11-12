@@ -10,6 +10,7 @@
     interactiva = false,
     ampliable = false,
     seleccionada = -1,
+    centroActuales = false,
     alMarcar,
   }: {
     dianaCm: TipoDiana;
@@ -19,6 +20,8 @@
     /** Permite acercar con dos dedos (aunque la diana no esté marcando). */
     ampliable?: boolean;
     seleccionada?: number;
+    /** El centro del grupo se calcula solo con las flechas actuales (p. ej. una ronda resaltada). */
+    centroActuales?: boolean;
     alMarcar?: (f: Flecha) => void;
   } = $props();
 
@@ -35,7 +38,7 @@
     }),
   );
 
-  const centro = $derived(centroGrupo([...anteriores, ...actuales]));
+  const centro = $derived(centroGrupo(centroActuales ? actuales : [...anteriores, ...actuales]));
   const tamMarca = $derived(g.anillo * 0.3);
 
   // ---- Zoom con dos dedos: se cambia el viewBox (cuadrado) ----
