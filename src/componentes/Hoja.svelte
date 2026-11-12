@@ -36,7 +36,6 @@
       <tbody>
         {#each filas as f (f.n)}
           <!-- La fila entera se puede tocar; el botón de la primera celda da el acceso por teclado y lector de pantalla -->
-          <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
           <tr class:elegible={alSeleccionar} class:activa={seleccionada === f.n - 1} onclick={alSeleccionar ? () => elegir(f.n - 1) : undefined}>
             <td>
               {#if alSeleccionar}

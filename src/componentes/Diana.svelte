@@ -71,6 +71,7 @@
   const previa = $derived(punta ? puntuar(punta.x, -punta.y, dianaCm) : null);
 
   // Dedos sobre la diana; con dos se acerca/aleja y se desplaza
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity -- solo se lee en los manejadores; no debe redibujar
   const dedos = new Map<number, { x: number; y: number }>();
   let pellizco: { d: number; w: number; p: { x: number; y: number } } | null = null;
   let marcando = -1;   // pointerId del dedo que marca

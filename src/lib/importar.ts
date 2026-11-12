@@ -9,7 +9,7 @@ export function leerCSV(texto: string): string[][] {
   let fila: string[] = [];
   let celda = '';
   let comillas = false;
-  const t = texto.replace(/^﻿/, '');
+  const t = texto.replace(/^\uFEFF/, '');
   for (let i = 0; i < t.length; i++) {
     const c = t[i];
     if (comillas) {

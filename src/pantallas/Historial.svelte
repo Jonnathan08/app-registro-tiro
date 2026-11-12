@@ -10,6 +10,7 @@
   // ---- Progreso: promedio por flecha de cada sesión, por distancia (y diana, si a una distancia se usó más de una) ----
   const clave = (s: Sesion) => `${s.distanciaM}-${s.dianaCm}`;
   const grupos = $derived.by(() => {
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity -- mapa temporal dentro del $derived
     const m = new Map<string, Sesion[]>();
     for (const s of estado.historial) {
       if (!resumen(s).flechas) continue;

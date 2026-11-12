@@ -8,7 +8,7 @@ const fecha = new Date('2026-10-04T09:30:00Z');
 
 describe('leerCSV', () => {
   it('celdas con comillas, comas y saltos de línea; CRLF y BOM', () => {
-    expect(leerCSV('﻿a,"b,c","d ""e""\nf"\r\n1,,3\r\n')).toEqual([
+    expect(leerCSV('\uFEFFa,"b,c","d ""e""\nf"\r\n1,,3\r\n')).toEqual([
       ['a', 'b,c', 'd "e"\nf'],
       ['1', '', '3'],
     ]);
