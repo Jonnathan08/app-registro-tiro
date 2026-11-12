@@ -1,10 +1,37 @@
 <script lang="ts">
+  import Grafico from '../componentes/Grafico.svelte';
   import Icono from '../componentes/Icono.svelte';
+  import Segmentado from '../componentes/Segmentado.svelte';
   import { estado } from '../lib/estado.svelte';
-  import { NOMBRE_PERFIL, resumen } from '../lib/modelo';
+  import { NOMBRE_PERFIL, resumen, type Sesion } from '../lib/modelo';
 
   const fecha = new Intl.DateTimeFormat('es', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  const fechaCorta = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short' });
   const prom = new Intl.NumberFormat('es', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  // ---- Progreso: promedio por flecha de cada sesión, por distancia (y diana, si a una distancia se usó más de una) ----
+  const clave = (s: Sesion) => `${s.distanciaM}-${s.dianaCm}`;
+  const grupos = $derived.by(() => {
+    const m = new Map<string, Sesion[]>();
+    for (const s of estado.historial) {
+      if (!resumen(s).flechas) continue;
+      m.set(clave(s), [...(m.get(clave(s)) ?? []), s]);
+    }
+    const lista = [...m.entries()].map(([k, ss]) => ({ k, sesiones: [...ss].sort((a, b) => a.fecha.localeCompare(b.fecha)) }));
+    lista.sort((a, b) => a.sesiones[0].distanciaM - b.sesiones[0].distanciaM || a.sesiones[0].dianaCm - b.sesiones[0].dianaCm);
+    return lista.map((g) => {
+      const s0 = g.sesiones[0];
+      const variasDianas = lista.filter((h) => h.sesiones[0].distanciaM === s0.distanciaM).length > 1;
+      return { ...g, texto: variasDianas ? `${s0.distanciaM} m · ${s0.dianaCm}` : `${s0.distanciaM} m` };
+    });
+  });
+
+  let elegido = $state<string | null>(null);
+  let punto = $state<number | null>(null);
+  // Por defecto, la distancia de la última sesión
+  const grupo = $derived(grupos.find((g) => g.k === elegido) ?? grupos.find((g) => estado.historial[0] && g.k === clave(estado.historial[0])) ?? grupos[0]);
+  const serie = $derived(grupo ? grupo.sesiones.map((s) => ({ s, r: resumen(s) })) : []);
+  const sesionPunto = $derived(punto !== null ? serie[punto] : undefined);
 </script>
 
 <header class="barra"><h1 class="t-title-l">Historial</h1></header>
@@ -17,6 +44,42 @@
       <p class="t-body-s">Cuando termines una sesión aparecerá aquí, con su hoja de puntuación y las opciones para exportarla.</p>
     </div>
   {:else}
+    {#if grupo}
+      <section class="progreso" aria-labelledby="titulo-progreso">
+        <h2 id="titulo-progreso" class="sec">Progreso · promedio por flecha</h2>
+        {#if grupos.length > 1}
+          <Segmentado
+            etiqueta="Distancia"
+            valor={grupo.k}
+            opciones={grupos.map((g) => ({ valor: g.k, texto: g.texto }))}
+            alCambiar={(k) => { elegido = k; punto = null; }}
+          />
+        {/if}
+        {#if serie.length > 1}
+          <Grafico
+            valores={serie.map((p) => p.r.promedio)}
+            etiquetaX={(i) => fechaCorta.format(new Date(serie[i].s.fecha))}
+            nombrePunto={(i) => `${fecha.format(new Date(serie[i].s.fecha))}: ${prom.format(serie[i].r.promedio)} por flecha`}
+            formato={(v) => prom.format(v)}
+            seleccionado={punto}
+            alElegir={(i) => (punto = i)}
+            descripcion="Promedio por flecha de cada sesión a {grupo.texto}"
+          />
+          {#if sesionPunto}
+            <button type="button" class="lectura estado" onclick={() => (estado.detalle = sesionPunto.s)}>
+              <span class="num"><span class="cap">{fecha.format(new Date(sesionPunto.s.fecha))}</span> · <b>{prom.format(sesionPunto.r.promedio)}</b> por flecha · {sesionPunto.r.total}/{sesionPunto.r.maximo}</span>
+              <Icono nombre="flecha" />
+            </button>
+          {:else}
+            <p class="t-body-s ayuda">Toca un punto para ver la sesión.</p>
+          {/if}
+        {:else}
+          <p class="t-body-s ayuda">Con dos o más sesiones a {grupo.texto} verás aquí cómo evoluciona tu promedio.</p>
+        {/if}
+      </section>
+    {/if}
+
+    <h2 class="sec titulo-lista">Sesiones</h2>
     <ul class="lista">
       {#each estado.historial as s (s.id)}
         {@const r = resumen(s)}
@@ -53,6 +116,17 @@
     background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);
     display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 500;
   }
+  .progreso { margin: 0 16px 8px; padding: 12px; border-radius: var(--shape-m); background: var(--md-sys-color-surface-container-low); display: flex; flex-direction: column; gap: 12px; }
+  .progreso .sec { margin: 0; }
+  .ayuda { margin: 0; font-size: 12px; line-height: 16px; }
+  .lectura {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 40px;
+    padding: 0 4px 0 8px; margin: -4px 0 0; border: 0; border-radius: var(--shape-s); background: none; cursor: pointer; text-align: left;
+    font-size: 13px; line-height: 18px; color: var(--md-sys-color-on-surface-variant);
+  }
+  .lectura b { font-weight: 500; color: var(--md-sys-color-on-surface); }
+  .cap { text-transform: capitalize; }
+  .titulo-lista { margin: 8px 16px 0; }
   .txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .txt .t-title-m { color: var(--md-sys-color-on-surface); text-transform: capitalize; }
 </style>
