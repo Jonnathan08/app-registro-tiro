@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { capa } from '../lib/atras';
+
   let {
     abierto = $bindable(false),
     titulo,
@@ -20,6 +22,10 @@
   $effect(() => {
     if (abierto && !dlg.open) dlg.showModal();
     if (!abierto && dlg.open) dlg.close();
+  });
+  // El botón atrás de Android lo cierra
+  $effect(() => {
+    if (abierto) return capa(() => (abierto = false));
   });
 </script>
 

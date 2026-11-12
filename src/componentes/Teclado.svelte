@@ -44,11 +44,11 @@
   .teclado {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
+    gap: 10px;
   }
   .tecla {
-    height: 56px;
-    border-radius: var(--shape-m);
+    height: 64px;
+    border-radius: var(--shape-l);
     border: 0;
     font-size: 22px;
     font-weight: 500;

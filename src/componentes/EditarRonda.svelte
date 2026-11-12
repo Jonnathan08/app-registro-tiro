@@ -1,5 +1,6 @@
 <script lang="ts">
   import { untrack } from 'svelte';
+  import { capa } from '../lib/atras';
   import { etiqueta, zona, type TipoDiana } from '../lib/diana';
   import { corregir, suma, type Flecha } from '../lib/modelo';
   import Diana from './Diana.svelte';
@@ -38,6 +39,8 @@
   $effect(() => {
     dlg.showModal();
   });
+  // El botón atrás de Android la cierra sin guardar
+  $effect(() => capa(() => dlg.close()));
 </script>
 
 <dialog bind:this={dlg} class="hoja-inferior" aria-labelledby="editar-titulo" onclose={alCerrar}>
@@ -165,6 +168,9 @@
     font-size: 16px;
     font-weight: 500;
     line-height: 18px;
+  }
+  .flecha.z-rojo {
+    font-weight: 700;
   }
   .flecha small {
     font-size: 10px;

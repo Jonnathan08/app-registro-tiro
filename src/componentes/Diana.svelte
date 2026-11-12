@@ -207,7 +207,16 @@
   {#each actuales as f, i (i)}
     {#if f.pos}
       {#if i === seleccionada}
-        <circle cx={f.pos.x} cy={-f.pos.y} r={tamMarca * 1.6} fill="none" class="sel" stroke-width={tamMarca * 0.3} />
+        <!-- Trazo oscuro debajo y blanco encima: se ve sobre cualquier anillo -->
+        <circle
+          cx={f.pos.x}
+          cy={-f.pos.y}
+          r={tamMarca * 1.6}
+          fill="none"
+          stroke={TINTA}
+          stroke-width={tamMarca * 0.6}
+        />
+        <circle cx={f.pos.x} cy={-f.pos.y} r={tamMarca * 1.6} fill="none" stroke="#fff" stroke-width={tamMarca * 0.3} />
       {/if}
       <circle cx={f.pos.x} cy={-f.pos.y} r={tamMarca} fill={TINTA} stroke="#fff" stroke-width={tamMarca * 0.2} />
       <text
@@ -245,11 +254,10 @@
     {@render impactos()}
     {#if centro}
       {@const c = tamMarca * 0.9}
-      <path
-        class="centro"
-        d={`M${centro.x - c} ${-centro.y - c}L${centro.x + c} ${-centro.y + c}M${centro.x + c} ${-centro.y - c}L${centro.x - c} ${-centro.y + c}`}
-        stroke-width={tamMarca * 0.28}
-      />
+      {@const d = `M${centro.x - c} ${-centro.y - c}L${centro.x + c} ${-centro.y + c}M${centro.x + c} ${-centro.y - c}L${centro.x - c} ${-centro.y + c}`}
+      <!-- ✕ blanca con borde oscuro: se ve sobre cualquier anillo -->
+      <path class="centro" {d} stroke={TINTA} stroke-width={tamMarca * 0.6} />
+      <path class="centro" {d} stroke="#fff" stroke-width={tamMarca * 0.3} />
     {/if}
     {#if punta}
       <circle cx={punta.x} cy={punta.y} r={tamMarca} fill="none" stroke="#fff" stroke-width={tamMarca * 0.25} />
@@ -298,7 +306,7 @@
   .marco {
     position: relative;
     overflow: hidden;
-    border-radius: var(--shape-m);
+    border-radius: var(--shape-l);
     background: var(--md-sys-color-surface-container-low);
   }
   .diana {
@@ -317,12 +325,8 @@
     cursor: crosshair;
   }
   .centro {
-    stroke: var(--md-sys-color-tertiary);
     stroke-linecap: round;
     fill: none;
-  }
-  .sel {
-    stroke: var(--md-sys-color-tertiary);
   }
 
   .lupa {
