@@ -14,14 +14,16 @@
 
   let { sesion }: { sesion: Sesion } = $props();
   let confirmarBorrar = $state(false);
-  let ronda = $state<number | null>(null);   // ronda resaltada en la diana
+  let ronda = $state<number | null>(null); // ronda resaltada en la diana
   let dianaRonda = $state<DianaRonda>();
 
   const conPosiciones = $derived(sesion.registro.some((r) => r.flechas.some((f) => f.pos)));
 
   // Puntos por ronda; si las rondas tienen distinto número de flechas (perfil Libre), promedio por flecha
   const porFlecha = $derived(new Set(sesion.registro.map((r) => r.flechas.length)).size > 1);
-  const porRonda = $derived(sesion.registro.map((r) => (porFlecha ? sumaRonda(r) / Math.max(1, r.flechas.length) : sumaRonda(r))));
+  const porRonda = $derived(
+    sesion.registro.map((r) => (porFlecha ? sumaRonda(r) / Math.max(1, r.flechas.length) : sumaRonda(r))),
+  );
   const fmtRonda = (v: number) => (porFlecha ? dosDecimales(v) : String(v));
   const unidad = $derived(porFlecha ? 'por flecha' : 'pts');
 
@@ -31,16 +33,24 @@
   }
 </script>
 
-<Barra fija titulo="{sesion.distanciaM} m · {NOMBRE_PERFIL[sesion.perfil]}" subtitulo="{fechaHora(sesion.fecha)} · {idCorto(sesion)}">
+<Barra
+  fija
+  titulo="{sesion.distanciaM} m · {NOMBRE_PERFIL[sesion.perfil]}"
+  subtitulo="{fechaHora(sesion.fecha)} · {idCorto(sesion)}"
+>
   {#snippet inicio()}
-    <button type="button" class="icbtn estado" aria-label="Volver al historial" onclick={() => (estado.detalle = null)}><Icono nombre="volver" /></button>
+    <button type="button" class="icbtn estado" aria-label="Volver al historial" onclick={() => (estado.detalle = null)}
+      ><Icono nombre="volver" /></button
+    >
   {/snippet}
 </Barra>
 
 <div class="cuerpo">
   <Resumen {sesion} />
 
-  <button type="button" class="btn lleno estado" onclick={exportar}><Icono nombre="compartir" />Compartir sesión (CSV)</button>
+  <button type="button" class="btn lleno estado" onclick={exportar}
+    ><Icono nombre="compartir" />Compartir sesión (CSV)</button
+  >
 
   {#if conPosiciones}
     <DianaRonda bind:this={dianaRonda} dianaCm={sesion.dianaCm} registro={sesion.registro} bind:ronda />
@@ -67,21 +77,67 @@
   {/if}
 
   <h2 class="sec">Hoja de puntuación</h2>
-  <Hoja registro={sesion.registro} seleccionada={ronda} alSeleccionar={conPosiciones ? (i) => { ronda = i; if (i !== null) dianaRonda?.mostrar(); } : undefined} />
+  <Hoja
+    registro={sesion.registro}
+    seleccionada={ronda}
+    alSeleccionar={conPosiciones
+      ? (i) => {
+          ronda = i;
+          if (i !== null) dianaRonda?.mostrar();
+        }
+      : undefined}
+  />
 
   <Notas {sesion} bloqueadas />
 
-  <button type="button" class="btn texto peligro estado borrar" onclick={() => (confirmarBorrar = true)}><Icono nombre="borrar" />Borrar sesión</button>
+  <button type="button" class="btn texto peligro estado borrar" onclick={() => (confirmarBorrar = true)}
+    ><Icono nombre="borrar" />Borrar sesión</button
+  >
 </div>
 
-<Dialogo bind:abierto={confirmarBorrar} titulo="¿Borrar la sesión?" texto="Se elimina de este teléfono. Si la exportaste, el archivo exportado no se borra." confirmar="Borrar" peligro alConfirmar={() => estado.borrarDetalle()} />
+<Dialogo
+  bind:abierto={confirmarBorrar}
+  titulo="¿Borrar la sesión?"
+  texto="Se elimina de este teléfono. Si la exportaste, el archivo exportado no se borra."
+  confirmar="Borrar"
+  peligro
+  alConfirmar={() => estado.borrarDetalle()}
+/>
 
 <style>
-  .cuerpo { display: flex; flex-direction: column; gap: 16px; padding: 4px 16px 24px; }
-  .borrar { align-self: flex-start; }
-  .tarjeta-grafico { border-radius: var(--shape-m); background: var(--md-sys-color-surface-container-low); padding: 12px 12px 4px; }
-  .cabeza { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
-  .cabeza .sec { margin: 0; }
-  .lectura { font-size: 12px; line-height: 16px; color: var(--md-sys-color-on-surface-variant); white-space: nowrap; }
-  .lectura b { font-size: 14px; font-weight: 500; color: var(--md-sys-color-on-surface); }
+  .cuerpo {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 4px 16px 24px;
+  }
+  .borrar {
+    align-self: flex-start;
+  }
+  .tarjeta-grafico {
+    border-radius: var(--shape-m);
+    background: var(--md-sys-color-surface-container-low);
+    padding: 12px 12px 4px;
+  }
+  .cabeza {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .cabeza .sec {
+    margin: 0;
+  }
+  .lectura {
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--md-sys-color-on-surface-variant);
+    white-space: nowrap;
+  }
+  .lectura b {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+  }
 </style>

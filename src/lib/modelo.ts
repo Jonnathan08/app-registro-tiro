@@ -28,14 +28,14 @@ export interface Ronda {
 export interface Sesion {
   version: number;
   id: string;
-  fecha: string;           // ISO 8601, inicio de la sesión
+  fecha: string; // ISO 8601, inicio de la sesión
   perfil: Perfil;
   distanciaM: number;
   dianaCm: TipoDiana;
   rondas: number;
   flechasPorRonda: number;
-  registro: Ronda[];       // rondas guardadas
-  enCurso: Flecha[];       // flechas de la ronda que se está tirando
+  registro: Ronda[]; // rondas guardadas
+  enCurso: Flecha[]; // flechas de la ronda que se está tirando
   notasPersonales: string;
   notasEntrenador: string;
   terminada: boolean;
@@ -59,7 +59,13 @@ export const LIMITES = {
   flechasPorRonda: { min: 1, max: 12 },
 } as const;
 
-export const CONFIG_DEFECTO: Configuracion = { perfil: 'control', distanciaM: 70, dianaCm: 122, rondas: 6, flechasPorRonda: 6 };
+export const CONFIG_DEFECTO: Configuracion = {
+  perfil: 'control',
+  distanciaM: 70,
+  dianaCm: 122,
+  rondas: 6,
+  flechasPorRonda: 6,
+};
 
 /**
  * Convierte un valor leído de fuera (p. ej. localStorage) en una configuración válida.
@@ -90,7 +96,12 @@ export function migrar(s: Sesion): Sesion {
 }
 
 export function nuevaSesion(c: Configuracion, ahora = new Date()): Sesion {
-  const formato = c.perfil === 'control' ? CONTROL : c.perfil === 'libre' ? { rondas: 0, flechasPorRonda: 0 } : { rondas: c.rondas, flechasPorRonda: c.flechasPorRonda };
+  const formato =
+    c.perfil === 'control'
+      ? CONTROL
+      : c.perfil === 'libre'
+        ? { rondas: 0, flechasPorRonda: 0 }
+        : { rondas: c.rondas, flechasPorRonda: c.flechasPorRonda };
   const iso = ahora.toISOString();
   return {
     version: VERSION_DATOS,

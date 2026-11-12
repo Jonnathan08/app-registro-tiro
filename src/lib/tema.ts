@@ -26,7 +26,11 @@ export function leerAjustes(): Ajustes {
 }
 
 export function guardarAjustes(a: Ajustes): void {
-  try { localStorage.setItem(CLAVE, JSON.stringify(a)); } catch { /* sin almacenamiento: se usa el defecto */ }
+  try {
+    localStorage.setItem(CLAVE, JSON.stringify(a));
+  } catch {
+    /* sin almacenamiento: se usa el defecto */
+  }
 }
 
 // Se consulta al usarla (no al importar el módulo), para que tema.ts se pueda importar fuera del navegador

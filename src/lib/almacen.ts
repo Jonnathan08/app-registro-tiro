@@ -18,7 +18,7 @@ function abrir() {
 }
 function base() {
   db ??= abrir().catch((e) => {
-    db = null;   // permite reintentar
+    db = null; // permite reintentar
     throw e;
   });
   return db;

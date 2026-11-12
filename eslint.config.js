@@ -12,7 +12,9 @@ export default ts.config(
   { languageOptions: { globals: { ...globals.browser, __VERSION__: 'readonly' } } },
   {
     files: ['**/*.svelte', '**/*.svelte.ts'],
-    languageOptions: { parserOptions: { projectService: true, extraFileExtensions: ['.svelte'], parser: ts.parser, svelteConfig } },
+    languageOptions: {
+      parserOptions: { projectService: true, extraFileExtensions: ['.svelte'], parser: ts.parser, svelteConfig },
+    },
   },
   {
     rules: {

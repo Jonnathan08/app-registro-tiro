@@ -2,7 +2,13 @@
   import type { Snippet } from 'svelte';
 
   // Barra superior de cada pantalla: título, subtítulo opcional y botones a los lados
-  let { titulo, subtitulo, fija = false, inicio, fin }: {
+  let {
+    titulo,
+    subtitulo,
+    fija = false,
+    inicio,
+    fin,
+  }: {
     titulo: string;
     subtitulo?: string;
     /** Queda pegada arriba al desplazar. */
@@ -24,11 +30,38 @@
 </header>
 
 <style>
-  .barra { height: 64px; display: flex; align-items: center; gap: 4px; padding: 0 16px; }
-  .con-inicio { padding-left: 4px; }
-  .con-fin { padding-right: 4px; }
-  .fija { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--md-sys-color-surface); }
-  .titulo { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  h1 { margin: 0; }
-  small { font-size: 12px; line-height: 16px; letter-spacing: .4px; color: var(--md-sys-color-on-surface-variant); }
+  .barra {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 16px;
+  }
+  .con-inicio {
+    padding-left: 4px;
+  }
+  .con-fin {
+    padding-right: 4px;
+  }
+  .fija {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 5;
+    background: var(--md-sys-color-surface);
+  }
+  .titulo {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  h1 {
+    margin: 0;
+  }
+  small {
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 0.4px;
+    color: var(--md-sys-color-on-surface-variant);
+  }
 </style>

@@ -22,7 +22,9 @@ describe('exportar', () => {
 
   it('una fila por flecha, con las notas escapadas', () => {
     const csv = aCSV(sesion());
-    expect(csv).toContain(',abierto,30,80,1,2,10,1,1,X,10,1,1.2,-4.6,0,"Viento, ráfagas","Dijo ""anclaje""\nmás bajo"\n');
+    expect(csv).toContain(
+      ',abierto,30,80,1,2,10,1,1,X,10,1,1.2,-4.6,0,"Viento, ráfagas","Dijo ""anclaje""\nmás bajo"\n',
+    );
     expect(csv).toContain(',1,2,M,0,0,,,1,');
   });
 
@@ -33,7 +35,9 @@ describe('exportar', () => {
   });
 
   it('varias sesiones comparten una sola cabecera', () => {
-    const cabeceras = aCSV([sesion(), sesion()]).split('\n').filter((l) => l.startsWith('sesion_id'));
+    const cabeceras = aCSV([sesion(), sesion()])
+      .split('\n')
+      .filter((l) => l.startsWith('sesion_id'));
     expect(cabeceras).toHaveLength(1);
   });
 

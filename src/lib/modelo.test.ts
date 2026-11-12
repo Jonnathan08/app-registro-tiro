@@ -1,5 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { CONFIG_DEFECTO, centroGrupo, corregir, LIBRE_MAX_FLECHAS, nuevaSesion, ordenHoja, resumen, rondaGuardable, rondaLlena, todasGuardadas, validarConfig, type Flecha } from './modelo';
+import {
+  CONFIG_DEFECTO,
+  centroGrupo,
+  corregir,
+  LIBRE_MAX_FLECHAS,
+  nuevaSesion,
+  ordenHoja,
+  resumen,
+  rondaGuardable,
+  rondaLlena,
+  todasGuardadas,
+  validarConfig,
+  type Flecha,
+} from './modelo';
 
 const f = (puntaje: number, x = false, pos: Flecha['pos'] = null): Flecha => ({ puntaje, x, pos });
 const fecha = new Date('2026-10-04T09:30:00Z');
@@ -72,7 +85,9 @@ describe('validarConfig', () => {
     expect(validarConfig(c)).toEqual(c);
   });
   it('cada campo inválido toma su valor por defecto', () => {
-    expect(validarConfig({ perfil: 'otro', distanciaM: '30', dianaCm: 100, rondas: 0, flechasPorRonda: 2.5 })).toEqual(CONFIG_DEFECTO);
+    expect(validarConfig({ perfil: 'otro', distanciaM: '30', dianaCm: 100, rondas: 0, flechasPorRonda: 2.5 })).toEqual(
+      CONFIG_DEFECTO,
+    );
   });
   it('lo que no es un objeto da la configuración por defecto', () => {
     expect(validarConfig(null)).toEqual(CONFIG_DEFECTO);

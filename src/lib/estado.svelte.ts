@@ -1,5 +1,15 @@
 import * as almacen from './almacen';
-import { nuevaSesion, rondaGuardable, suma, rondaLlena, todasGuardadas, validarConfig, type Configuracion, type Flecha, type Sesion } from './modelo';
+import {
+  nuevaSesion,
+  rondaGuardable,
+  suma,
+  rondaLlena,
+  todasGuardadas,
+  validarConfig,
+  type Configuracion,
+  type Flecha,
+  type Sesion,
+} from './modelo';
 
 export type Pantalla = 'sesion' | 'historial' | 'ajustes';
 
@@ -17,7 +27,7 @@ class Estado {
   pantalla = $state<Pantalla>('sesion');
   activa = $state<Sesion | null>(null);
   historial = $state<Sesion[]>([]);
-  detalle = $state<Sesion | null>(null);   // sesión abierta desde el historial
+  detalle = $state<Sesion | null>(null); // sesión abierta desde el historial
   aviso = $state<{ texto: string; n: number } | null>(null);
   config = $state<Configuracion>(leerConfig());
   cargado = $state(false);
@@ -33,7 +43,8 @@ class Estado {
       this.cargado = true;
     } catch (e) {
       console.error(e);
-      this.error = 'No se pudo abrir el almacenamiento del navegador. Si estás en una ventana privada, abre la app en una normal; si no, revisa el espacio libre del teléfono.';
+      this.error =
+        'No se pudo abrir el almacenamiento del navegador. Si estás en una ventana privada, abre la app en una normal; si no, revisa el espacio libre del teléfono.';
     }
   }
 
@@ -55,7 +66,11 @@ class Estado {
   }
 
   async empezar(c: Configuracion) {
-    try { localStorage.setItem(CLAVE_CONFIG, JSON.stringify(c)); } catch { /* opcional */ }
+    try {
+      localStorage.setItem(CLAVE_CONFIG, JSON.stringify(c));
+    } catch {
+      /* opcional */
+    }
     this.config = c;
     this.activa = nuevaSesion(c);
     await this.persistir();
@@ -102,9 +117,15 @@ class Estado {
     const s = this.activa;
     if (!s) return;
     // Una ronda a medias se guarda tal cual al terminar
-    if (s.enCurso.length) { s.registro.push({ flechas: s.enCurso }); s.enCurso = []; }
+    if (s.enCurso.length) {
+      s.registro.push({ flechas: s.enCurso });
+      s.enCurso = [];
+    }
     s.terminada = true;
-    if (!(await this.persistir())) { s.terminada = false; return; }
+    if (!(await this.persistir())) {
+      s.terminada = false;
+      return;
+    }
     const plano = $state.snapshot(s);
     this.historial = [plano, ...this.historial];
     this.activa = null;

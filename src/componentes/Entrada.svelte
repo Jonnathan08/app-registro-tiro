@@ -109,7 +109,11 @@
               </g>
               {#each DE_AFUERA_A_ADENTRO as a, i (a.r)}
                 <circle
-                  cx="256" cy="256" r={a.r} fill={a.color} class="color"
+                  cx="256"
+                  cy="256"
+                  r={a.r}
+                  fill={a.color}
+                  class="color"
                   style:--t="{ACIERTO + (ANILLOS.length - 1 - i) * PASO_COLOR}ms"
                 />
               {/each}
@@ -119,7 +123,14 @@
         </g>
       </g>
       {#each FLECHAS as f, i (i)}
-        <circle cx={f.x} cy={f.y} r="12" class="impacto" class:acierto={f.impacto === ACIERTO} style:--t="{f.impacto}ms" />
+        <circle
+          cx={f.x}
+          cy={f.y}
+          r="12"
+          class="impacto"
+          class:acierto={f.impacto === ACIERTO}
+          style:--t="{f.impacto}ms"
+        />
         <g transform="translate({f.x} {f.y}) rotate({f.angulo})">
           <g class="flecha" style:--t="{f.impacto - VUELO}ms" style:--vuelo="{VUELO}ms">
             <line x1="0" y1="0" x2="250" y2="0" class="asta" />
@@ -134,52 +145,140 @@
 
 <style>
   .entrada {
-    position: fixed; inset: 0; z-index: 30;
-    display: flex; align-items: center; justify-content: center;
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: var(--md-sys-color-surface);
     animation: salir 300ms ease-in var(--salida) forwards;
   }
-  svg { width: min(60vw, 260px); overflow: visible; }
-  .oculta { opacity: 0; }
-  :global(body.entrando #app > :not(.entrada)) { visibility: hidden; }
-  .borde { stroke: var(--md-sys-color-outline-variant); stroke-width: 2; }
+  svg {
+    width: min(60vw, 260px);
+    overflow: visible;
+  }
+  .oculta {
+    opacity: 0;
+  }
+  :global(body.entrando #app > :not(.entrada)) {
+    visibility: hidden;
+  }
+  .borde {
+    stroke: var(--md-sys-color-outline-variant);
+    stroke-width: 2;
+  }
 
   /* Los tiempos (--t, --vuelo, --salida, etc.) vienen del script. La flecha es invisible
      hasta que despega, para que no se vea esperando en pantallas anchas. */
-  .flecha { animation: vuelo var(--vuelo) cubic-bezier(.3, 0, .8, .15) var(--t) backwards; }
-  .asta { stroke: var(--md-sys-color-on-surface); stroke-width: 7; stroke-linecap: round; }
-  .plumas { fill: var(--md-sys-color-primary); }
-  .culatin { fill: var(--md-sys-color-on-surface); }
+  .flecha {
+    animation: vuelo var(--vuelo) cubic-bezier(0.3, 0, 0.8, 0.15) var(--t) backwards;
+  }
+  .asta {
+    stroke: var(--md-sys-color-on-surface);
+    stroke-width: 7;
+    stroke-linecap: round;
+  }
+  .plumas {
+    fill: var(--md-sys-color-primary);
+  }
+  .culatin {
+    fill: var(--md-sys-color-on-surface);
+  }
 
   /* Diana a color en la posición de la pantalla de inicio: se acerca y pasa a gris */
   .acercar {
-    transform-box: fill-box; transform-origin: center;
-    animation: acercar var(--acercar) cubic-bezier(.2, 0, 0, 1) var(--mantener) backwards;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: acercar var(--acercar) cubic-bezier(0.2, 0, 0, 1) var(--mantener) backwards;
   }
-  .inicial { animation: decolorar var(--acercar) ease-in-out var(--mantener) both; }
+  .inicial {
+    animation: decolorar var(--acercar) ease-in-out var(--mantener) both;
+  }
 
-  .golpe { transform-box: fill-box; transform-origin: center; animation: golpe 220ms ease-out var(--t); }
+  .golpe {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: golpe 220ms ease-out var(--t);
+  }
   .impacto {
-    fill: none; stroke: var(--md-sys-color-on-surface); stroke-width: 4; opacity: 0;
-    transform-box: fill-box; transform-origin: center;
+    fill: none;
+    stroke: var(--md-sys-color-on-surface);
+    stroke-width: 4;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
     animation: onda 300ms ease-out var(--t);
   }
-  .impacto.acierto { animation: onda-acierto 420ms ease-out var(--t); }
+  .impacto.acierto {
+    animation: onda-acierto 420ms ease-out var(--t);
+  }
 
   /* Tras el acierto, los colores se expanden del centro hacia afuera */
   .color {
-    transform-box: fill-box; transform-origin: center;
-    animation: color 380ms cubic-bezier(.2, 0, 0, 1) var(--t) backwards;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: color 380ms cubic-bezier(0.2, 0, 0, 1) var(--t) backwards;
   }
 
-  @keyframes acercar { from { transform: translateY(var(--desplazamiento-inicial)) scale(var(--escala-inicial)); } }
-  @keyframes decolorar { to { opacity: 0; } }
-  @keyframes vuelo { from { transform: translateX(900px); opacity: 0; } 20% { opacity: 1; } }
-  @keyframes golpe { 35% { transform: scale(.96); } }
-  @keyframes onda { from { opacity: .5; transform: scale(1); } to { opacity: 0; transform: scale(2.5); } }
-  @keyframes onda-acierto { from { opacity: .7; transform: scale(1); } to { opacity: 0; transform: scale(6); } }
-  @keyframes color { from { transform: scale(0); } }
-  @keyframes salir { to { opacity: 0; } }
+  @keyframes acercar {
+    from {
+      transform: translateY(var(--desplazamiento-inicial)) scale(var(--escala-inicial));
+    }
+  }
+  @keyframes decolorar {
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes vuelo {
+    from {
+      transform: translateX(900px);
+      opacity: 0;
+    }
+    20% {
+      opacity: 1;
+    }
+  }
+  @keyframes golpe {
+    35% {
+      transform: scale(0.96);
+    }
+  }
+  @keyframes onda {
+    from {
+      opacity: 0.5;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(2.5);
+    }
+  }
+  @keyframes onda-acierto {
+    from {
+      opacity: 0.7;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(6);
+    }
+  }
+  @keyframes color {
+    from {
+      transform: scale(0);
+    }
+  }
+  @keyframes salir {
+    to {
+      opacity: 0;
+    }
+  }
 
-  @media (prefers-reduced-motion: reduce) { .entrada { display: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .entrada {
+      display: none;
+    }
+  }
 </style>

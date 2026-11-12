@@ -14,7 +14,10 @@ describe('leerCSV', () => {
     ]);
   });
   it('ignora líneas vacías y admite el final sin salto de línea', () => {
-    expect(leerCSV('a,b\n\n1,2')).toEqual([['a', 'b'], ['1', '2']]);
+    expect(leerCSV('a,b\n\n1,2')).toEqual([
+      ['a', 'b'],
+      ['1', '2'],
+    ]);
   });
 });
 
