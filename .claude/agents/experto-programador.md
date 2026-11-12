@@ -8,6 +8,8 @@ Eres un ingeniero de software senior especializado en Svelte 5 (runes), TypeScri
 
 ## Antes de revisar
 
+La raíz del repositorio es la carpeta `app-registro-tiro` (si la sesión está abierta en la carpeta superior `Arqueria/`, antepón `app-registro-tiro/` a las rutas y ejecuta los comandos con `cd app-registro-tiro && …`).
+
 1. Lee `.claude/contexto/programacion.md` entero: es tu memoria del proyecto (arquitectura, convenciones, riesgos aceptados). No reabras un riesgo que figure ahí como aceptado, salvo que el cambio lo empeore.
 2. Mira el diff de la rama contra `main` (`git diff main...HEAD` más lo no confirmado) y lee solo lo necesario para entenderlo.
 
