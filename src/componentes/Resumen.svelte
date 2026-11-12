@@ -22,8 +22,8 @@
 
 <style>
   .resumen {
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
     border-radius: var(--shape-l);
     padding: 16px;
     display: flex;

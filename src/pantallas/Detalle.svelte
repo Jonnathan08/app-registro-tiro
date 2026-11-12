@@ -7,6 +7,7 @@
   import Icono from '../componentes/Icono.svelte';
   import Notas from '../componentes/Notas.svelte';
   import Resumen from '../componentes/Resumen.svelte';
+  import { capa } from '../lib/atras';
   import { estado } from '../lib/estado.svelte';
   import { aCSV, compartir, idCorto, nombreArchivo } from '../lib/exportar';
   import { dosDecimales, fechaHora } from '../lib/formato';
@@ -16,6 +17,9 @@
   let confirmarBorrar = $state(false);
   let ronda = $state<number | null>(null); // ronda resaltada en la diana
   let dianaRonda = $state<DianaRonda>();
+
+  // El botón atrás de Android vuelve al historial
+  $effect(() => capa(() => (estado.detalle = null)));
 
   const conPosiciones = $derived(sesion.registro.some((r) => r.flechas.some((f) => f.pos)));
 
@@ -43,14 +47,15 @@
       ><Icono nombre="volver" /></button
     >
   {/snippet}
+  {#snippet fin()}
+    <button type="button" class="icbtn estado" aria-label="Compartir sesión (CSV)" onclick={exportar}
+      ><Icono nombre="compartir" /></button
+    >
+  {/snippet}
 </Barra>
 
 <div class="cuerpo">
   <Resumen {sesion} />
-
-  <button type="button" class="btn lleno estado" onclick={exportar}
-    ><Icono nombre="compartir" />Compartir sesión (CSV)</button
-  >
 
   {#if conPosiciones}
     <DianaRonda bind:this={dianaRonda} dianaCm={sesion.dianaCm} registro={sesion.registro} bind:ronda />
@@ -115,7 +120,7 @@
     align-self: flex-start;
   }
   .tarjeta-grafico {
-    border-radius: var(--shape-m);
+    border-radius: var(--shape-l);
     background: var(--md-sys-color-surface-container-low);
     padding: 12px 12px 4px;
   }

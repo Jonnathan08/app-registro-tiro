@@ -120,7 +120,7 @@
     color: var(--md-sys-color-on-surface);
   }
   .destino[aria-current='page'] .pill {
-    background: var(--md-sys-color-secondary-container);
-    color: var(--md-sys-color-on-secondary-container);
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
   }
 </style>

@@ -46,7 +46,32 @@ describe('estado', () => {
     expect(estado.activa!.enCurso.map((a) => a.puntaje)).toEqual([9, 8, 7]);
     await estado.guardarRonda();
     expect(estado.activa!.registro).toHaveLength(1);
-    expect(estado.aviso?.texto).toBe('Ronda 1 guardada · 24 puntos');
+    expect(estado.aviso?.texto).toBe('Ronda 1 guardada · 24 pts');
+  });
+
+  it('Deshacer en el aviso devuelve la ronda guardada a la ronda en curso', async () => {
+    await estado.empezar(abierto);
+    for (const p of [9, 8, 7]) await estado.marcar(f(p));
+    await estado.guardarRonda();
+    expect(estado.aviso?.accion?.texto).toBe('Deshacer');
+    estado.aviso!.accion!.hacer();
+    await vi.waitFor(() => expect(estado.activa!.registro).toHaveLength(0));
+    expect(estado.activa!.enCurso.map((a) => a.puntaje)).toEqual([9, 8, 7]);
+    expect(vi.mocked(almacen.guardar).mock.lastCall![0].enCurso).toHaveLength(3);
+  });
+
+  it('reabrirRonda no hace nada si ya se marcó otra flecha o no es la última ronda', async () => {
+    await estado.empezar(abierto);
+    for (const p of [9, 8, 7]) await estado.marcar(f(p));
+    await estado.guardarRonda();
+    await estado.marcar(f(5));
+    expect(estado.aviso).toBeNull(); // la flecha nueva retira el aviso con Deshacer
+    await estado.reabrirRonda(1);
+    expect(estado.activa!.registro).toHaveLength(1);
+    expect(estado.activa!.enCurso.map((a) => a.puntaje)).toEqual([5]);
+    await estado.deshacer();
+    await estado.reabrirRonda(2);
+    expect(estado.activa!.registro).toHaveLength(1);
   });
 
   it('guarda una copia plana (sin proxies) en el almacén', async () => {

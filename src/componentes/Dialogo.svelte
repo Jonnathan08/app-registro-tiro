@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { capa } from '../lib/atras';
+
   let {
     abierto = $bindable(false),
     titulo,
@@ -6,6 +8,7 @@
     confirmar,
     peligro = false,
     alConfirmar,
+    devolverFoco,
   }: {
     abierto: boolean;
     titulo: string;
@@ -13,6 +16,8 @@
     confirmar: string;
     peligro?: boolean;
     alConfirmar: () => void;
+    /** Dónde poner el foco al cerrar si el elemento que abrió el diálogo ya no existe (p. ej. un ítem de menú). */
+    devolverFoco?: () => void;
   } = $props();
 
   const id = $props.id();
@@ -21,9 +26,20 @@
     if (abierto && !dlg.open) dlg.showModal();
     if (!abierto && dlg.open) dlg.close();
   });
+  // El botón atrás de Android lo cierra
+  $effect(() => {
+    if (abierto) return capa(() => (abierto = false));
+  });
 </script>
 
-<dialog bind:this={dlg} onclose={() => (abierto = false)} aria-labelledby="{id}-titulo">
+<dialog
+  bind:this={dlg}
+  onclose={() => {
+    abierto = false;
+    if (document.activeElement === document.body) devolverFoco?.();
+  }}
+  aria-labelledby="{id}-titulo"
+>
   <h2 id="{id}-titulo" class="t-headline">{titulo}</h2>
   <p>{texto}</p>
   <div class="acciones">

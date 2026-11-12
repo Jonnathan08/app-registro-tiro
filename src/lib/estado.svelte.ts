@@ -13,6 +13,14 @@ import {
 
 export type Pantalla = 'sesion' | 'historial' | 'ajustes';
 
+/** Mensaje breve en pantalla, con una acción opcional (p. ej. «Deshacer»). */
+export interface Aviso {
+  texto: string;
+  n: number;
+  /** `etiqueta` es el nombre para el lector de pantalla si `texto` no basta. */
+  accion?: { texto: string; etiqueta?: string; hacer: () => void };
+}
+
 const CLAVE_CONFIG = 'registro-tiro:ultima-config';
 
 function leerConfig(): Configuracion {
@@ -28,7 +36,7 @@ class Estado {
   activa = $state<Sesion | null>(null);
   historial = $state<Sesion[]>([]);
   detalle = $state<Sesion | null>(null); // sesión abierta desde el historial
-  aviso = $state<{ texto: string; n: number } | null>(null);
+  aviso = $state<Aviso | null>(null);
   config = $state<Configuracion>(leerConfig());
   cargado = $state(false);
   /** Error al abrir el almacenamiento: la app no puede funcionar sin él. */
@@ -48,8 +56,8 @@ class Estado {
     }
   }
 
-  avisar(texto: string) {
-    this.aviso = { texto, n: (this.aviso?.n ?? 0) + 1 };
+  avisar(texto: string, accion?: Aviso['accion']) {
+    this.aviso = { texto, n: (this.aviso?.n ?? 0) + 1, accion };
   }
 
   /** Guarda la sesión activa. Si falla, avisa y devuelve false (lo hecho sigue en pantalla). */
@@ -80,6 +88,8 @@ class Estado {
   async marcar(f: Flecha) {
     const s = this.activa;
     if (!s || rondaLlena(s) || todasGuardadas(s)) return;
+    // Con una flecha nueva el «Deshacer» del aviso ya no vale: se retira
+    if (this.aviso?.accion) this.aviso = null;
     s.enCurso.push(f);
     await this.persistir();
   }
@@ -98,7 +108,23 @@ class Estado {
     const pts = suma(s.enCurso);
     s.registro.push({ flechas: s.enCurso });
     s.enCurso = [];
-    if (await this.persistir()) this.avisar(`Ronda ${n} guardada · ${pts} puntos`);
+    if (await this.persistir())
+      this.avisar(`Ronda ${n} guardada · ${pts} pts`, {
+        texto: 'Deshacer',
+        etiqueta: `Deshacer el guardado de la ronda ${n}`,
+        hacer: () => this.reabrirRonda(n),
+      });
+  }
+
+  /**
+   * Devuelve la ronda n (recién guardada) a la ronda en curso para corregirla.
+   * Solo si sigue siendo la última y no se ha marcado ninguna flecha desde entonces.
+   */
+  async reabrirRonda(n: number) {
+    const s = this.activa;
+    if (!s || s.registro.length !== n || s.enCurso.length) return;
+    s.enCurso = s.registro.pop()!.flechas;
+    await this.persistir();
   }
 
   /** Reemplaza las flechas de una ronda ya guardada (solo en la sesión en curso). */

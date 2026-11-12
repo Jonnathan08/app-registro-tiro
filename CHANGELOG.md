@@ -1,5 +1,19 @@
 # Cambios
 
+## 0.3.0 — 2026-11-12
+
+- Anotar: la ronda actual pasa a una tira compacta y Deshacer / Guardar ronda a una barra fija de botones de 56 px sobre la navegación; la diana completa se ve sin desplazar en un teléfono de 390×844.
+- El cambio entre diana y teclado es un ícono en la barra superior; título «Ronda 3/6» y pestañas **Anotar** y **Hoja**.
+- La ayuda de la diana se muestra sola durante las primeras 12 flechas y después con el botón ⓘ.
+- Aviso «Ronda 3 guardada · 54 pts» con **Deshacer**, que devuelve la ronda a la ronda en curso.
+- Botón atrás de Android: cierra menú, diálogos, editor de ronda y detalle antes de salir de la app.
+- Diana: el centro del grupo y la flecha seleccionada se dibujan en blanco con borde oscuro, visibles sobre cualquier anillo.
+- Historial: separadores por mes, distancia como etiqueta y progreso plegable con tendencia. Al volver de una sesión, la lista sigue donde estaba.
+- Detalle: compartir pasa a un ícono en la barra superior.
+- Colores: lo seleccionado en azul petróleo medio (contenedor primario); resumen, totales e insignia en azul petróleo oscuro; números sobre rojo en negrita; anillo blanco con borde más oscuro; Deshacer con contorno.
+- Tarjetas con esquina de 16 px y teclado de 64 px.
+- Corrección: el indicador de la pestaña seleccionada no se veía.
+
 ## 0.2.0 — 2026-11-12
 
 - Importar sesiones desde el CSV exportado (Ajustes), sin duplicar las que ya están.

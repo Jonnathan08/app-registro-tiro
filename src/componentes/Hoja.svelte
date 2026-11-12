@@ -97,13 +97,6 @@
     padding: 0 4px 0 0;
     width: 48px;
   }
-  .oculto {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-  }
   .corregida {
     outline: 2px solid var(--md-sys-color-tertiary);
     outline-offset: 1px;
@@ -112,8 +105,8 @@
     cursor: pointer;
   }
   .activa {
-    background: var(--md-sys-color-secondary-container);
-    color: var(--md-sys-color-on-secondary-container);
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
   }
   .n {
     all: unset;

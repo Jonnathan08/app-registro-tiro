@@ -1,7 +1,7 @@
 # Contexto de programación — app de registro de tiro
 
 Memoria del agente `experto-programador`. Se actualiza en la misma rama que el cambio que la vuelve falsa.
-Última revisión: 2026-11-12 (versión 0.2.0).
+Última revisión: 2026-11-12 (versión 0.3.0).
 
 ## Pila
 
@@ -24,6 +24,9 @@ src/lib/                  lógica sin interfaz, con pruebas al lado
   almacen.ts              IndexedDB 'registro-tiro' v1, store 'sesiones' (keyPath id, índice fecha)
   exportar.ts/importar.ts CSV RFC 4180 de ida y vuelta (una fila por flecha)
   formato.ts, tema.ts     Intl en español; tema claro/oscuro y contraste en localStorage
+  atras.ts                botón atrás de Android por capas: una sola entrada propia en history, contador `ignorar`,
+                          scrollRestoration='manual'; `capa(cerrar)` se usa como limpieza de un $effect
+  ayuda.ts                contador en localStorage (`registro-tiro:marcas-diana`) de la ayuda de la diana
 src/estilos/              tema.css (generado, no tocar) y base.css (componentes MD3)
 ```
 
@@ -36,6 +39,9 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 - Errores de almacenamiento: `console.error` + `estado.avisar(...)` y devolver `false`; nunca perder lo que está en pantalla. La sesión no pasa al historial si no se pudo guardar.
 - Entradas externas siempre validadas: `validarConfig`, `leerAjustes`, `importar.ts` (cada campo inválido toma el defecto o se rechaza la fila).
 - Cambios de formato de datos: subir `VERSION_DATOS` en `modelo.ts`, añadir el paso en `migrar()`, prueba en `modelo.test.ts`, actualizar la tabla del CSV en README.
+- Toda capa modal nueva (menú, diálogo, hoja inferior, pantalla de detalle) registra `capa(cerrar)` en un `$effect`.
+- `estado.avisar(texto, accion?)` admite una acción (p. ej. Deshacer); la acción valida que el estado sigue siendo el esperado (como `reabrirRonda`) y `marcar` retira los avisos con acción.
+- Claves de localStorage (entradas externas, siempre validadas y con try/catch): `registro-tiro:ultima-config`, `registro-tiro:ajustes`, `registro-tiro:marcas-diana`.
 - Perfil Libre se guarda con `rondas = 0` y `flechasPorRonda = 0`; usar `esLibre()` en vez de comparar a mano.
 - Git: rama `feature/…` o `fix/…` desde `main`; merge `--no-ff`; versión en `package.json` + entrada en `CHANGELOG.md` en cada publicación.
 
@@ -54,8 +60,8 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 
 ## Pendientes y deuda conocida
 
-- (vacío)
+- Fechas importadas sin normalizar a ISO UTC (`importar.ts`): pueden alterar el orden del historial. La agrupación por mes ya usa un mapa y no duplica meses.
 
 ## Historial de revisiones
 
-- (cada revisión añade aquí una línea: fecha, rama, dictamen y lo aprendido)
+- 2026-11-12 · feature/rediseno-ux · aprobado con cambios · capas del botón atrás (con «adelante» ignorado vía `state.capa`) y aviso con acción (la pausa se reinicia con cada aviso); ojo con las claves derivadas de fechas importadas.

@@ -4,12 +4,18 @@
   // Barra superior de cada pantalla: título, subtítulo opcional y botones a los lados
   let {
     titulo,
+    sufijo,
+    sufijoLeido,
     subtitulo,
     fija = false,
     inicio,
     fin,
   }: {
     titulo: string;
+    /** Continuación del título en gris (p. ej. «/6» en «Ronda 3/6»). */
+    sufijo?: string;
+    /** Cómo lo lee el lector de pantalla (p. ej. « de 6»), si difiere de lo que se ve. */
+    sufijoLeido?: string;
     subtitulo?: string;
     /** Queda pegada arriba al desplazar. */
     fija?: boolean;
@@ -23,7 +29,10 @@
 <header class="barra" class:fija class:con-inicio={!!inicio} class:con-fin={!!fin}>
   {@render inicio?.()}
   <div class="titulo">
-    <h1 class="t-title-l">{titulo}</h1>
+    <h1 class="t-title-l">
+      {titulo}{#if sufijo}<span class="sufijo num" aria-hidden={sufijoLeido ? 'true' : undefined}>{sufijo}</span
+        >{#if sufijoLeido}<span class="oculto">{sufijoLeido}</span>{/if}{/if}
+    </h1>
     {#if subtitulo}<small class="num">{subtitulo}</small>{/if}
   </div>
   {@render fin?.()}
@@ -57,6 +66,9 @@
   }
   h1 {
     margin: 0;
+  }
+  .sufijo {
+    color: var(--md-sys-color-on-surface-variant);
   }
   small {
     font-size: 12px;
