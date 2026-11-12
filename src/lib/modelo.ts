@@ -1,4 +1,4 @@
-import type { Impacto, TipoDiana } from './diana';
+import { DIANAS, type Impacto, type TipoDiana } from './diana';
 
 export const VERSION_DATOS = 1;
 
@@ -48,6 +48,45 @@ export interface Configuracion {
   dianaCm: TipoDiana;
   rondas: number;
   flechasPorRonda: number;
+}
+
+export const PERFILES: Perfil[] = ['control', 'abierto', 'libre'];
+
+/** Valores permitidos (enteros) de cada campo numérico de la configuración. */
+export const LIMITES = {
+  distanciaM: { min: 1, max: 150 },
+  rondas: { min: 1, max: 36 },
+  flechasPorRonda: { min: 1, max: 12 },
+} as const;
+
+export const CONFIG_DEFECTO: Configuracion = { perfil: 'control', distanciaM: 70, dianaCm: 122, rondas: 6, flechasPorRonda: 6 };
+
+/**
+ * Convierte un valor leído de fuera (p. ej. localStorage) en una configuración válida.
+ * Cada campo que falte o no sea válido toma su valor por defecto.
+ */
+export function validarConfig(v: unknown): Configuracion {
+  const o = (typeof v === 'object' && v !== null ? v : {}) as Record<string, unknown>;
+  const entero = (k: keyof typeof LIMITES) => {
+    const n = o[k];
+    const { min, max } = LIMITES[k];
+    return typeof n === 'number' && Number.isInteger(n) && n >= min && n <= max ? n : CONFIG_DEFECTO[k];
+  };
+  return {
+    perfil: PERFILES.includes(o.perfil as Perfil) ? (o.perfil as Perfil) : CONFIG_DEFECTO.perfil,
+    distanciaM: entero('distanciaM'),
+    dianaCm: DIANAS.some((d) => d.cm === o.dianaCm) ? (o.dianaCm as TipoDiana) : CONFIG_DEFECTO.dianaCm,
+    rondas: entero('rondas'),
+    flechasPorRonda: entero('flechasPorRonda'),
+  };
+}
+
+/**
+ * Lleva una sesión guardada con una versión anterior del formato a la actual.
+ * VERSION_DATOS 1 es la primera: cuando cambie el esquema, aquí se añade el paso v1 → v2, etc.
+ */
+export function migrar(s: Sesion): Sesion {
+  return s;
 }
 
 export function nuevaSesion(c: Configuracion, ahora = new Date()): Sesion {

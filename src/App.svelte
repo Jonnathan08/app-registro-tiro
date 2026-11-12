@@ -23,7 +23,13 @@
 </script>
 
 <main>
-  {#if !estado.cargado}
+  {#if estado.error}
+    <div class="error" role="alert">
+      <p class="t-title-m">No se pudieron abrir tus sesiones</p>
+      <p class="t-body-s">{estado.error}</p>
+      <button type="button" class="btn lleno estado" onclick={() => estado.cargar()}>Reintentar</button>
+    </div>
+  {:else if !estado.cargado}
     <p class="cargando t-body-s">Cargando…</p>
   {:else if estado.pantalla === 'sesion'}
     {#if estado.activa}
@@ -57,6 +63,8 @@
 <style>
   main { max-width: 600px; margin: 0 auto; padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
   .cargando { text-align: center; padding: 48px 16px; }
+  .error { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 48px 24px; }
+  .error p { margin: 0; max-width: 40ch; }
   nav {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
     display: grid; grid-template-columns: repeat(3, 1fr);

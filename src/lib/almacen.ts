@@ -1,31 +1,42 @@
 // Almacenamiento local en IndexedDB. Nada sale del dispositivo.
 import { openDB, type DBSchema } from 'idb';
-import type { Sesion } from './modelo';
+import { migrar, type Sesion } from './modelo';
 
 interface Esquema extends DBSchema {
   sesiones: { key: string; value: Sesion; indexes: { fecha: string } };
 }
 
-const db = openDB<Esquema>('registro-tiro', 1, {
-  upgrade(d) {
-    const t = d.createObjectStore('sesiones', { keyPath: 'id' });
-    t.createIndex('fecha', 'fecha');
-  },
-});
-
-export async function guardar(s: Sesion): Promise<void> {
-  // Copia plana: quita los proxies reactivos de Svelte, que IndexedDB no puede clonar
-  const copia: Sesion = JSON.parse(JSON.stringify({ ...s, actualizada: new Date().toISOString() }));
-  await (await db).put('sesiones', copia);
+// Se abre al primer uso: si el navegador bloquea IndexedDB, el error llega a quien llama
+let db: ReturnType<typeof abrir> | null = null;
+function abrir() {
+  return openDB<Esquema>('registro-tiro', 1, {
+    upgrade(d) {
+      const t = d.createObjectStore('sesiones', { keyPath: 'id' });
+      t.createIndex('fecha', 'fecha');
+    },
+  });
+}
+function base() {
+  db ??= abrir().catch((e) => {
+    db = null;   // permite reintentar
+    throw e;
+  });
+  return db;
 }
 
+/** Guarda una sesión. Debe ser un objeto plano (sin proxies de Svelte: usar $state.snapshot). */
+export async function guardar(s: Sesion): Promise<void> {
+  await (await base()).put('sesiones', { ...s, actualizada: new Date().toISOString() });
+}
+
+/** Todas las sesiones, de la más reciente a la más antigua. */
 export async function listar(): Promise<Sesion[]> {
-  const todas = await (await db).getAllFromIndex('sesiones', 'fecha');
-  return todas.reverse();
+  const todas = await (await base()).getAllFromIndex('sesiones', 'fecha');
+  return todas.reverse().map(migrar);
 }
 
 export async function borrar(id: string): Promise<void> {
-  await (await db).delete('sesiones', id);
+  await (await base()).delete('sesiones', id);
 }
 
 /** Pide al navegador que no borre los datos cuando falte espacio. */
