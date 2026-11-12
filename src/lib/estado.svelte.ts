@@ -1,5 +1,5 @@
 import * as almacen from './almacen';
-import { nuevaSesion, rondaGuardable, rondaLlena, todasGuardadas, validarConfig, type Configuracion, type Flecha, type Sesion } from './modelo';
+import { nuevaSesion, rondaGuardable, suma, rondaLlena, todasGuardadas, validarConfig, type Configuracion, type Flecha, type Sesion } from './modelo';
 
 export type Pantalla = 'sesion' | 'historial' | 'ajustes';
 
@@ -80,7 +80,7 @@ class Estado {
     const s = this.activa;
     if (!s || !rondaGuardable(s)) return;
     const n = s.registro.length + 1;
-    const pts = s.enCurso.reduce((a, f) => a + f.puntaje, 0);
+    const pts = suma(s.enCurso);
     s.registro.push({ flechas: s.enCurso });
     s.enCurso = [];
     if (await this.persistir()) this.avisar(`Ronda ${n} guardada · ${pts} puntos`);
@@ -91,7 +91,7 @@ class Estado {
     const s = this.activa;
     if (!s || !s.registro[indice] || flechas.length !== s.registro[indice].flechas.length) return;
     s.registro[indice] = { flechas };
-    if (await this.persistir()) this.avisar(`Ronda ${indice + 1} actualizada · ${flechas.reduce((a, f) => a + f.puntaje, 0)} puntos`);
+    if (await this.persistir()) this.avisar(`Ronda ${indice + 1} actualizada · ${suma(flechas)} puntos`);
   }
 
   async notas() {

@@ -113,6 +113,10 @@ svg.ic { width: 24px; height: 24px; fill: currentColor; flex: none; }
 .campo .sufijo { position: absolute; right: 16px; top: 16px; color: var(--md-sys-color-on-surface-variant); pointer-events: none; }
 .campo .apoyo { font-size: 12px; line-height: 16px; letter-spacing: .4px; color: var(--md-sys-color-on-surface-variant); padding: 4px 16px 0; }
 
+/* Grupo de campos de un formulario */
+.grupo { display: flex; flex-direction: column; gap: 12px; }
+.grupo p { margin: 0; }
+
 /* Tarjetas */
 .tarjeta { border-radius: var(--shape-m); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
 .tarjeta.contorno { border: 1px solid var(--md-sys-color-outline-variant); }

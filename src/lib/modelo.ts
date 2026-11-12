@@ -110,7 +110,8 @@ export function nuevaSesion(c: Configuracion, ahora = new Date()): Sesion {
   };
 }
 
-export const sumaRonda = (r: Ronda) => r.flechas.reduce((a, f) => a + f.puntaje, 0);
+export const suma = (fl: Flecha[]) => fl.reduce((a, f) => a + f.puntaje, 0);
+export const sumaRonda = (r: Ronda) => suma(r.flechas);
 
 export function todasLasFlechas(s: Sesion): Flecha[] {
   return s.registro.flatMap((r) => r.flechas).concat(s.enCurso);
@@ -118,7 +119,7 @@ export function todasLasFlechas(s: Sesion): Flecha[] {
 
 export function resumen(s: Sesion) {
   const fl = todasLasFlechas(s);
-  const total = fl.reduce((a, f) => a + f.puntaje, 0);
+  const total = suma(fl);
   return {
     total,
     maximo: (esLibre(s) ? fl.length : s.rondas * s.flechasPorRonda) * 10,

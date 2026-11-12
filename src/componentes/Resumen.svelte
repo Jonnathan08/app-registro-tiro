@@ -1,9 +1,9 @@
 <script lang="ts">
+  import { dosDecimales } from '../lib/formato';
   import { resumen, type Sesion } from '../lib/modelo';
 
   let { sesion }: { sesion: Sesion } = $props();
   const r = $derived(resumen(sesion));
-  const fmt = new Intl.NumberFormat('es', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 </script>
 
 <section class="resumen" aria-label="Resumen de la sesión">
@@ -14,7 +14,7 @@
   <div class="stats num">
     <div><b>{r.x}</b><span>X</span></div>
     <div><b>{r.dieces}</b><span>10+X</span></div>
-    <div><b>{r.flechas ? fmt.format(r.promedio) : '–'}</b><span>Prom.</span></div>
+    <div><b>{r.flechas ? dosDecimales(r.promedio) : '–'}</b><span>Prom.</span></div>
   </div>
 </section>
 

@@ -1,13 +1,11 @@
 <script lang="ts">
+  import Barra from '../componentes/Barra.svelte';
   import Grafico from '../componentes/Grafico.svelte';
   import Icono from '../componentes/Icono.svelte';
   import Segmentado from '../componentes/Segmentado.svelte';
   import { estado } from '../lib/estado.svelte';
+  import { dosDecimales, fechaCorta, fechaLista } from '../lib/formato';
   import { NOMBRE_PERFIL, resumen, type Sesion } from '../lib/modelo';
-
-  const fecha = new Intl.DateTimeFormat('es', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-  const fechaCorta = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short' });
-  const prom = new Intl.NumberFormat('es', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   // ---- Progreso: promedio por flecha de cada sesión, por distancia (y diana, si a una distancia se usó más de una) ----
   const clave = (s: Sesion) => `${s.distanciaM}-${s.dianaCm}`;
@@ -34,7 +32,7 @@
   const sesionPunto = $derived(punto !== null ? serie[punto] : undefined);
 </script>
 
-<header class="barra"><h1 class="t-title-l">Historial</h1></header>
+<Barra titulo="Historial" />
 
 <div class="cuerpo">
   {#if !estado.historial.length}
@@ -58,16 +56,16 @@
         {#if serie.length > 1}
           <Grafico
             valores={serie.map((p) => p.r.promedio)}
-            etiquetaX={(i) => fechaCorta.format(new Date(serie[i].s.fecha))}
-            nombrePunto={(i) => `${fecha.format(new Date(serie[i].s.fecha))}: ${prom.format(serie[i].r.promedio)} por flecha`}
-            formato={(v) => prom.format(v)}
+            etiquetaX={(i) => fechaCorta(serie[i].s.fecha)}
+            nombrePunto={(i) => `${fechaLista(serie[i].s.fecha)}: ${dosDecimales(serie[i].r.promedio)} por flecha`}
+            formato={dosDecimales}
             seleccionado={punto}
             alElegir={(i) => (punto = i)}
             descripcion="Promedio por flecha de cada sesión a {grupo.texto}"
           />
           {#if sesionPunto}
             <button type="button" class="lectura estado" onclick={() => (estado.detalle = sesionPunto.s)}>
-              <span class="num"><span class="cap">{fecha.format(new Date(sesionPunto.s.fecha))}</span> · <b>{prom.format(sesionPunto.r.promedio)}</b> por flecha · {sesionPunto.r.total}/{sesionPunto.r.maximo}</span>
+              <span class="num"><span class="cap">{fechaLista(sesionPunto.s.fecha)}</span> · <b>{dosDecimales(sesionPunto.r.promedio)}</b> por flecha · {sesionPunto.r.total}/{sesionPunto.r.maximo}</span>
               <Icono nombre="flecha" />
             </button>
           {:else}
@@ -87,8 +85,8 @@
           <button type="button" class="item estado" onclick={() => (estado.detalle = s)}>
             <span class="total num">{r.total}</span>
             <span class="txt">
-              <span class="t-title-m">{fecha.format(new Date(s.fecha))}</span>
-              <span class="t-body-s num">{s.distanciaM} m · {NOMBRE_PERFIL[s.perfil]} · {r.flechas} flechas · prom. {prom.format(r.promedio)}</span>
+              <span class="t-title-m">{fechaLista(s.fecha)}</span>
+              <span class="t-body-s num">{s.distanciaM} m · {NOMBRE_PERFIL[s.perfil]} · {r.flechas} flechas · prom. {dosDecimales(r.promedio)}</span>
             </span>
             <Icono nombre="flecha" />
           </button>
@@ -99,8 +97,6 @@
 </div>
 
 <style>
-  .barra { height: 64px; display: flex; align-items: center; padding: 0 16px; }
-  h1 { margin: 0; }
   .cuerpo { padding: 0 0 24px; }
   .vacio { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 48px 32px; color: var(--md-sys-color-on-surface-variant); }
   .vacio p { margin: 0; max-width: 32ch; }

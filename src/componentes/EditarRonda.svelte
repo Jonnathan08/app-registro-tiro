@@ -1,10 +1,11 @@
 <script lang="ts">
   import { untrack } from 'svelte';
   import { etiqueta, zona, type TipoDiana } from '../lib/diana';
-  import { corregir, type Flecha } from '../lib/modelo';
+  import { corregir, suma, type Flecha } from '../lib/modelo';
   import Diana from './Diana.svelte';
   import Icono from './Icono.svelte';
   import Segmentado from './Segmentado.svelte';
+  import Teclado from './Teclado.svelte';
 
   let {
     numero,
@@ -21,18 +22,12 @@
   } = $props();
 
   // Se trabaja sobre una copia; nada cambia hasta "Guardar cambios"
-  const original = untrack(() => JSON.stringify(flechas));
-  let copia = $state<Flecha[]>(JSON.parse(original));
+  const original = untrack(() => $state.snapshot(flechas));
+  let copia = $state<Flecha[]>(structuredClone(original));
   let sel = $state(0);
   let modo = $state<'teclado' | 'diana'>('teclado');
-  const cambiada = $derived(JSON.stringify(copia) !== original);
-  const suma = $derived(copia.reduce((a, f) => a + f.puntaje, 0));
-
-  const TECLAS: { t: string; puntaje: number; x?: boolean }[] = [
-    { t: 'X', puntaje: 10, x: true }, { t: '10', puntaje: 10 }, { t: '9', puntaje: 9 }, { t: '8', puntaje: 8 },
-    { t: '7', puntaje: 7 }, { t: '6', puntaje: 6 }, { t: '5', puntaje: 5 }, { t: '4', puntaje: 4 },
-    { t: '3', puntaje: 3 }, { t: '2', puntaje: 2 }, { t: '1', puntaje: 1 }, { t: 'M', puntaje: 0 },
-  ];
+  const cambiada = $derived(JSON.stringify(copia) !== JSON.stringify(original));
+  const puntos = $derived(suma(copia));
 
   function tecla(puntaje: number, x: boolean) {
     copia[sel] = corregir(copia[sel], puntaje, x);
@@ -46,7 +41,7 @@
 <dialog bind:this={dlg} class="hoja-inferior" aria-labelledby="editar-titulo" onclose={alCerrar}>
   <div class="cab">
     <h2 id="editar-titulo" class="t-title-l">Editar ronda {numero}</h2>
-    <span class="t-body-s num">{suma} pts</span>
+    <span class="t-body-s num">{puntos} pts</span>
     <button type="button" class="icbtn estado" aria-label="Cerrar sin guardar" onclick={() => dlg.close()}><Icono nombre="cerrar" /></button>
   </div>
 
@@ -72,11 +67,7 @@
   />
 
   {#if modo === 'teclado'}
-    <div class="teclado">
-      {#each TECLAS as k (k.t)}
-        <button type="button" class="tecla estado num z-{zona(k.puntaje)}" onclick={() => tecla(k.puntaje, !!k.x)}>{k.t}</button>
-      {/each}
-    </div>
+    <Teclado compacto alTocar={tecla} />
     {#if copia[sel].pos}
       <p class="aviso">Corregir con el teclado quita la flecha {sel + 1} de la diana. Para conservar su posición, márcala de nuevo en <b>Diana</b>.</p>
     {:else}
@@ -121,8 +112,6 @@
   .flecha small { font-size: 10px; line-height: 12px; opacity: .7; }
   .flecha.sel { outline: 3px solid var(--md-sys-color-primary); outline-offset: 3px; }
   .flecha.corregida:not(.sel) { outline: 2px solid var(--md-sys-color-tertiary); outline-offset: 1px; }
-  .teclado { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .tecla { height: 52px; border-radius: var(--shape-m); border: 0; font-size: 20px; font-weight: 500; cursor: pointer; }
   p { margin: 0; }
   .aviso {
     font-size: 14px; line-height: 20px; padding: 12px 16px; border-radius: var(--shape-m);

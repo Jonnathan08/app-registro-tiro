@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Barra from '../componentes/Barra.svelte';
   import Icono from '../componentes/Icono.svelte';
   import Segmentado from '../componentes/Segmentado.svelte';
   import { DIANAS, type TipoDiana } from '../lib/diana';
@@ -26,9 +27,7 @@
   const sumar = (k: 'rondas' | 'flechasPorRonda', d: number) => (c[k] = limitar(c[k] + d, LIMITES[k].min, LIMITES[k].max));
 </script>
 
-<header class="barra">
-  <h1 class="t-title-l">Nueva sesión</h1>
-</header>
+<Barra titulo="Nueva sesión" />
 
 <div class="cuerpo">
   <section class="grupo">
@@ -104,11 +103,7 @@
 </div>
 
 <style>
-  .barra { height: 64px; display: flex; align-items: center; padding: 0 16px; }
-  h1 { margin: 0; }
   .cuerpo { display: flex; flex-direction: column; gap: 24px; padding: 8px 16px 24px; }
-  .grupo { display: flex; flex-direction: column; gap: 12px; }
-  .grupo p { margin: 0; }
   .contador { display: flex; align-items: center; gap: 4px; }
   .contador .t-title-m { flex: 1; }
   .valor { min-width: 40px; text-align: center; font-size: 22px; line-height: 28px; }

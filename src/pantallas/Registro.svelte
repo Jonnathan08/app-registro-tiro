@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Barra from '../componentes/Barra.svelte';
   import Diana from '../componentes/Diana.svelte';
   import Dialogo from '../componentes/Dialogo.svelte';
   import EditarRonda from '../componentes/EditarRonda.svelte';
@@ -7,16 +8,31 @@
   import Notas from '../componentes/Notas.svelte';
   import Resumen from '../componentes/Resumen.svelte';
   import Segmentado from '../componentes/Segmentado.svelte';
+  import Teclado from '../componentes/Teclado.svelte';
   import { tick } from 'svelte';
   import { fly } from 'svelte/transition';
   import { etiqueta, zona } from '../lib/diana';
   import { estado } from '../lib/estado.svelte';
-  import { esLibre, NOMBRE_PERFIL, numeroRonda, rondaGuardable, rondaLlena, todasGuardadas, type Sesion } from '../lib/modelo';
+  import { esLibre, NOMBRE_PERFIL, numeroRonda, rondaGuardable, rondaLlena, suma, todasGuardadas, type Sesion } from '../lib/modelo';
 
   let { sesion }: { sesion: Sesion } = $props();
 
   let entrada = $state<'diana' | 'manual'>('diana');
   let menu = $state(false);
+  let anclaMenu = $state<HTMLElement>();
+
+  // El menú se cierra al tocar fuera de él o con Escape
+  $effect(() => {
+    if (!menu) return;
+    const fuera = (e: PointerEvent) => !anclaMenu?.contains(e.target as Node) && (menu = false);
+    const escape = (e: KeyboardEvent) => e.key === 'Escape' && (menu = false);
+    addEventListener('pointerdown', fuera);
+    addEventListener('keydown', escape);
+    return () => {
+      removeEventListener('pointerdown', fuera);
+      removeEventListener('keydown', escape);
+    };
+  });
   let confirmarTerminar = $state(false);
   let confirmarDescartar = $state(false);
   let editando = $state<number | null>(null);
@@ -55,34 +71,27 @@
   const completa = $derived(todasGuardadas(sesion));
   const llena = $derived(rondaLlena(sesion));
   const anteriores = $derived(sesion.registro.flatMap((r) => r.flechas));
-  const sumaActual = $derived(sesion.enCurso.reduce((a, f) => a + f.puntaje, 0));
+  const sumaActual = $derived(suma(sesion.enCurso));
   const perfil = $derived(NOMBRE_PERFIL[sesion.perfil]);
   const libre = $derived(esLibre(sesion));
+  const titulo = $derived(completa ? 'Rondas completas' : libre ? `Ronda ${numeroRonda(sesion)}` : `Ronda ${numeroRonda(sesion)} de ${sesion.rondas}`);
   // En Libre se muestran las flechas tiradas más un hueco para la siguiente
   const huecos = $derived(libre ? sesion.enCurso.length + (llena ? 0 : 1) : sesion.flechasPorRonda);
-
-  const TECLAS: { t: string; puntaje: number; x?: boolean }[] = [
-    { t: 'X', puntaje: 10, x: true }, { t: '10', puntaje: 10 }, { t: '9', puntaje: 9 }, { t: '8', puntaje: 8 },
-    { t: '7', puntaje: 7 }, { t: '6', puntaje: 6 }, { t: '5', puntaje: 5 }, { t: '4', puntaje: 4 },
-    { t: '3', puntaje: 3 }, { t: '2', puntaje: 2 }, { t: '1', puntaje: 1 }, { t: 'M', puntaje: 0 },
-  ];
 </script>
 
-<header class="barra">
-  <div class="titulo">
-    <h1 class="t-title-l">{completa ? 'Rondas completas' : libre ? `Ronda ${numeroRonda(sesion)}` : `Ronda ${numeroRonda(sesion)} de ${sesion.rondas}`}</h1>
-    <small class="num">{sesion.distanciaM} m · Diana {sesion.dianaCm} cm · {perfil}</small>
-  </div>
-  <div class="menu-ancla">
-    <button type="button" class="icbtn estado" aria-label="Opciones de la sesión" aria-expanded={menu} onclick={() => (menu = !menu)}><Icono nombre="mas" /></button>
-    {#if menu}
-      <div class="menu" role="menu">
-        <button type="button" role="menuitem" class="estado" onclick={() => { menu = false; confirmarTerminar = true; }}>Terminar sesión ahora</button>
-        <button type="button" role="menuitem" class="estado" onclick={() => { menu = false; confirmarDescartar = true; }}>Descartar sesión</button>
-      </div>
-    {/if}
-  </div>
-</header>
+<Barra fija {titulo} subtitulo="{sesion.distanciaM} m · Diana {sesion.dianaCm} cm · {perfil}">
+  {#snippet fin()}
+    <div class="menu-ancla" bind:this={anclaMenu}>
+      <button type="button" class="icbtn estado" aria-label="Opciones de la sesión" aria-haspopup="menu" aria-expanded={menu} onclick={() => (menu = !menu)}><Icono nombre="mas" /></button>
+      {#if menu}
+        <div class="menu" role="menu">
+          <button type="button" role="menuitem" class="estado" onclick={() => { menu = false; confirmarTerminar = true; }}>Terminar sesión ahora</button>
+          <button type="button" role="menuitem" class="estado" onclick={() => { menu = false; confirmarDescartar = true; }}>Descartar sesión</button>
+        </div>
+      {/if}
+    </div>
+  {/snippet}
+</Barra>
 
 <div class="pestanas" role="tablist" aria-label="Páginas de la sesión">
   <button type="button" role="tab" id="tab-anotar" aria-controls="pag-anotar" aria-selected={pagina === 'anotar'} class="estado" onclick={() => ir('anotar')}>Ronda</button>
@@ -133,11 +142,7 @@
             </p>
           </div>
         {:else}
-          <div class="teclado">
-            {#each TECLAS as k (k.t)}
-              <button type="button" class="tecla estado num z-{zona(k.puntaje)}" disabled={llena} onclick={() => estado.marcar({ puntaje: k.puntaje, x: !!k.x, pos: null })}>{k.t}</button>
-            {/each}
-          </div>
+          <Teclado deshabilitado={llena} alTocar={(puntaje, x) => estado.marcar({ puntaje, x, pos: null })} />
         {/if}
       {:else}
         <section class="tarjeta relleno">
@@ -188,14 +193,6 @@
 <Dialogo bind:abierto={confirmarDescartar} titulo="¿Descartar la sesión?" texto="Se borran todas las flechas y notas de esta sesión. No se puede deshacer." confirmar="Descartar" peligro alConfirmar={() => estado.descartar()} />
 
 <style>
-  .barra {
-    height: 64px; display: flex; align-items: center; gap: 4px; padding: 0 4px 0 16px;
-    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
-    background: var(--md-sys-color-surface);
-  }
-  .titulo { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  h1 { margin: 0; }
-  small { font-size: 12px; line-height: 16px; letter-spacing: .4px; color: var(--md-sys-color-on-surface-variant); }
   .menu-ancla { position: relative; }
   .menu {
     position: absolute; right: 4px; top: 48px; min-width: 220px; z-index: 10;
@@ -231,12 +228,8 @@
   .diana-wrap { display: flex; flex-direction: column; gap: 8px; }
   .ayuda { margin: 0; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; font-size: 12px; line-height: 16px; letter-spacing: .4px; color: var(--md-sys-color-on-surface-variant); }
   .leyenda { display: inline-flex; align-items: center; gap: 6px; }
-  .tenue { width: 10px; height: 10px; border-radius: 50%; background: #231f20; opacity: .35; display: inline-block; }
+  .tenue { width: 10px; height: 10px; border-radius: 50%; background: var(--diana-tinta); opacity: .35; display: inline-block; }
   .cruz { font-style: normal; font-weight: 700; font-size: 18px; color: var(--md-sys-color-tertiary); margin-left: 6px; }
-
-  .teclado { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .tecla { height: 56px; border-radius: var(--shape-m); border: 0; font-size: 22px; font-weight: 500; cursor: pointer; }
-  .tecla:disabled { opacity: .38; cursor: default; }
 
   .cab { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
   .flechas { display: grid; grid-template-columns: repeat(var(--cols), 1fr); gap: 6px; }

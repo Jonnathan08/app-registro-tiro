@@ -38,7 +38,8 @@ export function deCSV(texto: string): Sesion[] {
   const [cabecera, ...filas] = leerCSV(texto);
   if (!cabecera) throw new Error('El archivo está vacío.');
   const faltan = COLUMNAS.filter((c) => !cabecera.includes(c));
-  if (faltan.length) throw new Error(`No es un CSV de la app: faltan las columnas ${faltan.join(', ')}.`);
+  if (faltan.length === COLUMNAS.length) throw new Error('No es un CSV exportado por la app.');
+  if (faltan.length) throw new Error(`Faltan las columnas ${faltan.join(', ')}.`);
   const idx = Object.fromEntries(COLUMNAS.map((c) => [c, cabecera.indexOf(c)])) as Record<Columna, number>;
 
   const sesiones = new Map<string, { s: Sesion; rondas: Map<number, Map<number, Flecha>> }>();
