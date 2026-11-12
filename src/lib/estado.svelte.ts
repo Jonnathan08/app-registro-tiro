@@ -113,6 +113,20 @@ class Estado {
     this.avisar('Sesión guardada');
   }
 
+  /**
+   * Añade al historial las sesiones importadas que no estén ya en el teléfono (por id).
+   * Devuelve cuántas se añadieron y cuántas ya estaban. Si no se pueden guardar, lanza el error.
+   */
+  async importar(sesiones: Sesion[]): Promise<{ nuevas: number; repetidas: number }> {
+    const ids = new Set([...this.historial.map((s) => s.id), this.activa?.id]);
+    const nuevas = sesiones.filter((s) => !ids.has(s.id));
+    if (nuevas.length) {
+      await almacen.guardarVarias(nuevas);
+      this.historial = [...this.historial, ...nuevas].sort((a, b) => b.fecha.localeCompare(a.fecha));
+    }
+    return { nuevas: nuevas.length, repetidas: sesiones.length - nuevas.length };
+  }
+
   /** Borra una sesión del almacenamiento; si falla, avisa y devuelve false. */
   private async borrar(id: string): Promise<boolean> {
     try {

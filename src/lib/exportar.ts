@@ -17,7 +17,7 @@ export function celda(v: string | number | boolean | null | undefined): string {
   return /[",\r\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t;
 }
 
-const COLUMNAS = [
+export const COLUMNAS = [
   'sesion_id', 'fecha', 'perfil', 'distancia_m', 'diana_cm', 'rondas', 'flechas_por_ronda',
   'total_sesion', 'ronda', 'flecha', 'valor', 'puntaje', 'es_x', 'x_mm', 'y_mm', 'corregida',
   'notas_personales', 'notas_entrenador',
