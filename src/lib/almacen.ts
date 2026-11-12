@@ -29,6 +29,12 @@ export async function guardar(s: Sesion): Promise<void> {
   await (await base()).put('sesiones', { ...s, actualizada: new Date().toISOString() });
 }
 
+/** Guarda varias sesiones en una sola transacción: o se guardan todas o ninguna. */
+export async function guardarVarias(ss: Sesion[]): Promise<void> {
+  const tx = (await base()).transaction('sesiones', 'readwrite');
+  await Promise.all([...ss.map((s) => tx.store.put(s)), tx.done]);
+}
+
 /** Todas las sesiones, de la más reciente a la más antigua. */
 export async function listar(): Promise<Sesion[]> {
   const todas = await (await base()).getAllFromIndex('sesiones', 'fecha');

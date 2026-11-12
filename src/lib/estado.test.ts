@@ -5,6 +5,7 @@ import { nuevaSesion, type Configuracion, type Flecha } from './modelo';
 
 vi.mock('./almacen', () => ({
   guardar: vi.fn(async () => {}),
+  guardarVarias: vi.fn(async () => {}),
   listar: vi.fn(async () => []),
   borrar: vi.fn(async () => {}),
   pedirPersistencia: vi.fn(async () => true),
@@ -102,5 +103,17 @@ describe('estado', () => {
     expect(estado.activa).not.toBeNull();
     await estado.descartar();
     expect(estado.activa).toBeNull();
+  });
+});
+
+describe('importar', () => {
+  it('añade solo las sesiones que no están y las ordena por fecha', async () => {
+    const vieja = { ...nuevaSesion(abierto, new Date('2026-09-01')), terminada: true };
+    const nueva = { ...nuevaSesion(abierto, new Date('2026-10-01')), terminada: true };
+    estado.historial = [nueva];
+    const r = await estado.importar([vieja, nueva]);
+    expect(r).toEqual({ nuevas: 1, repetidas: 1 });
+    expect(vi.mocked(almacen.guardarVarias)).toHaveBeenCalledWith([vieja]);
+    expect(estado.historial.map((s) => s.id)).toEqual([nueva.id, vieja.id]);
   });
 });
