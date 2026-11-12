@@ -1,4 +1,4 @@
-# En cada pull request: auditoría, pruebas, tipos y compilación.
+# En cada pull request: auditoría, formato y lint, pruebas, tipos y compilación.
 # Al integrar en main: lo mismo y además publica en GitHub Pages.
 name: Verificar y publicar
 
@@ -27,6 +27,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm audit --audit-level=high
+      - run: npm run lint
       - run: npm test
       - run: npm run check
       - run: npm run build

@@ -24,7 +24,10 @@ function csp(): Plugin {
     name: 'csp',
     apply: 'build',
     transformIndexHtml: (html) =>
-      html.replace('<meta charset="utf-8">', `<meta charset="utf-8">\n    <meta http-equiv="Content-Security-Policy" content="${CSP}">`),
+      html.replace(
+        '<meta charset="utf-8">',
+        `<meta charset="utf-8">\n    <meta http-equiv="Content-Security-Policy" content="${CSP}">`,
+      ),
   };
 }
 

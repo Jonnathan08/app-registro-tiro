@@ -13,7 +13,16 @@
   import { fly } from 'svelte/transition';
   import { etiqueta, zona } from '../lib/diana';
   import { estado } from '../lib/estado.svelte';
-  import { esLibre, NOMBRE_PERFIL, numeroRonda, rondaGuardable, rondaLlena, suma, todasGuardadas, type Sesion } from '../lib/modelo';
+  import {
+    esLibre,
+    NOMBRE_PERFIL,
+    numeroRonda,
+    rondaGuardable,
+    rondaLlena,
+    suma,
+    todasGuardadas,
+    type Sesion,
+  } from '../lib/modelo';
 
   let { sesion }: { sesion: Sesion } = $props();
 
@@ -57,12 +66,16 @@
   let deslizar: { x: number; y: number } | null = null;
   function inicioDeslizar(e: TouchEvent) {
     const t = e.target as Element;
-    deslizar = e.touches.length > 1 || t.closest('.marco, textarea, input, .hoja') ? null : { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    deslizar =
+      e.touches.length > 1 || t.closest('.marco, textarea, input, .hoja')
+        ? null
+        : { x: e.touches[0].clientX, y: e.touches[0].clientY };
   }
   function finDeslizar(e: TouchEvent) {
     if (!deslizar) return;
     const p = e.changedTouches[0];
-    const dx = p.clientX - deslizar.x, dy = p.clientY - deslizar.y;
+    const dx = p.clientX - deslizar.x,
+      dy = p.clientY - deslizar.y;
     deslizar = null;
     if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
     ir(dx < 0 ? 'hoja' : 'anotar');
@@ -74,7 +87,13 @@
   const sumaActual = $derived(suma(sesion.enCurso));
   const perfil = $derived(NOMBRE_PERFIL[sesion.perfil]);
   const libre = $derived(esLibre(sesion));
-  const titulo = $derived(completa ? 'Rondas completas' : libre ? `Ronda ${numeroRonda(sesion)}` : `Ronda ${numeroRonda(sesion)} de ${sesion.rondas}`);
+  const titulo = $derived(
+    completa
+      ? 'Rondas completas'
+      : libre
+        ? `Ronda ${numeroRonda(sesion)}`
+        : `Ronda ${numeroRonda(sesion)} de ${sesion.rondas}`,
+  );
   // En Libre se muestran las flechas tiradas más un hueco para la siguiente
   const huecos = $derived(libre ? sesion.enCurso.length + (llena ? 0 : 1) : sesion.flechasPorRonda);
 </script>
@@ -82,11 +101,34 @@
 <Barra fija {titulo} subtitulo="{sesion.distanciaM} m · Diana {sesion.dianaCm} cm · {perfil}">
   {#snippet fin()}
     <div class="menu-ancla" bind:this={anclaMenu}>
-      <button type="button" class="icbtn estado" aria-label="Opciones de la sesión" aria-haspopup="menu" aria-expanded={menu} onclick={() => (menu = !menu)}><Icono nombre="mas" /></button>
+      <button
+        type="button"
+        class="icbtn estado"
+        aria-label="Opciones de la sesión"
+        aria-haspopup="menu"
+        aria-expanded={menu}
+        onclick={() => (menu = !menu)}><Icono nombre="mas" /></button
+      >
       {#if menu}
         <div class="menu" role="menu">
-          <button type="button" role="menuitem" class="estado" onclick={() => { menu = false; confirmarTerminar = true; }}>Terminar sesión ahora</button>
-          <button type="button" role="menuitem" class="estado" onclick={() => { menu = false; confirmarDescartar = true; }}>Descartar sesión</button>
+          <button
+            type="button"
+            role="menuitem"
+            class="estado"
+            onclick={() => {
+              menu = false;
+              confirmarTerminar = true;
+            }}>Terminar sesión ahora</button
+          >
+          <button
+            type="button"
+            role="menuitem"
+            class="estado"
+            onclick={() => {
+              menu = false;
+              confirmarDescartar = true;
+            }}>Descartar sesión</button
+          >
         </div>
       {/if}
     </div>
@@ -94,8 +136,24 @@
 </Barra>
 
 <div class="pestanas" role="tablist" aria-label="Páginas de la sesión">
-  <button type="button" role="tab" id="tab-anotar" aria-controls="pag-anotar" aria-selected={pagina === 'anotar'} class="estado" onclick={() => ir('anotar')}>Ronda</button>
-  <button type="button" role="tab" id="tab-hoja" aria-controls="pag-hoja" aria-selected={pagina === 'hoja'} class="estado" onclick={() => ir('hoja')}>
+  <button
+    type="button"
+    role="tab"
+    id="tab-anotar"
+    aria-controls="pag-anotar"
+    aria-selected={pagina === 'anotar'}
+    class="estado"
+    onclick={() => ir('anotar')}>Ronda</button
+  >
+  <button
+    type="button"
+    role="tab"
+    id="tab-hoja"
+    aria-controls="pag-hoja"
+    aria-selected={pagina === 'hoja'}
+    class="estado"
+    onclick={() => ir('hoja')}
+  >
     Sesión{#if sesion.registro.length}<span class="insignia num">{sesion.registro.length}</span>{/if}
   </button>
 </div>
@@ -122,20 +180,40 @@
             {/each}
           </div>
           <div class="acciones">
-            <button type="button" class="btn tonal estado" disabled={!sesion.enCurso.length} onclick={() => estado.deshacer()}><Icono nombre="deshacer" />Deshacer</button>
-            <button type="button" class="btn lleno estado crece" disabled={!rondaGuardable(sesion)} onclick={() => estado.guardarRonda()}><Icono nombre="check" />Guardar ronda</button>
+            <button
+              type="button"
+              class="btn tonal estado"
+              disabled={!sesion.enCurso.length}
+              onclick={() => estado.deshacer()}><Icono nombre="deshacer" />Deshacer</button
+            >
+            <button
+              type="button"
+              class="btn lleno estado crece"
+              disabled={!rondaGuardable(sesion)}
+              onclick={() => estado.guardarRonda()}><Icono nombre="check" />Guardar ronda</button
+            >
           </div>
         </section>
 
         <Segmentado
           etiqueta="Forma de registro"
           bind:valor={entrada}
-          opciones={[{ valor: 'diana' as const, texto: 'Diana' }, { valor: 'manual' as const, texto: 'Manual' }]}
+          opciones={[
+            { valor: 'diana' as const, texto: 'Diana' },
+            { valor: 'manual' as const, texto: 'Manual' },
+          ]}
         />
 
         {#if entrada === 'diana'}
           <div class="diana-wrap">
-            <Diana dianaCm={sesion.dianaCm} {anteriores} actuales={sesion.enCurso} interactiva={!llena} ampliable alMarcar={(f) => estado.marcar(f)} />
+            <Diana
+              dianaCm={sesion.dianaCm}
+              {anteriores}
+              actuales={sesion.enCurso}
+              interactiva={!llena}
+              ampliable
+              alMarcar={(f) => estado.marcar(f)}
+            />
             <p class="ayuda">
               <span>Mantén presionado, ajusta con la lupa y suelta. Pellizca para acercar.</span>
               <span class="leyenda"><i class="tenue"></i>Rondas anteriores <i class="cruz">×</i>Centro del grupo</span>
@@ -147,10 +225,15 @@
       {:else}
         <section class="tarjeta relleno">
           <span class="t-title-m">Terminaste las {sesion.rondas} rondas</span>
-          <p class="t-body-s">Agrega las notas en la pestaña <b>Sesión</b> y termina: después quedan bloqueadas. Podrás exportarla desde el historial.</p>
+          <p class="t-body-s">
+            Agrega las notas en la pestaña <b>Sesión</b> y termina: después quedan bloqueadas. Podrás exportarla desde el
+            historial.
+          </p>
           <div class="acciones">
             <button type="button" class="btn tonal estado" onclick={irANotas}>Ir a las notas</button>
-            <button type="button" class="btn lleno estado crece" onclick={() => estado.terminar()}><Icono nombre="check" />Terminar y guardar</button>
+            <button type="button" class="btn lleno estado crece" onclick={() => estado.terminar()}
+              ><Icono nombre="check" />Terminar y guardar</button
+            >
           </div>
         </section>
       {/if}
@@ -169,9 +252,13 @@
       <Notas {sesion} alCambiar={() => estado.notas()} />
 
       {#if completa}
-        <button type="button" class="btn lleno estado" onclick={() => estado.terminar()}><Icono nombre="check" />Terminar y guardar</button>
+        <button type="button" class="btn lleno estado" onclick={() => estado.terminar()}
+          ><Icono nombre="check" />Terminar y guardar</button
+        >
       {:else}
-        <button type="button" class="btn tonal estado" onclick={() => (confirmarTerminar = true)}><Icono nombre="check" />Terminar sesión</button>
+        <button type="button" class="btn tonal estado" onclick={() => (confirmarTerminar = true)}
+          ><Icono nombre="check" />Terminar sesión</button
+        >
       {/if}
     </div>
   {/if}
@@ -189,57 +276,185 @@
   {/key}
 {/if}
 
-<Dialogo bind:abierto={confirmarTerminar} titulo="¿Terminar la sesión?" texto="Se guarda con las rondas registradas hasta ahora. La ronda a medias también se guarda. Después las notas ya no se pueden cambiar." confirmar="Terminar" alConfirmar={() => estado.terminar()} />
-<Dialogo bind:abierto={confirmarDescartar} titulo="¿Descartar la sesión?" texto="Se borran todas las flechas y notas de esta sesión. No se puede deshacer." confirmar="Descartar" peligro alConfirmar={() => estado.descartar()} />
+<Dialogo
+  bind:abierto={confirmarTerminar}
+  titulo="¿Terminar la sesión?"
+  texto="Se guarda con las rondas registradas hasta ahora. La ronda a medias también se guarda. Después las notas ya no se pueden cambiar."
+  confirmar="Terminar"
+  alConfirmar={() => estado.terminar()}
+/>
+<Dialogo
+  bind:abierto={confirmarDescartar}
+  titulo="¿Descartar la sesión?"
+  texto="Se borran todas las flechas y notas de esta sesión. No se puede deshacer."
+  confirmar="Descartar"
+  peligro
+  alConfirmar={() => estado.descartar()}
+/>
 
 <style>
-  .menu-ancla { position: relative; }
-  .menu {
-    position: absolute; right: 4px; top: 48px; min-width: 220px; z-index: 10;
-    background: var(--md-sys-color-surface-container); border-radius: var(--shape-xs);
-    padding: 8px 0; box-shadow: 0 2px 6px rgb(0 0 0 / .25);
-    display: flex; flex-direction: column;
+  .menu-ancla {
+    position: relative;
   }
-  .menu button { height: 48px; padding: 0 12px; border: 0; background: none; text-align: left; font-size: 14px; cursor: pointer; }
+  .menu {
+    position: absolute;
+    right: 4px;
+    top: 48px;
+    min-width: 220px;
+    z-index: 10;
+    background: var(--md-sys-color-surface-container);
+    border-radius: var(--shape-xs);
+    padding: 8px 0;
+    box-shadow: 0 2px 6px rgb(0 0 0 / 0.25);
+    display: flex;
+    flex-direction: column;
+  }
+  .menu button {
+    height: 48px;
+    padding: 0 12px;
+    border: 0;
+    background: none;
+    text-align: left;
+    font-size: 14px;
+    cursor: pointer;
+  }
 
   .pestanas {
-    display: grid; grid-template-columns: 1fr 1fr;
-    position: sticky; top: calc(env(safe-area-inset-top, 0px) + 64px); z-index: 4;
-    background: var(--md-sys-color-surface); border-bottom: 1px solid var(--md-sys-color-surface-variant);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: sticky;
+    top: calc(env(safe-area-inset-top, 0px) + 64px);
+    z-index: 4;
+    background: var(--md-sys-color-surface);
+    border-bottom: 1px solid var(--md-sys-color-surface-variant);
   }
   .pestanas button {
-    height: 48px; border: 0; background: none; cursor: pointer; position: relative;
-    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-    font-size: 14px; font-weight: 500; letter-spacing: .1px; color: var(--md-sys-color-on-surface-variant);
+    height: 48px;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.1px;
+    color: var(--md-sys-color-on-surface-variant);
   }
-  .pestanas button[aria-selected="true"] { color: var(--md-sys-color-primary); }
-  .pestanas button[aria-selected="true"]::after {
-    content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-    width: 64px; height: 3px; border-radius: 3px 3px 0 0; background: var(--md-sys-color-primary);
+  .pestanas button[aria-selected='true'] {
+    color: var(--md-sys-color-primary);
+  }
+  .pestanas button[aria-selected='true']::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 64px;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: var(--md-sys-color-primary);
   }
   .insignia {
-    min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--shape-full);
-    font-size: 11px; line-height: 20px; background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container);
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: var(--shape-full);
+    font-size: 11px;
+    line-height: 20px;
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
   }
 
-  .cuerpo { padding: 12px 16px 24px; min-height: 60dvh; }
-  .pagina { display: flex; flex-direction: column; gap: 16px; }
-  .vacio { margin: 0; color: var(--md-sys-color-on-surface-variant); }
-  .diana-wrap { display: flex; flex-direction: column; gap: 8px; }
-  .ayuda { margin: 0; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; font-size: 12px; line-height: 16px; letter-spacing: .4px; color: var(--md-sys-color-on-surface-variant); }
-  .leyenda { display: inline-flex; align-items: center; gap: 6px; }
-  .tenue { width: 10px; height: 10px; border-radius: 50%; background: var(--diana-tinta); opacity: .35; display: inline-block; }
-  .cruz { font-style: normal; font-weight: 700; font-size: 18px; color: var(--md-sys-color-tertiary); margin-left: 6px; }
+  .cuerpo {
+    padding: 12px 16px 24px;
+    min-height: 60dvh;
+  }
+  .pagina {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .vacio {
+    margin: 0;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+  .diana-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .ayuda {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 4px 12px;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 0.4px;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+  .leyenda {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tenue {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--diana-tinta);
+    opacity: 0.35;
+    display: inline-block;
+  }
+  .cruz {
+    font-style: normal;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--md-sys-color-tertiary);
+    margin-left: 6px;
+  }
 
-  .cab { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-  .flechas { display: grid; grid-template-columns: repeat(var(--cols), 1fr); gap: 6px; }
+  .cab {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .flechas {
+    display: grid;
+    grid-template-columns: repeat(var(--cols), 1fr);
+    gap: 6px;
+  }
   .flecha {
-    aspect-ratio: 1; width: 100%; max-width: 56px; justify-self: center;
-    border-radius: var(--shape-full); display: flex; align-items: center; justify-content: center;
-    font-size: 16px; font-weight: 500;
+    aspect-ratio: 1;
+    width: 100%;
+    max-width: 56px;
+    justify-self: center;
+    border-radius: var(--shape-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 500;
   }
-  .flecha.vacia { border: 1px dashed var(--md-sys-color-outline); color: var(--md-sys-color-outline); font-weight: 400; }
-  .acciones { display: flex; gap: 8px; flex-wrap: wrap; }
-  .crece { flex: 1; }
-  .tarjeta p { margin: 0; }
+  .flecha.vacia {
+    border: 1px dashed var(--md-sys-color-outline);
+    color: var(--md-sys-color-outline);
+    font-weight: 400;
+  }
+  .acciones {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .crece {
+    flex: 1;
+  }
+  .tarjeta p {
+    margin: 0;
+  }
 </style>

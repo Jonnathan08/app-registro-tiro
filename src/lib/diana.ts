@@ -13,20 +13,20 @@ export const DIANAS: { cm: TipoDiana; nombre: string }[] = [
 export const RADIO_FLECHA_MM = 4.5;
 
 export interface Geometria {
-  radio: number;   // radio exterior (anillo 1)
-  anillo: number;  // ancho de cada anillo
-  radioX: number;  // radio del anillo X
+  radio: number; // radio exterior (anillo 1)
+  anillo: number; // ancho de cada anillo
+  radioX: number; // radio del anillo X
 }
 
 export function geometria(cm: TipoDiana): Geometria {
-  const radio = cm * 5;            // cm → mm, mitad del diámetro
+  const radio = cm * 5; // cm → mm, mitad del diámetro
   const anillo = radio / 10;
   return { radio, anillo, radioX: anillo / 2 };
 }
 
 export interface Impacto {
-  puntaje: number;  // 0 = M (fuera), 1..10
-  x: boolean;       // dentro del anillo X
+  puntaje: number; // 0 = M (fuera), 1..10
+  x: boolean; // dentro del anillo X
 }
 
 /**

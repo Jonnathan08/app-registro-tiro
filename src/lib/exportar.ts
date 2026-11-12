@@ -18,9 +18,24 @@ export function celda(v: string | number | boolean | null | undefined): string {
 }
 
 export const COLUMNAS = [
-  'sesion_id', 'fecha', 'perfil', 'distancia_m', 'diana_cm', 'rondas', 'flechas_por_ronda',
-  'total_sesion', 'ronda', 'flecha', 'valor', 'puntaje', 'es_x', 'x_mm', 'y_mm', 'corregida',
-  'notas_personales', 'notas_entrenador',
+  'sesion_id',
+  'fecha',
+  'perfil',
+  'distancia_m',
+  'diana_cm',
+  'rondas',
+  'flechas_por_ronda',
+  'total_sesion',
+  'ronda',
+  'flecha',
+  'valor',
+  'puntaje',
+  'es_x',
+  'x_mm',
+  'y_mm',
+  'corregida',
+  'notas_personales',
+  'notas_entrenador',
 ];
 
 function filas(s: Sesion): string[] {
@@ -28,13 +43,31 @@ function filas(s: Sesion): string[] {
   const out: string[] = [];
   s.registro.forEach((r, i) => {
     r.flechas.forEach((f, j) => {
-      out.push([
-        // En Libre: rondas = las que se tiraron; flechas por ronda vacío porque varía
-        s.id, s.fecha, s.perfil, s.distanciaM, s.dianaCm, esLibre(s) ? s.registro.length : s.rondas, esLibre(s) ? '' : s.flechasPorRonda,
-        total, i + 1, j + 1, etiqueta(f), f.puntaje, f.x ? 1 : 0,
-        f.pos ? r1(f.pos.x) : '', f.pos ? r1(f.pos.y) : '', f.corregida ? 1 : 0,
-        s.notasPersonales, s.notasEntrenador,
-      ].map(celda).join(','));
+      out.push(
+        [
+          // En Libre: rondas = las que se tiraron; flechas por ronda vacío porque varía
+          s.id,
+          s.fecha,
+          s.perfil,
+          s.distanciaM,
+          s.dianaCm,
+          esLibre(s) ? s.registro.length : s.rondas,
+          esLibre(s) ? '' : s.flechasPorRonda,
+          total,
+          i + 1,
+          j + 1,
+          etiqueta(f),
+          f.puntaje,
+          f.x ? 1 : 0,
+          f.pos ? r1(f.pos.x) : '',
+          f.pos ? r1(f.pos.y) : '',
+          f.corregida ? 1 : 0,
+          s.notasPersonales,
+          s.notasEntrenador,
+        ]
+          .map(celda)
+          .join(','),
+      );
     });
   });
   return out;

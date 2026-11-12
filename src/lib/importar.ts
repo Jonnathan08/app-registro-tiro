@@ -9,22 +9,31 @@ export function leerCSV(texto: string): string[][] {
   let fila: string[] = [];
   let celda = '';
   let comillas = false;
-  const t = texto.replace(/^﻿/, '');
+  const t = texto.replace(/^\uFEFF/, '');
   for (let i = 0; i < t.length; i++) {
     const c = t[i];
     if (comillas) {
-      if (c === '"' && t[i + 1] === '"') { celda += '"'; i++; }
-      else if (c === '"') comillas = false;
+      if (c === '"' && t[i + 1] === '"') {
+        celda += '"';
+        i++;
+      } else if (c === '"') comillas = false;
       else celda += c;
     } else if (c === '"') comillas = true;
-    else if (c === ',') { fila.push(celda); celda = ''; }
-    else if (c === '\n' || c === '\r') {
+    else if (c === ',') {
+      fila.push(celda);
+      celda = '';
+    } else if (c === '\n' || c === '\r') {
       if (c === '\r' && t[i + 1] === '\n') i++;
-      fila.push(celda); celda = '';
-      filas.push(fila); fila = [];
+      fila.push(celda);
+      celda = '';
+      filas.push(fila);
+      fila = [];
     } else celda += c;
   }
-  if (celda || fila.length) { fila.push(celda); filas.push(fila); }
+  if (celda || fila.length) {
+    fila.push(celda);
+    filas.push(fila);
+  }
   return filas.filter((f) => f.some((c) => c !== ''));
 }
 
@@ -44,11 +53,12 @@ export function deCSV(texto: string): Sesion[] {
 
   const sesiones = new Map<string, { s: Sesion; rondas: Map<number, Map<number, Flecha>> }>();
   filas.forEach((fila, i) => {
-    const n = i + 2;   // número de línea en el archivo (la 1 es la cabecera)
+    const n = i + 2; // número de línea en el archivo (la 1 es la cabecera)
     const v = (c: Columna) => fila[idx[c]] ?? '';
     const num = (c: Columna, min: number, max: number) => {
       const x = Number(v(c));
-      if (v(c) === '' || !Number.isFinite(x) || x < min || x > max) throw new Error(`Línea ${n}: valor no válido en ${c} («${v(c)}»).`);
+      if (v(c) === '' || !Number.isFinite(x) || x < min || x > max)
+        throw new Error(`Línea ${n}: valor no válido en ${c} («${v(c)}»).`);
       return x;
     };
     const opcional = (c: Columna) => (v(c) === '' ? null : num(c, -1e4, 1e4));
@@ -87,15 +97,24 @@ export function deCSV(texto: string): Sesion[] {
       sesiones.set(id, g);
     }
 
-    const x = opcional('x_mm'), y = opcional('y_mm');
-    const flecha: Flecha = { puntaje: num('puntaje', 0, 10), x: v('es_x') === '1', pos: x !== null && y !== null ? { x, y } : null };
+    const x = opcional('x_mm'),
+      y = opcional('y_mm');
+    const flecha: Flecha = {
+      puntaje: num('puntaje', 0, 10),
+      x: v('es_x') === '1',
+      pos: x !== null && y !== null ? { x, y } : null,
+    };
     if (v('corregida') === '1') flecha.corregida = true;
-    const r = num('ronda', 1, 1e4), j = num('flecha', 1, 1e4);
+    const r = num('ronda', 1, 1e4),
+      j = num('flecha', 1, 1e4);
     if (!g.rondas.has(r)) g.rondas.set(r, new Map());
     g.rondas.get(r)!.set(j, flecha);
   });
 
   // Rondas y flechas en orden por su número
   const ordenar = <T>(m: Map<number, T>) => [...m.entries()].sort((a, b) => a[0] - b[0]).map((e) => e[1]);
-  return [...sesiones.values()].map(({ s, rondas }) => ({ ...s, registro: ordenar(rondas).map((fl) => ({ flechas: ordenar(fl) })) }));
+  return [...sesiones.values()].map(({ s, rondas }) => ({
+    ...s,
+    registro: ordenar(rondas).map((fl) => ({ flechas: ordenar(fl) })),
+  }));
 }

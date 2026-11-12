@@ -53,7 +53,12 @@
 
 <nav aria-label="Navegación principal">
   {#each DESTINOS as d (d.p)}
-    <button type="button" class="destino" aria-current={estado.pantalla === d.p ? 'page' : undefined} onclick={() => ir(d.p)}>
+    <button
+      type="button"
+      class="destino"
+      aria-current={estado.pantalla === d.p ? 'page' : undefined}
+      onclick={() => ir(d.p)}
+    >
       <span class="pill estado"><Icono nombre={d.icono} /></span>
       <span class="t-label">{d.texto}</span>
     </button>
@@ -61,18 +66,61 @@
 </nav>
 
 <style>
-  main { max-width: 600px; margin: 0 auto; padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
-  .cargando { text-align: center; padding: 48px 16px; }
-  .error { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 48px 24px; }
-  .error p { margin: 0; max-width: 40ch; }
+  main {
+    max-width: 600px;
+    margin: 0 auto;
+    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  }
+  .cargando {
+    text-align: center;
+    padding: 48px 16px;
+  }
+  .error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+    padding: 48px 24px;
+  }
+  .error p {
+    margin: 0;
+    max-width: 40ch;
+  }
   nav {
-    position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
-    display: grid; grid-template-columns: repeat(3, 1fr);
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     background: var(--md-sys-color-surface-container);
     padding: 12px 0 calc(16px + env(safe-area-inset-bottom, 0px));
   }
-  .destino { display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: 0; cursor: pointer; color: var(--md-sys-color-on-surface-variant); }
-  .pill { width: 64px; height: 32px; border-radius: var(--shape-full); display: flex; align-items: center; justify-content: center; }
-  .destino[aria-current="page"] { color: var(--md-sys-color-on-surface); }
-  .destino[aria-current="page"] .pill { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+  .destino {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+  .pill {
+    width: 64px;
+    height: 32px;
+    border-radius: var(--shape-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .destino[aria-current='page'] {
+    color: var(--md-sys-color-on-surface);
+  }
+  .destino[aria-current='page'] .pill {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+  }
 </style>

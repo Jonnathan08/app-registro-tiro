@@ -8,13 +8,16 @@ const fecha = new Date('2026-10-04T09:30:00Z');
 
 describe('leerCSV', () => {
   it('celdas con comillas, comas y saltos de línea; CRLF y BOM', () => {
-    expect(leerCSV('﻿a,"b,c","d ""e""\nf"\r\n1,,3\r\n')).toEqual([
+    expect(leerCSV('\uFEFFa,"b,c","d ""e""\nf"\r\n1,,3\r\n')).toEqual([
       ['a', 'b,c', 'd "e"\nf'],
       ['1', '', '3'],
     ]);
   });
   it('ignora líneas vacías y admite el final sin salto de línea', () => {
-    expect(leerCSV('a,b\n\n1,2')).toEqual([['a', 'b'], ['1', '2']]);
+    expect(leerCSV('a,b\n\n1,2')).toEqual([
+      ['a', 'b'],
+      ['1', '2'],
+    ]);
   });
 });
 

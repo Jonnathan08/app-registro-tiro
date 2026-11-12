@@ -27,10 +27,17 @@
   // Escala Y con marcas redondas, sin empezar en cero: interesa la variación
   const escala = $derived.by(() => {
     if (!valores.length) return { lo: 0, hi: 1, marcas: [] };
-    let min = Math.min(...valores), max = Math.max(...valores);
-    if (min === max) { min -= 1; max += 1; }
-    const paso = [0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10, 20, 25, 50, 100].find((p) => Math.ceil(max / p) - Math.floor(min / p) <= 4) ?? 100;
-    const lo = Math.max(0, Math.floor(min / paso) * paso), hi = Math.ceil(max / paso) * paso;
+    let min = Math.min(...valores),
+      max = Math.max(...valores);
+    if (min === max) {
+      min -= 1;
+      max += 1;
+    }
+    const paso =
+      [0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10, 20, 25, 50, 100].find((p) => Math.ceil(max / p) - Math.floor(min / p) <= 4) ??
+      100;
+    const lo = Math.max(0, Math.floor(min / paso) * paso),
+      hi = Math.ceil(max / paso) * paso;
     const marcas: number[] = [];
     for (let t = lo; t <= hi + paso / 2; t += paso) marcas.push(+t.toFixed(2));
     return { lo, hi: hi > lo ? hi : lo + paso, marcas };
@@ -53,7 +60,7 @@
     }
     return idx;
   });
-  const franja = $derived(n > 1 ? plano / (n - 1) : plano);   // zona táctil de cada punto
+  const franja = $derived(n > 1 ? plano / (n - 1) : plano); // zona táctil de cada punto
 
   const elegir = (i: number) => alElegir?.(seleccionado === i ? null : i);
 </script>
@@ -65,7 +72,12 @@
       <text class="eje" x={M.izq - 6} y={y(t) + 4} text-anchor="end">{formato(t)}</text>
     {/each}
     {#each marcasX as i (i)}
-      <text class="eje" x={x(i)} y={ALTO - 8} text-anchor={n > 1 && i === 0 ? 'start' : n > 1 && i === n - 1 ? 'end' : 'middle'}>{etiquetaX(i)}</text>
+      <text
+        class="eje"
+        x={x(i)}
+        y={ALTO - 8}
+        text-anchor={n > 1 && i === 0 ? 'start' : n > 1 && i === n - 1 ? 'end' : 'middle'}>{etiquetaX(i)}</text
+      >
     {/each}
 
     {#if area}<path class="area" d={area} />{/if}
@@ -75,17 +87,34 @@
       <line class="guia" x1={x(seleccionado)} x2={x(seleccionado)} y1={M.arr} y2={ALTO - M.aba} />
     {/if}
     {#each valores as v, i (i)}
-      <circle class="punto" class:activo={i === seleccionado} cx={x(i)} cy={y(v)} r={i === seleccionado ? 6 : n > 30 ? 3 : 4} />
+      <circle
+        class="punto"
+        class:activo={i === seleccionado}
+        cx={x(i)}
+        cy={y(v)}
+        r={i === seleccionado ? 6 : n > 30 ? 3 : 4}
+      />
     {/each}
 
     {#if alElegir}
       {#each valores as _, i (i)}
         <rect
           class="toque"
-          x={x(i) - franja / 2} y={0} width={franja} height={ALTO}
-          role="button" tabindex="0" aria-pressed={i === seleccionado} aria-label={nombrePunto(i)}
+          x={x(i) - franja / 2}
+          y={0}
+          width={franja}
+          height={ALTO}
+          role="button"
+          tabindex="0"
+          aria-pressed={i === seleccionado}
+          aria-label={nombrePunto(i)}
           onclick={() => elegir(i)}
-          onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); elegir(i); } }}
+          onkeydown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              elegir(i);
+            }
+          }}
         />
       {/each}
     {/if}
@@ -93,15 +122,53 @@
 </div>
 
 <style>
-  .grafico { width: 100%; }
-  svg { display: block; font-family: var(--font); overflow: visible; }
-  .rejilla { stroke: var(--md-sys-color-surface-variant); stroke-width: 1; }
-  .guia { stroke: var(--md-sys-color-outline); stroke-width: 1; }
-  .eje { font-size: 11px; fill: var(--md-sys-color-on-surface-variant); font-variant-numeric: tabular-nums; }
-  .area { fill: var(--md-sys-color-primary); fill-opacity: .1; }
-  .linea { fill: none; stroke: var(--md-sys-color-primary); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
-  .punto { fill: var(--md-sys-color-primary); stroke: var(--md-sys-color-surface-container-low); stroke-width: 2; }
-  .punto.activo { fill: var(--md-sys-color-tertiary); }
-  .toque { fill: transparent; cursor: pointer; outline: none; }
-  .toque:focus-visible { fill: var(--md-sys-color-primary); fill-opacity: .08; }
+  .grafico {
+    width: 100%;
+  }
+  svg {
+    display: block;
+    font-family: var(--font);
+    overflow: visible;
+  }
+  .rejilla {
+    stroke: var(--md-sys-color-surface-variant);
+    stroke-width: 1;
+  }
+  .guia {
+    stroke: var(--md-sys-color-outline);
+    stroke-width: 1;
+  }
+  .eje {
+    font-size: 11px;
+    fill: var(--md-sys-color-on-surface-variant);
+    font-variant-numeric: tabular-nums;
+  }
+  .area {
+    fill: var(--md-sys-color-primary);
+    fill-opacity: 0.1;
+  }
+  .linea {
+    fill: none;
+    stroke: var(--md-sys-color-primary);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+  .punto {
+    fill: var(--md-sys-color-primary);
+    stroke: var(--md-sys-color-surface-container-low);
+    stroke-width: 2;
+  }
+  .punto.activo {
+    fill: var(--md-sys-color-tertiary);
+  }
+  .toque {
+    fill: transparent;
+    cursor: pointer;
+    outline: none;
+  }
+  .toque:focus-visible {
+    fill: var(--md-sys-color-primary);
+    fill-opacity: 0.08;
+  }
 </style>

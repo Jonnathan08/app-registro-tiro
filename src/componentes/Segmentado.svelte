@@ -1,7 +1,12 @@
 <script lang="ts" generics="T extends string">
   import Icono from './Icono.svelte';
 
-  let { opciones, valor = $bindable(), etiqueta, alCambiar }: {
+  let {
+    opciones,
+    valor = $bindable(),
+    etiqueta,
+    alCambiar,
+  }: {
     opciones: { valor: T; texto: string }[];
     valor: T;
     etiqueta: string;
@@ -15,7 +20,10 @@
       type="button"
       class="estado"
       aria-pressed={valor === o.valor}
-      onclick={() => { valor = o.valor; alCambiar?.(o.valor); }}
+      onclick={() => {
+        valor = o.valor;
+        alCambiar?.(o.valor);
+      }}
     >
       {#if valor === o.valor}<Icono nombre="check" clase="" />{/if}
       {o.texto}
