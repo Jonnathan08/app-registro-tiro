@@ -48,7 +48,8 @@ describe('deCSV', () => {
   });
 
   it('rechaza un CSV que no es de la app', () => {
-    expect(() => deCSV('nombre,edad\nAna,30\n')).toThrow(/faltan las columnas/);
+    expect(() => deCSV('nombre,edad\nAna,30\n')).toThrow(/No es un CSV exportado/);
+    expect(() => deCSV('sesion_id,fecha\n')).toThrow(/Faltan las columnas perfil/);
     expect(() => deCSV('')).toThrow(/vacío/);
   });
 

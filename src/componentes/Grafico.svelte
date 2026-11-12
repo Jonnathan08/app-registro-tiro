@@ -26,6 +26,7 @@
 
   // Escala Y con marcas redondas, sin empezar en cero: interesa la variación
   const escala = $derived.by(() => {
+    if (!valores.length) return { lo: 0, hi: 1, marcas: [] };
     let min = Math.min(...valores), max = Math.max(...valores);
     if (min === max) { min -= 1; max += 1; }
     const paso = [0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10, 20, 25, 50, 100].find((p) => Math.ceil(max / p) - Math.floor(min / p) <= 4) ?? 100;

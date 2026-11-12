@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Barra from '../componentes/Barra.svelte';
   import Icono from '../componentes/Icono.svelte';
   import Segmentado from '../componentes/Segmentado.svelte';
   import { estado } from '../lib/estado.svelte';
@@ -37,7 +38,7 @@
   }
 </script>
 
-<header class="barra"><h1 class="t-title-l">Ajustes</h1></header>
+<Barra titulo="Ajustes" />
 
 <div class="cuerpo">
   <section class="grupo">
@@ -62,10 +63,6 @@
 </div>
 
 <style>
-  .barra { height: 64px; display: flex; align-items: center; padding: 0 16px; }
-  h1 { margin: 0; }
   .cuerpo { display: flex; flex-direction: column; gap: 24px; padding: 8px 16px 24px; }
-  .grupo { display: flex; flex-direction: column; gap: 12px; }
-  .grupo p { margin: 0; }
   .version { margin: 0; text-align: center; }
 </style>

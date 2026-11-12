@@ -28,13 +28,14 @@
   // Unidades del dibujo = mm de la diana real. En SVG la y crece hacia abajo; en los datos, hacia arriba.
   const g = $derived(geometria(dianaCm));
   const borde = $derived(g.radio * 1.05);
-  const uid = `d${Math.random().toString(36).slice(2, 8)}`;
+  const uid = $props.id();
+  const TINTA = 'var(--diana-tinta)';   // negro de las líneas y números de la diana
 
   const RELLENO = ['--diana-blanco', '--diana-blanco', '--diana-negro', '--diana-negro', '--diana-azul', '--diana-azul', '--diana-rojo', '--diana-rojo', '--diana-oro', '--diana-oro'];
   const anillos = $derived(
     Array.from({ length: 10 }, (_, i) => {
       const s = i + 1;
-      return { s, r: (11 - s) * g.anillo, relleno: `var(${RELLENO[i]})`, linea: s === 4 ? '#fff' : '#231f20', tinta: s === 3 || s === 4 || s === 7 || s === 8 ? '#fff' : '#231f20' };
+      return { s, r: (11 - s) * g.anillo, relleno: `var(${RELLENO[i]})`, linea: s === 4 ? '#fff' : TINTA, tinta: s === 3 || s === 4 || s === 7 || s === 8 ? '#fff' : TINTA };
     }),
   );
 
@@ -147,8 +148,8 @@
   {#each anillos as a (a.s)}
     <circle r={a.r} fill={a.relleno} stroke={a.linea} stroke-width={g.anillo * 0.035} />
   {/each}
-  <circle r={g.radioX} fill="none" stroke="#231f20" stroke-width={g.anillo * 0.025} />
-  <path d={`M${-g.anillo * 0.12} 0H${g.anillo * 0.12}M0 ${-g.anillo * 0.12}V${g.anillo * 0.12}`} stroke="#231f20" stroke-width={g.anillo * 0.025} />
+  <circle r={g.radioX} fill="none" stroke={TINTA} stroke-width={g.anillo * 0.025} />
+  <path d={`M${-g.anillo * 0.12} 0H${g.anillo * 0.12}M0 ${-g.anillo * 0.12}V${g.anillo * 0.12}`} stroke={TINTA} stroke-width={g.anillo * 0.025} />
   {#each anillos as a (a.s)}
     <text x={(10.5 - a.s) * g.anillo} y={g.anillo * 0.13} text-anchor="middle" font-size={g.anillo * 0.38} fill={a.tinta} opacity=".7">{a.s}</text>
   {/each}
@@ -157,7 +158,7 @@
 {#snippet impactos()}
   {#each anteriores as f, i (i)}
     {#if f.pos}
-      <circle cx={f.pos.x} cy={-f.pos.y} r={tamMarca * 0.5} fill="#231f20" fill-opacity=".3" stroke="#fff" stroke-opacity=".6" stroke-width={tamMarca * 0.1} />
+      <circle cx={f.pos.x} cy={-f.pos.y} r={tamMarca * 0.5} fill={TINTA} fill-opacity=".3" stroke="#fff" stroke-opacity=".6" stroke-width={tamMarca * 0.1} />
     {/if}
   {/each}
   {#each actuales as f, i (i)}
@@ -165,7 +166,7 @@
       {#if i === seleccionada}
         <circle cx={f.pos.x} cy={-f.pos.y} r={tamMarca * 1.6} fill="none" class="sel" stroke-width={tamMarca * 0.3} />
       {/if}
-      <circle cx={f.pos.x} cy={-f.pos.y} r={tamMarca} fill="#231f20" stroke="#fff" stroke-width={tamMarca * 0.2} />
+      <circle cx={f.pos.x} cy={-f.pos.y} r={tamMarca} fill={TINTA} stroke="#fff" stroke-width={tamMarca * 0.2} />
       <text x={f.pos.x} y={-f.pos.y + tamMarca * 0.42} text-anchor="middle" font-size={tamMarca * 1.2} font-weight="700" fill="#fff">{i + 1}</text>
     {/if}
   {/each}
@@ -206,10 +207,10 @@
         <use href="#{uid}-cara" />
         {@render impactos()}
         <!-- círculo del tamaño real de la flecha -->
-        <circle cx={punta.x} cy={punta.y} r={RADIO_FLECHA_MM} fill="none" stroke="#231f20" stroke-width="1.5" vector-effect="non-scaling-stroke" />
+        <circle cx={punta.x} cy={punta.y} r={RADIO_FLECHA_MM} fill="none" stroke={TINTA} stroke-width="1.5" vector-effect="non-scaling-stroke" />
         <path
           d={`M${punta.x - ladoLupa} ${punta.y}H${punta.x - hueco}M${punta.x + hueco} ${punta.y}H${punta.x + ladoLupa}M${punta.x} ${punta.y - ladoLupa}V${punta.y - hueco}M${punta.x} ${punta.y + hueco}V${punta.y + ladoLupa}`}
-          stroke="#231f20" stroke-opacity=".5" stroke-width="1" vector-effect="non-scaling-stroke"
+          stroke={TINTA} stroke-opacity=".5" stroke-width="1" vector-effect="non-scaling-stroke"
         />
       </svg>
       <span class="pastilla num">{previa.x ? 'X' : previa.puntaje === 0 ? 'M' : previa.puntaje}</span>

@@ -29,11 +29,12 @@ export function guardarAjustes(a: Ajustes): void {
   try { localStorage.setItem(CLAVE, JSON.stringify(a)); } catch { /* sin almacenamiento: se usa el defecto */ }
 }
 
-const media = matchMedia('(prefers-color-scheme: dark)');
+// Se consulta al usarla (no al importar el módulo), para que tema.ts se pueda importar fuera del navegador
+const media = () => matchMedia('(prefers-color-scheme: dark)');
 
 /** Pone en <html> la clase exportada por Material Theme Builder (p. ej. "dark-medium-contrast"). */
 export function aplicarTema(a: Ajustes): void {
-  const oscuro = a.modo === 'oscuro' || (a.modo === 'sistema' && media.matches);
+  const oscuro = a.modo === 'oscuro' || (a.modo === 'sistema' && media().matches);
   const raiz = document.documentElement;
   raiz.className = (oscuro ? 'dark' : 'light') + SUFIJO[a.contraste];
   // Color de la barra del sistema = superficie del tema
@@ -42,5 +43,5 @@ export function aplicarTema(a: Ajustes): void {
 }
 
 export function alCambiarSistema(fn: () => void): void {
-  media.addEventListener('change', fn);
+  media().addEventListener('change', fn);
 }
