@@ -2,6 +2,8 @@
   import { estado } from '../lib/estado.svelte';
 
   let visible = $state(false);
+  // Texto mostrado: se vacía al terminar de ocultarse, para que el lector no encuentre un aviso viejo
+  let texto = $state('');
   let temporizador: ReturnType<typeof setTimeout> | undefined;
   let pausado = false; // con el foco o el dedo encima no se va (WCAG 2.2.1)
 
@@ -9,16 +11,23 @@
   const duracion = () => (estado.aviso?.accion ? 5000 : 3000);
   function programar() {
     clearTimeout(temporizador);
-    if (!pausado) temporizador = setTimeout(() => (visible = false), duracion());
+    if (!pausado) temporizador = setTimeout(ocultar, duracion());
+  }
+  function ocultar() {
+    visible = false;
+    setTimeout(() => !visible && (texto = ''), 250); // tras la transición de 0,2 s
   }
 
   $effect(() => {
     if (!estado.aviso) {
-      visible = false;
+      ocultar();
       return;
     }
     void estado.aviso.n;
+    texto = estado.aviso.texto;
     visible = true;
+    // Si el botón tenía el foco y desapareció sin blur, la pausa no debe heredarse
+    pausado = false;
     programar();
   });
 
@@ -33,7 +42,7 @@
 
   function actuar() {
     const accion = estado.aviso?.accion;
-    visible = false;
+    ocultar();
     pausado = false;
     clearTimeout(temporizador);
     accion?.hacer();
@@ -41,7 +50,7 @@
 </script>
 
 <div class="snack" class:visible>
-  <span class="mensaje" role="status" aria-live="polite">{estado.aviso?.texto ?? ''}</span>
+  <span class="mensaje" role="status" aria-live="polite">{texto}</span>
   <!-- Fuera de la región viva para que no se lea con el texto; solo existe mientras el aviso se ve -->
   {#if visible && estado.aviso?.accion}
     <button
@@ -98,6 +107,7 @@
     transform: none;
   }
   .snack .btn {
+    min-height: 48px;
     pointer-events: auto;
     color: var(--md-sys-color-inverse-primary);
   }

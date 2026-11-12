@@ -2,13 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Historial simulado: cuenta las entradas propias y entrega popstate como el navegador (en otra tarea)
 let entradas: number;
-let alVolver: () => void;
+let alVolver: (e: { state: unknown }) => void;
 const historia = {
   scrollRestoration: 'auto',
   pushState: vi.fn(() => entradas++),
   back: vi.fn(() => {
     entradas--;
-    setTimeout(alVolver);
+    setTimeout(() => alVolver({ state: null }));
   }),
 };
 /** El usuario pulsa atrás. */
@@ -21,7 +21,7 @@ beforeEach(async () => {
   entradas = 0;
   vi.clearAllMocks();
   vi.stubGlobal('history', historia);
-  vi.stubGlobal('addEventListener', (_: string, fn: () => void) => (alVolver = fn));
+  vi.stubGlobal('addEventListener', (_: string, fn: typeof alVolver) => (alVolver = fn));
   vi.resetModules();
   ({ capa } = await import('./atras'));
 });
@@ -76,6 +76,13 @@ describe('capa', () => {
     atras();
     await esperar();
     expect(dialogo).toHaveBeenCalledOnce();
+  });
+
+  it('«adelante» hacia una entrada propia no cierra ninguna capa', async () => {
+    const cerrar = vi.fn();
+    capa(cerrar);
+    alVolver({ state: { capa: true } });
+    expect(cerrar).not.toHaveBeenCalled();
   });
 
   it('la limpieza tras cerrar con atrás no retrocede otra vez', async () => {

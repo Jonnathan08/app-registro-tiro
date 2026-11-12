@@ -8,12 +8,14 @@ App web instalable para registrar sesiones de tiro con arco recurvo. Funciona si
 
 - Perfiles de sesión: **Control** (12 rondas × 6 flechas), **Abierto** (rondas y flechas a elección) y **Libre** (sin formato: rondas de cualquier tamaño hasta terminar la sesión).
 - Distancia de tiro y diana de 122, 80 o 40 cm.
-- Registro flecha a flecha tocando la diana (con lupa y regla de la línea) o con teclado manual.
-- Hoja de puntuación, total, X, 10+X, promedio y centro del grupo. La sesión en curso tiene dos pestañas: **Ronda** (anotar) y **Sesión** (hoja y notas).
+- Registro flecha a flecha tocando la diana (con lupa y regla de la línea) o con teclado manual; se cambia con el ícono de la barra superior. Deshacer y Guardar ronda quedan fijos sobre la navegación, y la diana se ve entera sin desplazar.
+- Al guardar una ronda, el aviso ofrece **Deshacer** para devolverla a la ronda en curso y corregirla.
+- Hoja de puntuación, total, X, 10+X, promedio y centro del grupo. La sesión en curso tiene dos pestañas: **Anotar** y **Hoja** (hoja y notas).
+- El botón atrás de Android cierra primero el menú, los diálogos, el editor de ronda o el detalle de una sesión; solo sale de la app si no queda nada abierto.
 - Zoom con dos dedos sobre la diana y lupa fija en una esquina para afinar el impacto.
 - Edición de rondas ya guardadas durante la sesión en curso (lápiz en la hoja): corregir el valor con el teclado (descarta la posición) o volver a marcar en la diana (reemplaza posición y valor).
 - Notas personales y notas del entrenador; quedan bloqueadas al terminar la sesión.
-- Historial con gráfico de progreso (promedio por flecha) por distancia y, en cada sesión, gráfico de puntos por ronda y la ronda elegida resaltada en la diana.
+- Historial agrupado por mes, con un resumen de progreso plegable (último promedio, diferencia con la sesión anterior y tendencia) que se despliega en el gráfico por distancia; en cada sesión, gráfico de puntos por ronda y la ronda elegida resaltada en la diana.
 - Exportación a CSV completo con el menú de compartir del teléfono (Drive, correo…). Nombre: `tiro_<fecha>_<distancia>m_<id>.csv`.
 - Importación del mismo CSV en Ajustes, para recuperar el historial en otro teléfono; las sesiones que ya están no se duplican.
 
@@ -33,7 +35,7 @@ Requiere Node 24 (`nvm use`, lee `.nvmrc`).
 ```
 npm ci            # instala dependencias exactas
 npm run dev       # servidor de desarrollo
-npm test          # pruebas (puntuación, modelo, estado, exportación e importación)
+npm test          # pruebas (puntuación, modelo, estado, botón atrás, ayuda, exportación e importación)
 npm run check     # chequeo de tipos
 npm run lint      # formato (Prettier) y lint (ESLint)
 npm run format    # aplica el formato de Prettier

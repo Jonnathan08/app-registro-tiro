@@ -19,9 +19,14 @@ function iniciar() {
   addEventListener('popstate', alVolver);
 }
 
-function alVolver() {
+function alVolver(e: PopStateEvent) {
   if (ignorar) {
     ignorar--;
+    return;
+  }
+  // «Adelante» (en escritorio) lleva a una entrada propia ya gastada: no hay capa que cerrar
+  if (e.state?.capa) {
+    enHistorial = true;
     return;
   }
   enHistorial = false;
@@ -36,6 +41,8 @@ function poner() {
 
 // Se revisa después del cambio en curso: al pasar del menú a un diálogo la pila queda vacía
 // solo un instante, y la entrada se reutiliza en vez de quitarla y ponerla otra vez.
+// Si se abre una capa entre este back() y su popstate, `ignorar` se gasta igual y la cuenta de entradas
+// sigue cuadrando (las entradas no llevan datos); la ventana es de milisegundos.
 function revisar() {
   if (pila.length || !enHistorial) return;
   enHistorial = false;

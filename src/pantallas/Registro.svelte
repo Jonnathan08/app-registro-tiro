@@ -33,9 +33,10 @@
 
   // El menú se cierra al tocar fuera de él, con Escape o con el botón atrás de Android.
   // Con Escape o atrás el foco vuelve al botón ⋮ (si no, quedaría en la página).
+  const focoMenu = () => anclaMenu?.querySelector<HTMLElement>('[aria-haspopup]')?.focus();
   const cerrarMenu = () => {
     menu = false;
-    anclaMenu?.querySelector<HTMLElement>('[aria-haspopup]')?.focus();
+    focoMenu();
   };
   $effect(() => {
     if (!menu) return;
@@ -334,6 +335,7 @@
   texto="Se guarda con las rondas registradas hasta ahora. La ronda a medias también se guarda. Después las notas ya no se pueden cambiar."
   confirmar="Terminar"
   alConfirmar={() => estado.terminar()}
+  devolverFoco={focoMenu}
 />
 <Dialogo
   bind:abierto={confirmarDescartar}
@@ -342,6 +344,7 @@
   confirmar="Descartar"
   peligro
   alConfirmar={() => estado.descartar()}
+  devolverFoco={focoMenu}
 />
 
 <style>
@@ -398,7 +401,8 @@
   .pestanas button[aria-selected='true'] {
     color: var(--md-sys-color-primary);
   }
-  /* Indicador: comparte ::after con la capa de estado (.estado), así que se fijan posición y opacidad */
+  /* Indicador: comparte ::after con la capa de estado (.estado), así que se fijan posición y opacidad.
+     La pestaña seleccionada se queda sin capa de estado al pulsarla; no hace falta porque ya está elegida. */
   .pestanas button[aria-selected='true']::after {
     content: '';
     position: absolute;

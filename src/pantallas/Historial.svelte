@@ -65,15 +65,16 @@
     return { d: pts.map((p, i) => `${i ? 'L' : 'M'}${p.x} ${p.y}`).join(''), fin: pts.at(-1)! };
   });
 
-  // Sesiones agrupadas por mes, en el orden del historial (más recientes primero)
+  // Sesiones agrupadas por mes, en el orden del historial (más recientes primero). Con un mapa, un mes
+  // no se repite aunque fechas importadas con otro huso horario alteren el orden.
   const meses = $derived.by(() => {
-    const lista: { texto: string; sesiones: Sesion[] }[] = [];
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity -- mapa temporal dentro del $derived
+    const m = new Map<string, Sesion[]>();
     for (const s of estado.historial) {
       const texto = mesAnio(s.fecha);
-      if (lista.at(-1)?.texto === texto) lista.at(-1)!.sesiones.push(s);
-      else lista.push({ texto, sesiones: [s] });
+      m.set(texto, [...(m.get(texto) ?? []), s]);
     }
-    return lista;
+    return [...m].map(([texto, sesiones]) => ({ texto, sesiones }));
   });
 
   function abrir(s: Sesion) {
@@ -376,9 +377,8 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    min-height: 40px;
+    min-height: 48px;
     padding: 0 4px 0 8px;
-    margin: -4px 0 0;
     border: 0;
     border-radius: var(--shape-s);
     background: none;
