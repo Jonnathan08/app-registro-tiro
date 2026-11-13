@@ -1,7 +1,7 @@
 # Contexto UX — app de registro de tiro
 
 Memoria del agente `experto-ux`. Se actualiza en la misma rama que el cambio que la vuelve falsa.
-Última revisión: 2026-11-12 (versión 0.3.0).
+Última revisión: 2026-11-13 (versión 0.3.1).
 
 ## Usuario y uso
 
@@ -26,7 +26,7 @@ Memoria del agente `experto-ux`. Se actualiza en la misma rama que el cambio que
 Barra inferior fija con 3 destinos: **Sesión**, **Historial**, **Ajustes**. Cada pantalla usa `Barra.svelte` arriba.
 
 - **Configurar** (Sesión sin sesión activa): perfil, distancia (con atajos de distancias habituales y su diana), diana 122/80/40 cm, rondas y flechas (solo Abierto).
-- **Registro** (sesión activa): título «Ronda n/N» («/N» atenuado, leído « de N»). Dos pestañas, **Anotar** y **Hoja** (resumen, hoja, notas, «Terminar sesión»; la insignia cuenta las rondas guardadas); también se cambia deslizando. En Anotar: tira de la ronda actual con la suma a la derecha (en Libre, una fila desplazable anclada a la última flecha), diana o teclado (teclas de 64 px) y una **barra fija Deshacer (contorno) / Guardar ronda** de 56 px sobre la navegación. En la barra superior, un solo botón alterna teclado/diana y ⓘ muestra la ayuda de la diana (visible sola durante las primeras 12 flechas). Menú ⋮ con «Terminar sesión ahora» y «Descartar sesión». En 390×844 la diana entra sin desplazar.
+- **Registro** (sesión activa): título «Ronda n/N» («/N» atenuado, leído « de N»). Dos pestañas, **Anotar** y **Hoja** (resumen, hoja, notas, «Terminar sesión»; la insignia cuenta las rondas guardadas); también se cambia deslizando. En Anotar: tira de la ronda actual en un panel `surface-container` (`--shape-l`), con fichas de 40 px como máximo (16 px/600) y la suma en un compartimento `primary-container` de 72 px pegado a la derecha (26 px/700 y «PTS»; se lee «Suma: N puntos»); la flecha recién anotada entra con un «pop» de 320 ms (en Libre, una fila desplazable anclada a la última flecha), diana o teclado (teclas de 64 px) y una **barra fija Deshacer (contorno) / Guardar ronda** de 56 px sobre la navegación. En la barra superior, un solo botón alterna teclado/diana y ⓘ muestra la ayuda de la diana (visible sola durante las primeras 12 flechas). Menú ⋮ con «Terminar sesión ahora» y «Descartar sesión». En 390×844 la diana entra sin desplazar.
 - **Historial**: tarjeta de **Progreso** plegable (plegada: último promedio, ▲ en primary / ▼ en gris frente a la sesión anterior, tendencia de las últimas 12; nunca rojo/verde; desplegada: segmentado de distancia y gráfico) y lista agrupada por mes con la distancia como etiqueta.
 - **Detalle**: compartir CSV como ícono en la barra superior; sesión terminada, gráfico de puntos por ronda, ronda elegida resaltada en la diana, notas en solo lectura.
 - **Ajustes**: modo, contraste, exportar/importar CSV, versión.
@@ -40,6 +40,7 @@ Barra inferior fija con 3 destinos: **Sesión**, **Historial**, **Ajustes**. Cad
 - Marcado en la diana: **lupa cuadrada fija arriba a la izquierda** que salta a la derecha si el dedo pasa por debajo; zoom con dos dedos; regla de la línea.
 - Corrección de una ronda guardada: con el teclado (descarta la posición) o volviendo a marcar en la diana.
 - Animación de entrada: arranca igual que la pantalla de inicio de Android con el ícono maskable, pasa a gris, dos flechas fallan, la tercera acierta y vuelven los colores. Sus constantes están medidas en el Pixel 8; no cambiarlas sin medir de nuevo.
+- Tira de la ronda en «caja tonal» (variante A) con animación pop de la última flecha: conservarla.
 - El ícono maskable lleva versión en el nombre (`icono-512-mask-v2`): Brave lo guarda en caché, así que cambiarlo implica un nombre nuevo (v3…).
 
 ## Criterios ya aplicados
@@ -51,7 +52,9 @@ Barra inferior fija con 3 destinos: **Sesión**, **Historial**, **Ajustes**. Cad
 - Abreviaturas visuales con texto oculto (`.oculto`): «/6» → « de 6», ▲▼ → sube/baja, fecha completa en las filas del historial.
 - `scroll-padding-bottom` con la barra fija de acciones. Al volver de Detalle se restauran el scroll y el foco en la fila.
 - Diana: centro del grupo y flecha seleccionada con doble trazo (`--diana-tinta` debajo, blanco encima). Números sobre rojo en 700; anillo blanco con borde 1,5 px #8a8a8a.
-- `prefers-reduced-motion` respetado en `Entrada` y `Aviso`.
+- `prefers-reduced-motion` respetado en `Entrada`, `Aviso` y el pop de la tira.
+- En la tira, contorno de 1,5 px en `outline` para la M (siempre) y para el negro en tema oscuro (`html[class^='dark']`): si no, se confunden con el panel.
+- Capa de estado: `:hover` solo dentro de `@media (hover: hover)` (en táctil se quedaba pegado); el indicador de pestaña va en `::before`, separado de la capa `::after`.
 
 ## Pendientes y deuda conocida
 
@@ -62,3 +65,4 @@ Barra inferior fija con 3 destinos: **Sesión**, **Historial**, **Ajustes**. Cad
 ## Historial de revisiones
 
 - 2026-11-12 · feature/rediseno-ux · propuesta e implementación aprobadas con cambios: toda capa se cierra por un solo camino (limpieza del `$effect`) y la pila de atrás evita la carrera back()/pushState; el indicador de pestaña comparte `::after` con `.estado` (fijar posición y opacidad); los diálogos abiertos desde un menú devuelven el foco al ⋮.
+- 2026-11-13 · fix/tira-caja-y-pestanas · aprobado con cambios: tira en caja tonal con pop; el destello en la pestaña que se deja venía de compartir `::after` con la capa de estado y del hover pegado en táctil (supera la nota anterior sobre `::after`); corregido.

@@ -1,5 +1,10 @@
 # Cambios
 
+## 0.3.1 — 2026-11-13
+
+- Anotar: la ronda actual va en un panel con la suma destacada a la derecha; la flecha nueva aparece con una animación breve.
+- Corrección: al cambiar de pestaña se marcaba también la otra.
+
 ## 0.3.0 — 2026-11-12
 
 - Anotar: la ronda actual pasa a una tira compacta y Deshacer / Guardar ronda a una barra fija de botones de 56 px sobre la navegación; la diana completa se ve sin desplazar en un teléfono de 390×844.

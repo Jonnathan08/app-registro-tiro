@@ -113,8 +113,11 @@ svg.ic {
   transition: opacity 0.15s;
   pointer-events: none;
 }
-.estado:hover::after {
-  opacity: 0.08;
+/* Solo con puntero real: en táctil :hover se queda pegado en lo último que se tocó */
+@media (hover: hover) {
+  .estado:hover::after {
+    opacity: 0.08;
+  }
 }
 .estado:active::after {
   opacity: 0.12;

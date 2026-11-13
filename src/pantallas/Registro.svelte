@@ -22,10 +22,18 @@
     rondaLlena,
     suma,
     todasGuardadas,
+    type Flecha,
     type Sesion,
   } from '../lib/modelo';
 
   let { sesion }: { sesion: Sesion } = $props();
+
+  // Índice de la flecha recién anotada: solo esa hace el pop (deshacer, guardar o volver de Hoja no animan)
+  let nueva = $state<number | null>(null);
+  function anotar(f: Flecha) {
+    nueva = sesion.enCurso.length;
+    estado.marcar(f);
+  }
 
   let entrada = $state<'diana' | 'manual'>('diana');
   let menu = $state(false);
@@ -218,14 +226,19 @@
             {#each { length: huecos } as _, i (i)}
               {@const f = sesion.enCurso[i]}
               {#if f}
-                <span class="flecha z-{zona(f.puntaje)}">{etiqueta(f)}</span>
+                <span class="flecha z-{zona(f.puntaje)}" class:pop={i === nueva} onanimationend={() => (nueva = null)}
+                  >{etiqueta(f)}</span
+                >
               {:else}
                 <!-- Los huecos numerados no se leen: se confundirían con puntajes -->
                 <span class="flecha vacia" aria-hidden="true">{i + 1}</span>
               {/if}
             {/each}
           </div>
-          <div class="suma num"><b>{sumaActual}</b><span>pts</span></div>
+          <div class="suma num">
+            <b aria-hidden="true">{sumaActual}</b><span aria-hidden="true">pts</span>
+            <span class="oculto">Suma: {sumaActual} puntos</span>
+          </div>
         </section>
 
         {#if entrada === 'diana'}
@@ -238,7 +251,7 @@
               ampliable
               alMarcar={(f) => {
                 contarMarca();
-                estado.marcar(f);
+                anotar(f);
               }}
             />
             <p class="ayuda leyenda">
@@ -254,7 +267,7 @@
             </p>
           </div>
         {:else}
-          <Teclado deshabilitado={llena} alTocar={(puntaje, x) => estado.marcar({ puntaje, x, pos: null })} />
+          <Teclado deshabilitado={llena} alTocar={(puntaje, x) => anotar({ puntaje, x, pos: null })} />
         {/if}
       {:else}
         <section class="tarjeta relleno">
@@ -401,13 +414,11 @@
   .pestanas button[aria-selected='true'] {
     color: var(--md-sys-color-primary);
   }
-  /* Indicador: comparte ::after con la capa de estado (.estado), así que se fijan posición y opacidad.
-     La pestaña seleccionada se queda sin capa de estado al pulsarla; no hace falta porque ya está elegida. */
-  .pestanas button[aria-selected='true']::after {
+  /* Indicador en ::before, separado de la capa de estado (::after): si la compartiera, la pestaña que se deja
+     destellaría al recuperar el tamaño completo mientras su opacidad baja */
+  .pestanas button[aria-selected='true']::before {
     content: '';
     position: absolute;
-    inset: auto auto 0 auto;
-    opacity: 1;
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
@@ -489,14 +500,19 @@
     stroke-width: 3.4;
   }
 
-  /* Ronda actual: flechas en fila y la suma a la derecha */
+  /* Ronda actual: panel tonal con las flechas y la suma en su compartimento */
   .tira {
     display: flex;
-    align-items: center;
-    gap: 12px;
+    align-items: stretch;
+    background: var(--md-sys-color-surface-container);
+    border-radius: var(--shape-l);
+    overflow: hidden;
   }
+  /* El margen va aquí y no en .tira: en Libre entra en el área desplazable y el pop no se recorta */
   .flechas {
     flex: 1;
+    min-width: 0;
+    padding: 12px;
     display: grid;
     grid-template-columns: repeat(var(--cols), 1fr);
     gap: 6px;
@@ -519,11 +535,34 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 15px;
-    font-weight: 500;
+    font-size: 16px;
+    font-weight: 600;
   }
   .flecha.z-rojo {
     font-weight: 700;
+  }
+  /* Contorno donde la ficha se confunde con el panel: la M siempre y el negro en tema oscuro */
+  .flecha.z-fuera {
+    box-shadow: inset 0 0 0 1.5px var(--md-sys-color-outline);
+  }
+  /* aplicarTema (lib/tema.ts) sustituye toda la clase de <html>, que empieza siempre por dark o light */
+  :global(html[class^='dark']) .flecha.z-negro {
+    box-shadow: inset 0 0 0 1.5px var(--md-sys-color-outline);
+  }
+  .pop {
+    animation: pop 320ms cubic-bezier(0.2, 1.6, 0.4, 1);
+  }
+  @keyframes pop {
+    from {
+      transform: scale(0.4);
+      opacity: 0;
+    }
+  }
+  /* Casi instantánea en vez de none: así llega animationend y nueva vuelve a null */
+  @media (prefers-reduced-motion: reduce) {
+    .pop {
+      animation-duration: 1ms;
+    }
   }
   .flecha.vacia {
     border: 1.5px dashed var(--md-sys-color-outline);
@@ -532,20 +571,28 @@
     font-weight: 400;
   }
   .suma {
-    min-width: 52px;
+    position: relative;
+    flex: none;
+    width: 72px;
+    padding: 8px 4px;
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
+    align-items: center;
+    justify-content: center;
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
   }
   .suma b {
-    font-size: 24px;
-    line-height: 28px;
-    font-weight: 500;
+    font-size: 26px;
+    line-height: 30px;
+    font-weight: 700;
   }
-  .suma span {
-    font-size: 11px;
+  /* Solo el rótulo visible: el texto oculto «Suma: N puntos» no debe pasar a mayúsculas */
+  .suma span[aria-hidden='true'] {
+    font-size: 10px;
     line-height: 14px;
-    color: var(--md-sys-color-on-surface-variant);
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
   }
 
   /* Lo enfocado nunca queda debajo de la barra fija */

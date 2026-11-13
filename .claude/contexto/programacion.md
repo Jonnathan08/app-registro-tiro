@@ -1,7 +1,7 @@
 # Contexto de programación — app de registro de tiro
 
 Memoria del agente `experto-programador`. Se actualiza en la misma rama que el cambio que la vuelve falsa.
-Última revisión: 2026-11-12 (versión 0.3.0).
+Última revisión: 2026-11-13 (versión 0.3.1).
 
 ## Pila
 
@@ -43,6 +43,9 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 - `estado.avisar(texto, accion?)` admite una acción (p. ej. Deshacer); la acción valida que el estado sigue siendo el esperado (como `reabrirRonda`) y `marcar` retira los avisos con acción.
 - Claves de localStorage (entradas externas, siempre validadas y con try/catch): `registro-tiro:ultima-config`, `registro-tiro:ajustes`, `registro-tiro:marcas-diana`.
 - Perfil Libre se guarda con `rondas = 0` y `flechasPorRonda = 0`; usar `esLibre()` en vez de comparar a mano.
+- Capa de estado: `.estado::after` es solo la capa de hover/pulsación (hover solo en `@media (hover: hover)`); indicadores u otros adornos van en `::before` o en un elemento propio, nunca reutilizando `::after`.
+- Animaciones de entrada ligadas a una acción del usuario: clase CSS con `@keyframes` y un índice `$state` que se fija en la acción y se limpia en `animationend` (ver `nueva` en Registro); con `prefers-reduced-motion`, duración de 1 ms para que `animationend` llegue. Las transiciones `in:` de Svelte no admiten curvas CSS.
+- Tema oscuro en CSS de componente: `:global(html[class^='dark'])` (`aplicarTema` asigna `className` completo).
 - Git: rama `feature/…` o `fix/…` desde `main`; merge `--no-ff`; versión en `package.json` + entrada en `CHANGELOG.md` en cada publicación.
 
 ## Seguridad (requisito del usuario: sin puertas traseras ni vulnerabilidades)
@@ -65,3 +68,4 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 ## Historial de revisiones
 
 - 2026-11-12 · feature/rediseno-ux · aprobado con cambios · capas del botón atrás (con «adelante» ignorado vía `state.capa`) y aviso con acción (la pausa se reinicia con cada aviso); ojo con las claves derivadas de fechas importadas.
+- 2026-11-13 · fix/tira-caja-y-pestanas · aprobado · tira en caja tonal con pop en la flecha nueva; el indicador de la pestaña compartía `::after` con la capa de estado y destellaba en la pestaña abandonada.
