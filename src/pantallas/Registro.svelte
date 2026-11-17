@@ -295,10 +295,10 @@
             Agrega las notas en la pestaña <b>Hoja</b> y termina: después quedan bloqueadas. Podrás exportarla desde el historial.
           </p>
           <div class="acciones">
-            <button type="button" class="btn contorno estado" onclick={irANotas}>Ir a las notas</button>
-            <button type="button" class="btn lleno estado crece" onclick={() => estado.terminar()}
+            <button type="button" class="btn lleno grande estado" onclick={() => estado.terminar()}
               ><Icono nombre="check" />Terminar y guardar</button
             >
+            <button type="button" class="btn contorno estado" onclick={irANotas}>Ir a las notas</button>
           </div>
         </section>
       {/if}
@@ -611,13 +611,11 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
     gap: 8px;
   }
+  /* En columna y a todo el ancho: en una fila, «Terminar y guardar» no cabe */
   .acciones {
     display: flex;
+    flex-direction: column;
     gap: 8px;
-    flex-wrap: wrap;
-  }
-  .crece {
-    flex: 1;
   }
   .tarjeta p {
     margin: 0;

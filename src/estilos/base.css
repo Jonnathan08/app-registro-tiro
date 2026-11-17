@@ -217,6 +217,8 @@ h2.sec {
   width: 20px;
   height: 20px;
   fill: currentColor;
+  /* El ícono nunca se encoge, aunque el texto no quepa */
+  flex: none;
 }
 /* Barra fija y acciones principales */
 .btn.grande {
