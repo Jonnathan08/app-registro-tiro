@@ -27,8 +27,8 @@ App web instalable para registrar sesiones de tiro con arco recurvo. Funciona si
 - Los datos viven en IndexedDB del teléfono; solo salen si los compartes tú.
 - Dependencias con versión fija y `ignore-scripts` en `.npmrc` (ningún paquete ejecuta código al instalarse).
 - Acciones de GitHub fijadas por hash de commit.
-- CI (GitHub Actions): cada pull request a `main` corre `npm audit`, formato y lint, pruebas, chequeo de tipos y compilación; al integrar en `main` se publica en GitHub Pages.
-- `npm audit --omit=dev` (lo que llega al teléfono) da 0 vulnerabilidades. Los avisos moderados de `deepmerge` y `glob` vienen de herramientas de compilación (`workbox-build`, `vite-plugin-svelte`) y no tienen todavía una versión corregida compatible.
+- CI (GitHub Actions): cada pull request a `main` corre `npm audit` (bloquea si hay vulnerabilidades altas en lo que llega al teléfono o críticas en cualquier dependencia; las altas de herramientas de desarrollo quedan como aviso), formato y lint, pruebas, chequeo de tipos y compilación; al integrar en `main` se publica en GitHub Pages.
+- `npm audit --omit=dev` (lo que llega al teléfono) da 0 vulnerabilidades. Las altas vienen de herramientas de compilación por `picomatch` (GHSA-fc5q-39xc-vjpf), todavía sin versión corregida; hay que actualizarlo en cuanto salga.
 
 ## Desarrollo
 

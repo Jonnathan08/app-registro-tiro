@@ -1,7 +1,7 @@
 # Contexto de programación — app de registro de tiro
 
 Memoria del agente `experto-programador`. Se actualiza en la misma rama que el cambio que la vuelve falsa.
-Última revisión: 2026-11-17 (versión 0.4.1).
+Última revisión: 2026-11-17 (versión 0.4.2).
 
 ## Pila
 
@@ -67,6 +67,8 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 - Registro: `.pagina` define `--resto` (lo que ocupa Anotar fuera de la diana o el teclado) y `--alto-tecla` (56–76 px
   según el alto). Si cambia la altura de la barra, el marcador, las pestañas o la tira, actualizar `--resto`.
 - `colorBarraSistema()` (tema.ts) pone `theme-color` del color del tablero, o de la superficie mientras `body.entrando`.
+- Todo contenedor con `overflow-x: auto` que tenga descendientes absolutos (`.oculto`, `::before`) lleva `position: relative`;
+  si no, ensancha la página y Chrome Android descoloca los fijos y los diálogos (`.hoja`, `.grafico`).
 - Git: rama `feature/…` o `fix/…` desde `main`; merge `--no-ff`; versión en `package.json` + entrada en `CHANGELOG.md` en cada publicación.
 
 ## Seguridad (requisito del usuario: sin puertas traseras ni vulnerabilidades)
@@ -75,15 +77,22 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 - **Nada de red en tiempo de ejecución** (analítica, CDNs, fuentes, telemetría). Los datos solo salen si el usuario comparte el CSV. La fuente va incluida en la app (auto-alojada y precacheada).
 - CSP estricta inyectada al compilar en `vite.config.ts` (`default-src 'self'`, `form-action 'none'`, `object-src 'none'`…). En desarrollo no se aplica.
 - `.npmrc`: `ignore-scripts=true`, `save-exact=true`, `audit=true`.
-- CI (`.github/workflows/publicar.yml`): permisos mínimos, acciones fijadas por hash; en PR corre audit (high), lint, test, check y build; en `main` además publica.
+- CI (`.github/workflows/publicar.yml`): permisos mínimos, acciones fijadas por hash; en PR corre audit (sin dev en alto y completo en crítico bloquean; completo en alto, aviso `::warning`), lint, test, check y build; en `main` además publica.
 - No se usa `{@html}`, `innerHTML` ni `eval` (verificado 2026-11-12).
 
 ## Riesgos aceptados
 
-- `npm audit` muestra 12 avisos moderados en herramientas de desarrollo (p. ej. `minimatch` vía `eslint`); no llegan al teléfono (`--omit=dev` da 0).
+- `npm audit` completo: 12 moderados y 14 altas solo en herramientas de desarrollo y compilación (las altas por
+  GHSA-fc5q-39xc-vjpf, `picomatch` <=4.0.7, sin versión corregida a 2026-11-17, vía vite, vitest, svelte-check y
+  vite-plugin-pwa); `--omit=dev` da 0. Por decisión del usuario (2026-11-17) el CI solo bloquea por altas sin dev y por
+  críticas en todo; las altas de desarrollo quedan como aviso. Una alta real en una herramienta de compilación ya no
+  detiene la publicación.
 
 ## Pendientes y deuda conocida
 
+- Actualizar `picomatch` por vulnerabilidad (GHSA-fc5q-39xc-vjpf, ReDoS) en cuanto salga la 4.0.8 o posterior: `npm update`,
+  comprobar que `npm audit --audit-level=high` queda limpio y preguntar al usuario si el CI vuelve a bloquear por la
+  auditoría completa en alto.
 - Fechas importadas sin normalizar a ISO UTC (`importar.ts`): pueden alterar el orden del historial. La agrupación por mes ya usa un mapa y no duplica meses.
 
 ## Historial de revisiones
@@ -94,3 +103,5 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 - 2026-11-17 · feature/estilo-marcador (2.ª vuelta) · aprobado · Grafico solo barras con desplazamiento lateral; alturas de la diana y del teclado calculadas con --resto y --alto-nav; queda por probar en 360×640 en el teléfono.
 - 2026-11-17 · feature/estilo-marcador (3.ª vuelta) · aprobado · barra elegida a la vista con scrollLeft; queda por probar en 360×640 en el teléfono.
 - 2026-11-17 · fix/hoja-y-terminar · aprobado · botones de Rondas completas en columna, el ícono del botón no se encoge y el total con las flechas como nota bajo la cifra.
+- 2026-11-17 · fix/hoja-desborde · aprobado con cambios · .hoja posicionada para que los .oculto no ensanchen la página (diálogo y navegación descolocados en Chrome Android); el audit en alto falla por picomatch sin corrección publicada y bloquea la publicación en CI.
+- 2026-11-17 · fix/ci-audit · aprobado · el CI bloquea por altas sin dev y por críticas en todo; las altas de desarrollo, como aviso `::warning`; pendiente picomatch 4.0.8.

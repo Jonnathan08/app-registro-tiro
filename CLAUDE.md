@@ -32,5 +32,6 @@ Las decisiones del usuario mandan sobre las opiniones de los expertos: si un exp
 
 ```
 . ~/.nvm/nvm.sh && nvm use
-npm ci && npm audit --audit-level=high && npm run lint && npm test && npm run check && npm run build
+npm ci && npm audit --omit=dev --audit-level=high && npm audit --audit-level=critical && npm run lint && npm test && npm run check && npm run build
+npm audit --audit-level=high   # solo aviso: dependencias de desarrollo; no detiene la verificación
 ```
