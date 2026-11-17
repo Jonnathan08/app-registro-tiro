@@ -1,5 +1,9 @@
 # Cambios
 
+## 0.4.2 — 2026-11-17
+
+- Corrección: con una ronda de muchas flechas en la Hoja (Libre), la página se ensanchaba; los diálogos salían desplazados y cortados y la navegación inferior desaparecía.
+
 ## 0.4.1 — 2026-11-17
 
 - Rondas completas: «Terminar y guardar» e «Ir a las notas» van uno sobre otro a todo el ancho; antes «Terminar y guardar» se salía de la tarjeta y su ícono se aplastaba. Ningún botón encoge ya su ícono.

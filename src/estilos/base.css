@@ -415,6 +415,8 @@ h2.sec {
   border: 1px solid var(--md-sys-color-surface-container-highest);
   background: var(--md-sys-color-surface-container-lowest);
   overflow-x: auto;
+  /* Bloque contenedor de los .oculto de las cabeceras: si no, quedan fuera del desplazamiento y ensanchan la página */
+  position: relative;
 }
 .hoja table {
   width: 100%;
