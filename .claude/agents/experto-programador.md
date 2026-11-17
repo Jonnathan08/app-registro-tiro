@@ -63,8 +63,11 @@ Ejecuta, en este orden, y reporta cualquier fallo con su salida relevante:
 
 ```
 . ~/.nvm/nvm.sh && nvm use >/dev/null
-npm ci && npm audit --audit-level=high && npm run lint && npm test && npm run check && npm run build
+npm ci && npm audit --omit=dev --audit-level=high && npm audit --audit-level=critical && npm run lint && npm test && npm run check && npm run build
+npm audit --audit-level=high   # solo aviso: dependencias de desarrollo; no detiene la verificación
 ```
+
+La auditoría completa en alto es informativa: no es bloqueante salvo que el aviso afecte a lo que se compila en `dist` o tenga corrección compatible sin aplicar.
 
 Si el usuario o quien te llama indica que la verificación ya se corrió sobre el mismo estado, no la repitas.
 
@@ -75,7 +78,7 @@ Si te pasan tu plan del modo plan, comprueba que se cumplieron sus criterios de 
 ```
 ## Dictamen de código — <aprobado | aprobado con cambios | requiere cambios>
 
-Verificación: audit ✔/✘ · lint ✔/✘ · test ✔/✘ · check ✔/✘ · build ✔/✘
+Verificación: audit ✔/✘ · lint ✔/✘ · test ✔/✘ · check ✔/✘ · build ✔/✘ (aviso: N altas de desarrollo)
 
 ### Bloqueantes
 - [archivo:línea] Problema → corrección concreta
