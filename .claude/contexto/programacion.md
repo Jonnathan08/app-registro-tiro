@@ -1,7 +1,7 @@
 # Contexto de programación — app de registro de tiro
 
 Memoria del agente `experto-programador`. Se actualiza en la misma rama que el cambio que la vuelve falsa.
-Última revisión: 2026-11-17 (versión 0.4.0).
+Última revisión: 2026-11-17 (versión 0.4.1).
 
 ## Pila
 
@@ -61,7 +61,9 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
   inferior en oscuro va en base.css (`.tablero:not(:has(+ .tablero))`).
 - Clases tipográficas `.t-cifra-xl`, `.t-cifra-l`, `.t-rotulo`, `.t-titulo-tablero`, `.t-contexto` y `h2.sec`. Mayúsculas
   siempre con `text-transform`, nunca escritas así en el código. Ya no existen `.t-display`, `.t-headline`,
-  `.t-title-l`, `.t-label` ni `.btn.tonal`. `Cifra.rotuloLeido` lee completas las abreviaturas de los rótulos.
+  `.t-title-l`, `.t-label` ni `.btn.tonal`. `Cifra.rotuloLeido` lee completas las abreviaturas de los rótulos. `Cifra.nota` es la línea pequeña bajo la cifra
+  (Roboto 500, 13/16, `--tablero-rotulo`); con nota en la primera cifra (`dl.con-nota`), las secundarias se alinean con
+  la cifra y no con la nota (si otra cifra llevara nota, generalizar con `cifras.some`). `.btn svg` lleva `flex: none`.
 - Registro: `.pagina` define `--resto` (lo que ocupa Anotar fuera de la diana o el teclado) y `--alto-tecla` (56–76 px
   según el alto). Si cambia la altura de la barra, el marcador, las pestañas o la tira, actualizar `--resto`.
 - `colorBarraSistema()` (tema.ts) pone `theme-color` del color del tablero, o de la superficie mientras `body.entrando`.
@@ -91,3 +93,4 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 - 2026-11-17 · feature/estilo-marcador · aprobado con cambios · rediseño marcador con fuente auto-alojada y precacheada; quedaron la variante de línea de Grafico sin uso y las barras/teclado por validar en pantallas pequeñas.
 - 2026-11-17 · feature/estilo-marcador (2.ª vuelta) · aprobado · Grafico solo barras con desplazamiento lateral; alturas de la diana y del teclado calculadas con --resto y --alto-nav; queda por probar en 360×640 en el teléfono.
 - 2026-11-17 · feature/estilo-marcador (3.ª vuelta) · aprobado · barra elegida a la vista con scrollLeft; queda por probar en 360×640 en el teléfono.
+- 2026-11-17 · fix/hoja-y-terminar · aprobado · botones de Rondas completas en columna, el ícono del botón no se encoge y el total con las flechas como nota bajo la cifra.

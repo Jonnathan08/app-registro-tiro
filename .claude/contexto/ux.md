@@ -1,7 +1,7 @@
 # Contexto UX — app de registro de tiro
 
 Memoria del agente `experto-ux`. Se actualiza en la misma rama que el cambio que la vuelve falsa.
-Última revisión: 2026-11-17 (versión 0.4.0).
+Última revisión: 2026-11-17 (versión 0.4.1).
 
 ## Usuario y uso
 
@@ -19,7 +19,8 @@ Memoria del agente `experto-ux`. Se actualiza en la misma rama que el cambio que
 - **Fuente**: Barlow Condensed 600/700 incluida en la app (`fuentes.css`, desde @fontsource, precacheada) para cifras, rótulos, botones, pestañas y navegación; Roboto/sistema para el texto corrido. Las mayúsculas, solo con `text-transform` (el texto fuente va en minúscula para que el lector no deletree).
 - Tipografía: `t-cifra-xl`, `t-cifra-l`, `t-rotulo`, `t-seccion` (también `h2.sec`), `t-titulo-tablero`, `t-contexto`, más `t-title-m` y `t-body-s`. Ya no existen `t-display`, `t-headline`, `t-title-l`, `t-label`.
 - Forma: `--shape-s` (8 px) en botones, segmentados, casillas, teclas, tarjetas, hoja, campos, diálogos y aviso; `.icbtn` redondo.
-- Botones: `.btn` de 48 px mínimo (Barlow 700 18, mayúsculas), `.grande` 56; `.contorno` con 2px `on-surface`; `.lleno` (en claro, ícono en oro); `.lleno.peligro`; `.texto`.
+- `Marcador` admite `nota`: línea de 13 px bajo la cifra, leída junto al valor; con nota, las cifras secundarias se alinean con la cifra.
+- Botones: `.btn` de 48 px mínimo (Barlow 700 18, mayúsculas), `.grande` 56; el ícono no se encoge (`flex: none`); `.contorno` con 2px `on-surface`; `.lleno` (en claro, ícono en oro); `.lleno.peligro`; `.texto`.
 - Segmentado y chips: botones separados; lo elegido en **primary / on-primary**, sin ✓.
 - Bordes: controles interactivos en `outline-variant`; divisores decorativos en `surface-container-highest`.
 - Colores de la diana World Archery fijos (`--diana-*`, clases `z-oro|rojo|azul|negro|blanco|fuera`): no dependen del tema. La M usa `--diana-fallo` #4c5458 (fijo, texto blanco).
@@ -33,9 +34,10 @@ Navegación inferior fija de 76 px (`--alto-nav`) con 3 destinos, **Sesión**, *
 - **Configurar**: tablero FORMATO / FLECHAS / MÁXIMO (en Libre: FORMATO / DISTANCIA / DIANA), al día con lo elegido. Perfil, caja de distancia (cifra grande, error en línea), atajos de distancia, diana 122/80/40 cm, rondas y flechas (solo Abierto). «Empezar sesión» pegado sobre la navegación.
 - **Registro**: barra de contexto «Perfil · d m · Diana cm» (« cm» oculto); marcador RONDA n/N (leído « de N»; en Libre sin /N; con todo guardado se queda en N) / ESTA RONDA (amarillo; «–» con todo guardado) / SESIÓN (solo rondas guardadas). Pestañas **Anotar** y **Hoja** dentro del tablero, pegadas arriba, indicador amarillo de 4 px en `::before`; Hoja se lee «Hoja, N rondas guardadas»; también se cambia deslizando.
   - Anotar: tira de casillas cuadradas de 50 px (borde 2px `on-surface`, cifra 30 px; el siguiente hueco con borde primary), sin caja tonal ni suma (está en el tablero), con «pop» de la flecha nueva; en Libre, fila desplazable con máscara a la izquierda solo cuando está desplazada. Diana o teclado 3×4 (teclas de 56 a 76 px), dimensionados con `--resto` y `--ayuda` para no desplazar. Barra fija Deshacer (contorno) / Guardar ronda (lleno) en proporción 1 : 1,35. ⓘ ayuda de la diana, alternar teclado/diana y menú ⋮ («Terminar sesión ahora», «Descartar sesión» en error).
-  - Hoja: Resumen en caja con borde 2px, solo de rondas guardadas; hoja; notas; «Terminar sesión».
+  - Rondas completas: tarjeta con «Terminar y guardar» (`.lleno.grande`) y debajo «Ir a las notas» (`.contorno`), a todo el ancho.
+  - Hoja: Resumen en caja con borde 2px, solo de rondas guardadas, rótulo «Total» y «N flechas» como nota bajo la cifra; hoja; notas; «Terminar sesión».
 - **Historial**: progreso en la franja (chips de distancia si hay varias, promedio de la última sesión, insignia ± frente a la anterior —nunca rojo/verde—, tendencia de las últimas 12 sesiones con puntos tocables que abren la sesión); lista por mes con el total en casilla primary («N puntos»), fecha, perfil · flechas · promedio y distancia.
-- **Detalle**: fila del título pegada arriba (volver, «d m · Perfil», fecha · hora · id, compartir); tablero TOTAL / X / 10+X / PROM.; diana por ronda con ◀ ▶ (Todas → R1 … Rn → Todas, anunciado); gráfico de barras (mínimo 24 px, desplazable de lado, la elegida en oro y llevada a la vista); fila elegida de la hoja en oro con marca primary y texto `on-surface`; notas en solo lectura; «Borrar sesión».
+- **Detalle**: fila del título pegada arriba (volver, «d m · Perfil», fecha · hora · id, compartir); tablero TOTAL (con «N flechas» como nota) / X / 10+X / PROM.; diana por ronda con ◀ ▶ (Todas → R1 … Rn → Todas, anunciado); gráfico de barras (mínimo 24 px, desplazable de lado, la elegida en oro y llevada a la vista); fila elegida de la hoja en oro con marca primary y texto `on-surface`; notas en solo lectura; «Borrar sesión».
 - **Ajustes**: tablero SESIONES / FLECHAS y «Guardadas solo en este teléfono.»; modo, contraste, exportar/importar CSV, versión.
 - `Entrada.svelte`: animación de arranque (ver decisiones).
 
@@ -81,3 +83,4 @@ Navegación inferior fija de 76 px (`--alto-nav`) con 3 destinos, **Sesión**, *
 - 2026-11-12 · feature/rediseno-ux · propuesta e implementación aprobadas con cambios: toda capa se cierra por un solo camino (limpieza del `$effect`) y la pila de atrás evita la carrera back()/pushState; el indicador de pestaña comparte `::after` con `.estado` (fijar posición y opacidad); los diálogos abiertos desde un menú devuelven el foco al ⋮.
 - 2026-11-13 · fix/tira-caja-y-pestanas · aprobado con cambios: tira en caja tonal con pop; el destello en la pestaña que se deja venía de compartir `::after` con la capa de estado y del hover pegado en táctil (supera la nota anterior sobre `::after`); corregido.
 - 2026-11-17 · feature/estilo-marcador · rediseño «marcador deportivo»; aprobado tras corregir el contraste de la fila elegida en oscuro y la altura de Anotar con la ayuda visible.
+- 2026-11-17 · fix/hoja-y-terminar (0.4.1) · aprobado: botones de «Rondas completas» en columna y nota de flechas bajo el total.
