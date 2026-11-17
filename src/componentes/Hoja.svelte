@@ -34,9 +34,10 @@
     <table class="num">
       <thead
         ><tr
-          ><th>Ronda</th><th>Flechas</th><th class="r">Pts</th><th class="r">Acum.</th>{#if alEditar}<th
-              ><span class="oculto">Editar</span></th
-            >{/if}</tr
+          ><th><span aria-hidden="true">R</span><span class="oculto">Ronda</span></th><th>Flechas</th><th class="r"
+            ><span aria-hidden="true">Pts</span><span class="oculto">Puntos</span></th
+          ><th class="r"><span aria-hidden="true">Acum.</span><span class="oculto">Acumulado</span></th
+          >{#if alEditar}<th><span class="oculto">Editar</span></th>{/if}</tr
         ></thead
       >
       <tbody>
@@ -104,19 +105,36 @@
   .elegible {
     cursor: pointer;
   }
+  /* Ronda elegida (Detalle): fondo amarillo de la diana y marca a la izquierda */
   .activa {
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
+    background: color-mix(in srgb, var(--diana-oro) 45%, var(--md-sys-color-surface-container-lowest));
+    color: var(--md-sys-color-on-surface);
+    box-shadow: inset 4px 0 0 var(--md-sys-color-primary);
+  }
+  .activa .acum {
+    color: inherit;
+  }
+  td:first-child {
+    width: 40px;
+    text-align: center;
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 18px;
+  }
+  .activa td:first-child {
+    color: inherit;
   }
   .n {
     all: unset;
-    display: inline-block;
-    min-width: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 48px;
     cursor: pointer;
   }
   .n:focus-visible {
     outline: 2px solid var(--md-sys-color-primary);
-    outline-offset: 2px;
+    outline-offset: -2px;
     border-radius: 4px;
   }
 </style>

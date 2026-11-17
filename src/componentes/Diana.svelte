@@ -306,8 +306,7 @@
   .marco {
     position: relative;
     overflow: hidden;
-    border-radius: var(--shape-l);
-    background: var(--md-sys-color-surface-container-low);
+    border-radius: var(--shape-s);
   }
   .diana {
     width: 100%;
@@ -360,11 +359,12 @@
     transform: translateX(-50%);
     min-width: 40px;
     padding: 2px 10px;
-    border-radius: var(--shape-full);
+    border-radius: var(--shape-xs);
     text-align: center;
-    font-size: 18px;
+    font-family: var(--font-marcador);
+    font-size: 22px;
     font-weight: 700;
-    line-height: 24px;
+    line-height: 26px;
     background: var(--md-sys-color-inverse-surface);
     color: var(--md-sys-color-inverse-on-surface);
   }

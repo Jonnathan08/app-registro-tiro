@@ -40,13 +40,13 @@
   }}
   aria-labelledby="{id}-titulo"
 >
-  <h2 id="{id}-titulo" class="t-headline">{titulo}</h2>
+  <h2 id="{id}-titulo" class="t-titulo-tablero">{titulo}</h2>
   <p>{texto}</p>
   <div class="acciones">
     <button type="button" class="btn texto estado" onclick={() => (abierto = false)}>Cancelar</button>
     <button
       type="button"
-      class="btn texto estado"
+      class="btn lleno estado"
       class:peligro
       onclick={() => {
         abierto = false;
@@ -59,7 +59,7 @@
 <style>
   dialog {
     border: 0;
-    border-radius: var(--shape-xl);
+    border-radius: var(--shape-s);
     padding: 24px;
     width: min(312px, calc(100% - 48px));
     background: var(--md-sys-color-surface-container-high);

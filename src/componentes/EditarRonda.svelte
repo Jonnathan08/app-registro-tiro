@@ -45,8 +45,8 @@
 
 <dialog bind:this={dlg} class="hoja-inferior" aria-labelledby="editar-titulo" onclose={alCerrar}>
   <div class="cab">
-    <h2 id="editar-titulo" class="t-title-l">Editar ronda {numero}</h2>
-    <span class="t-body-s num">{puntos} pts</span>
+    <h2 id="editar-titulo" class="t-titulo-tablero">Editar ronda {numero}</h2>
+    <span class="t-cifra-l">{puntos}<span class="pts"> pts</span></span>
     <button type="button" class="icbtn estado" aria-label="Cerrar sin guardar" onclick={() => dlg.close()}
       ><Icono nombre="cerrar" /></button
     >
@@ -115,11 +115,10 @@
     max-height: 92dvh;
     overflow-y: auto;
     border: 0;
-    border-radius: var(--shape-xl) var(--shape-xl) 0 0;
+    border-radius: var(--shape-m) var(--shape-m) 0 0;
     padding: 8px 16px calc(16px + env(safe-area-inset-bottom, 0px));
     background: var(--md-sys-color-surface-container-low);
     color: var(--md-sys-color-on-surface);
-    --fondo-campo: var(--md-sys-color-surface-container-low);
   }
   .hoja-inferior[open] {
     display: flex;
@@ -153,29 +152,32 @@
     grid-template-columns: repeat(var(--cols), 1fr);
     gap: 8px;
   }
+  /* Como las casillas de la ronda en curso, con el número de flecha debajo */
   .flecha {
-    aspect-ratio: 1;
-    width: 100%;
-    max-width: 56px;
-    justify-self: center;
-    border: 0;
-    border-radius: var(--shape-full);
+    height: 56px;
+    min-width: 0;
+    border: 2px solid var(--md-sys-color-on-surface);
+    border-radius: var(--shape-s);
     cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 18px;
-  }
-  .flecha.z-rojo {
+    font-family: var(--font-marcador);
+    font-size: 26px;
     font-weight: 700;
+    line-height: 28px;
   }
   .flecha small {
-    font-size: 10px;
+    font-family: var(--font);
+    font-size: 11px;
     line-height: 12px;
-    opacity: 0.7;
+    font-weight: 500;
+    opacity: 0.8;
+  }
+  .pts {
+    font-size: 16px;
+    color: var(--md-sys-color-on-surface-variant);
   }
   .flecha.sel {
     outline: 3px solid var(--md-sys-color-primary);
@@ -192,7 +194,7 @@
     font-size: 14px;
     line-height: 20px;
     padding: 12px 16px;
-    border-radius: var(--shape-m);
+    border-radius: var(--shape-s);
     background: var(--md-sys-color-tertiary-container);
     color: var(--md-sys-color-on-tertiary-container);
   }

@@ -1,6 +1,7 @@
 <script lang="ts">
   import Barra from '../componentes/Barra.svelte';
   import Icono from '../componentes/Icono.svelte';
+  import Marcador, { type Cifra } from '../componentes/Marcador.svelte';
   import Segmentado from '../componentes/Segmentado.svelte';
   import { DIANAS, type TipoDiana } from '../lib/diana';
   import { estado } from '../lib/estado.svelte';
@@ -29,12 +30,37 @@
     { clave: 'flechasPorRonda', texto: 'Flechas por ronda' },
   ];
 
+  const distanciaValida = $derived(c.distanciaM >= D.min && c.distanciaM <= D.max);
+  // Tablero: el formato que se va a tirar, al día con lo que se elige
+  const cifras = $derived<Cifra[]>(
+    c.perfil === 'libre'
+      ? [
+          { rotulo: 'Formato', valor: 'Libre' },
+          distanciaValida
+            ? { rotulo: 'Distancia', valor: c.distanciaM, sufijo: ' m', sufijoLeido: ' metros' }
+            : { rotulo: 'Distancia', valor: '–', leido: 'sin definir' },
+          { rotulo: 'Diana', valor: c.dianaCm, sufijo: ' cm', sufijoLeido: ' centímetros' },
+        ]
+      : valida
+        ? [
+            { rotulo: 'Formato', valor: rondas, sufijo: `×${flechas}`, sufijoLeido: ` rondas de ${flechas} flechas` },
+            { rotulo: 'Flechas', valor: rondas * flechas },
+            { rotulo: 'Máximo', valor: rondas * flechas * 10, leido: `${rondas * flechas * 10} puntos`, acento: true },
+          ]
+        : [
+            { rotulo: 'Formato', valor: '–', leido: 'sin definir' },
+            { rotulo: 'Flechas', valor: '–', leido: 'sin definir' },
+            { rotulo: 'Máximo', valor: '–', leido: 'sin definir', acento: true },
+          ],
+  );
+
   const limitar = (v: number, min: number, max: number) => Math.min(max, Math.max(min, Math.round(v) || min));
   const sumar = (k: 'rondas' | 'flechasPorRonda', d: number) =>
     (c[k] = limitar(c[k] + d, LIMITES[k].min, LIMITES[k].max));
 </script>
 
 <Barra titulo="Nueva sesión" />
+<Marcador {cifras} etiqueta="Formato de la sesión" />
 
 <div class="cuerpo">
   <section class="grupo">
@@ -63,16 +89,28 @@
 
   <section class="grupo">
     <h2 class="sec">Distancia</h2>
-    <div class="campo">
-      <input id="distancia" type="number" inputmode="numeric" min={D.min} max={D.max} bind:value={c.distanciaM} />
-      <label for="distancia">Distancia de tiro</label>
-      <span class="sufijo">m</span>
-    </div>
+    <label class="distancia" class:error={!distanciaValida}>
+      <span class="texto">Distancia de tiro<span class="oculto"> en metros</span></span>
+      <input
+        id="distancia"
+        type="number"
+        inputmode="numeric"
+        min={D.min}
+        max={D.max}
+        bind:value={c.distanciaM}
+        aria-invalid={!distanciaValida}
+        aria-describedby={distanciaValida ? undefined : 'error-distancia'}
+      />
+      <span class="unidad" aria-hidden="true">m</span>
+    </label>
+    {#if !distanciaValida}
+      <p id="error-distancia" class="t-body-s error-texto">Escribe una distancia entre {D.min} y {D.max} m.</p>
+    {/if}
     <div class="chips" role="group" aria-label="Distancias habituales">
       {#each DISTANCIAS as d (d.m)}
         <button
           type="button"
-          class="chip estado num"
+          class="chip estado"
           aria-pressed={c.distanciaM === d.m}
           onclick={() => {
             c.distanciaM = d.m;
@@ -100,17 +138,17 @@
       <h2 class="sec">Formato</h2>
       {#each FORMATO as campo (campo.clave)}
         <div class="contador">
-          <span class="t-title-m">{campo.texto}</span>
+          <span class="nombre">{campo.texto}</span>
           <button
             type="button"
-            class="icbtn estado"
+            class="paso estado"
             aria-label="Menos {campo.texto.toLowerCase()}"
             onclick={() => sumar(campo.clave, -1)}><Icono nombre="menos" /></button
           >
-          <span class="valor num" aria-live="polite">{c[campo.clave]}</span>
+          <span class="valor t-cifra-l" aria-live="polite">{c[campo.clave]}</span>
           <button
             type="button"
-            class="icbtn estado"
+            class="paso estado"
             aria-label="Más {campo.texto.toLowerCase()}"
             onclick={() => sumar(campo.clave, 1)}><Icono nombre="sumar" /></button
           >
@@ -120,16 +158,9 @@
   {/if}
 
   <div class="pie">
-    <p class="t-body-s num">
-      {#if c.perfil === 'libre'}
-        Rondas y flechas libres hasta que termines la sesión
-      {:else}
-        {rondas} rondas × {flechas} flechas = {rondas * flechas} flechas · máximo {rondas * flechas * 10} puntos
-      {/if}
-    </p>
     <button
       type="button"
-      class="btn lleno estado ancho"
+      class="btn lleno grande estado ancho"
       disabled={!valida}
       onclick={() => estado.empezar({ ...c, distanciaM: limitar(c.distanciaM, D.min, D.max) })}
     >
@@ -142,34 +173,93 @@
   .cuerpo {
     display: flex;
     flex-direction: column;
-    gap: 24px;
-    padding: 8px 16px 24px;
+    gap: 20px;
+    padding: 18px 16px 0;
+  }
+  .grupo h2 {
+    margin: 0;
+  }
+  /* Distancia: una caja con el texto a la izquierda y la cifra grande a la derecha */
+  .distancia {
+    height: 60px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 2px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--shape-s);
+    background: var(--md-sys-color-surface-container-lowest);
+    cursor: text;
+  }
+  .distancia:focus-within {
+    border-color: var(--md-sys-color-primary);
+  }
+  .distancia.error {
+    border-color: var(--md-sys-color-error);
+  }
+  .distancia .texto {
+    flex: 1;
+    font-size: 14px;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+  .distancia input {
+    width: 72px;
+    border: 0;
+    background: none;
+    text-align: right;
+    font-family: var(--font-marcador);
+    font-size: 34px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--md-sys-color-on-surface);
+    padding: 0;
+  }
+  .distancia input:focus {
+    outline: none;
+  }
+  .unidad {
+    font-family: var(--font-marcador);
+    font-size: 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+  .error-texto {
+    color: var(--md-sys-color-error);
   }
   .contador {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
   }
-  .contador .t-title-m {
+  .nombre {
     flex: 1;
+    font-size: 16px;
+  }
+  .paso {
+    width: 48px;
+    height: 48px;
+    border: 2px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--shape-s);
+    background: var(--md-sys-color-surface-container-lowest);
+    color: var(--md-sys-color-on-surface);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
   }
   .valor {
-    min-width: 40px;
+    min-width: 44px;
     text-align: center;
-    font-size: 22px;
-    line-height: 28px;
   }
+  /* «Empezar sesión» siempre a mano, justo encima de la navegación */
   .pie {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .pie p {
-    margin: 0;
-    text-align: center;
+    position: sticky;
+    bottom: calc(var(--alto-nav) + env(safe-area-inset-bottom, 0px));
+    padding: 12px 0 14px;
+    background: var(--md-sys-color-surface);
   }
   .ancho {
     width: 100%;
-    height: 48px;
   }
 </style>

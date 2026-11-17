@@ -1,12 +1,16 @@
 /* Componentes Material 3 hechos a mano sobre los tokens de tema.css */
 :root {
   --font: Roboto, system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  /* Estilo marcador: cifras, rótulos, botones y navegación (fuentes.css) */
+  --font-marcador: 'Barlow Condensed', 'Roboto Condensed', sans-serif-condensed, 'Arial Narrow', var(--font);
   --shape-xs: 4px;
   --shape-s: 8px;
   --shape-m: 12px;
   --shape-l: 16px;
   --shape-xl: 28px;
   --shape-full: 999px;
+  /* Altura de la navegación inferior (sin la zona segura) */
+  --alto-nav: 76px;
   /* Diana World Archery: colores fijos, no dependen del tema */
   --diana-blanco: #ffffff;
   --diana-negro: #231f20;
@@ -14,6 +18,27 @@
   --diana-rojo: #e8403d;
   --diana-oro: #ffe14d;
   --diana-tinta: #231f20;
+  /* Fallo (M): fijo como los anillos, para que se vea igual en los dos temas; blanco encima da 7,6:1 */
+  --diana-fallo: #4c5458;
+
+  /* Tablero: la franja oscura de arriba. Claro medio y alto: primary */
+  --tablero-fondo: var(--md-sys-color-primary);
+  --tablero-texto: var(--md-sys-color-on-primary);
+  /* Rótulos: rgb(140 207 241) en las seis variantes, ≥5,5:1 sobre cualquier fondo del tablero */
+  --tablero-rotulo: var(--md-sys-color-inverse-primary);
+  --tablero-acento: var(--diana-oro);
+  --tablero-linea: color-mix(in srgb, var(--tablero-texto) 22%, transparent);
+  --tablero-tenue: color-mix(in srgb, var(--tablero-texto) 82%, var(--tablero-fondo));
+}
+/* Claro estándar: su primary deja los rótulos por debajo de 4,5:1, se oscurece */
+:root.light {
+  --tablero-fondo: var(--md-sys-color-on-primary-fixed-variant);
+}
+/* Oscuro: inverse-* se invierte, así que se toman los tonos oscuros fijos */
+:root[class^='dark'] {
+  --tablero-fondo: var(--md-sys-color-on-primary-fixed-variant);
+  --tablero-texto: var(--md-sys-color-on-surface);
+  --tablero-rotulo: var(--md-sys-color-primary-fixed-dim);
 }
 
 *,
@@ -42,6 +67,14 @@ textarea {
   outline: 3px solid var(--md-sys-color-primary);
   outline-offset: 2px;
 }
+/* En oscuro (sobre todo con alto contraste) el tablero casi se funde con la página: borde bajo el último bloque */
+:root[class^='dark'] .tablero:not(:has(+ .tablero)) {
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+/* Sobre el tablero, el contorno primary no se vería en claro */
+.tablero :focus-visible {
+  outline-color: var(--tablero-acento);
+}
 [hidden] {
   display: none !important;
 }
@@ -65,37 +98,69 @@ svg.ic {
 }
 
 /* Tipografía MD3 */
-.t-display {
-  font-size: 45px;
-  line-height: 52px;
-  font-weight: 400;
-}
-.t-headline {
-  font-size: 24px;
-  line-height: 32px;
-  font-weight: 400;
-}
-.t-title-l {
-  font-size: 22px;
-  line-height: 28px;
-  font-weight: 400;
-}
 .t-title-m {
   font-size: 16px;
   line-height: 24px;
   font-weight: 500;
   letter-spacing: 0.15px;
 }
-.t-label {
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-}
 .t-body-s {
   font-size: 14px;
   line-height: 20px;
   color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Tipografía del marcador. Las mayúsculas, siempre con text-transform: en el código el texto va en
+   minúscula normal para que el lector de pantalla no lo deletree. */
+.t-cifra-xl,
+.t-cifra-l,
+.t-rotulo,
+.t-seccion,
+.t-titulo-tablero,
+.t-contexto {
+  font-family: var(--font-marcador);
+  font-variant-numeric: tabular-nums;
+}
+.t-cifra-xl {
+  font-size: 48px;
+  line-height: 52px;
+  font-weight: 700;
+}
+.t-cifra-l {
+  font-size: 30px;
+  line-height: 34px;
+  font-weight: 700;
+}
+.t-rotulo {
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.t-seccion,
+h2.sec {
+  font-family: var(--font-marcador);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.t-titulo-tablero {
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.t-contexto {
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
 }
 
 /* Capa de estado al pasar o presionar */
@@ -126,49 +191,60 @@ svg.ic {
   opacity: 0;
 }
 
-/* Botones */
+/* Botones: cuadrados, Barlow en mayúsculas */
 .btn {
-  height: 40px;
-  padding: 0 24px;
-  border-radius: var(--shape-full);
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: var(--shape-s);
   border: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.1px;
+  font-family: var(--font-marcador);
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 .btn:has(> svg) {
   padding-left: 16px;
 }
 .btn svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   fill: currentColor;
+}
+/* Barra fija y acciones principales */
+.btn.grande {
+  min-height: 56px;
 }
 .btn.lleno {
   background: var(--md-sys-color-primary);
   color: var(--md-sys-color-on-primary);
 }
-.btn.tonal {
-  background: var(--md-sys-color-secondary-container);
-  color: var(--md-sys-color-on-secondary-container);
+/* En claro, el ícono del botón principal va en el amarillo de la diana */
+:root[class^='light'] .btn.lleno:enabled svg {
+  fill: var(--diana-oro);
+}
+.btn.lleno.peligro {
+  background: var(--md-sys-color-error);
+  color: var(--md-sys-color-on-error);
 }
 .btn.contorno {
   background: transparent;
-  border: 1px solid var(--md-sys-color-outline);
-  color: var(--md-sys-color-primary);
+  border: 2px solid var(--md-sys-color-on-surface);
+  color: var(--md-sys-color-on-surface);
 }
 .btn.texto {
   background: transparent;
   color: var(--md-sys-color-primary);
   padding: 0 12px;
 }
-.btn.peligro {
+.btn.texto.peligro {
   color: var(--md-sys-color-error);
 }
 .btn:disabled {
@@ -195,91 +271,69 @@ svg.ic {
   cursor: pointer;
   color: var(--md-sys-color-on-surface-variant);
 }
+.tablero .icbtn {
+  color: var(--tablero-texto);
+}
 
-/* Botón segmentado */
+/* Botón segmentado: botones cuadrados separados; lo elegido, en primary */
 .seg {
-  display: flex;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 6px;
   width: 100%;
 }
-.seg button {
-  flex: 1;
-  height: 40px;
+.seg button,
+.chip {
+  min-height: 48px;
   min-width: 0;
+  padding: 0 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  border: 1px solid var(--md-sys-color-outline);
-  background: transparent;
-  color: var(--md-sys-color-on-surface);
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.1px;
-  cursor: pointer;
-  padding: 0 8px;
-}
-.seg button + button {
-  margin-left: -1px;
-}
-.seg button:first-child {
-  border-radius: var(--shape-full) 0 0 var(--shape-full);
-}
-.seg button:last-child {
-  border-radius: 0 var(--shape-full) var(--shape-full) 0;
-}
-/* Lo seleccionado (segmentado, chips, navegación, fila de la hoja) usa el contenedor primario */
-.seg button[aria-pressed='true'] {
-  background: var(--md-sys-color-primary-container);
-  color: var(--md-sys-color-on-primary-container);
-}
-.seg button svg {
-  width: 18px;
-  height: 18px;
-  fill: currentColor;
-}
-
-/* Chips de filtro / sugerencia */
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.chip {
-  height: 32px;
-  padding: 0 16px;
+  border: 2px solid var(--md-sys-color-outline-variant);
   border-radius: var(--shape-s);
-  border: 1px solid var(--md-sys-color-outline);
-  background: transparent;
-  color: var(--md-sys-color-on-surface-variant);
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.1px;
+  background: var(--md-sys-color-surface-container-lowest);
+  color: var(--md-sys-color-on-surface);
+  font-family: var(--font-marcador);
+  font-size: 18px;
+  line-height: 22px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
 }
+.seg button[aria-pressed='true'],
 .chip[aria-pressed='true'] {
-  background: var(--md-sys-color-primary-container);
-  color: var(--md-sys-color-on-primary-container);
-  border-color: transparent;
+  background: var(--md-sys-color-primary);
+  border-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
 }
 
-/* Campos de texto con contorno */
+/* Atajos (p. ej. distancias habituales): una fila de botones iguales */
+.chips {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 6px;
+}
+
+/* Campos: etiqueta encima (en el código va después del campo) */
 .campo {
-  position: relative;
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
+  gap: 4px;
 }
 .campo input,
 .campo textarea {
   width: 100%;
-  border: 1px solid var(--md-sys-color-outline);
-  border-radius: var(--shape-xs);
-  background: transparent;
+  border: 2px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--shape-s);
+  background: var(--md-sys-color-surface-container-lowest);
   color: var(--md-sys-color-on-surface);
   font: 16px/24px var(--font);
-  padding: 15px 16px;
+  padding: 10px 12px;
 }
 .campo textarea {
   min-height: 96px;
@@ -288,63 +342,45 @@ svg.ic {
 .campo input:focus,
 .campo textarea:focus {
   outline: none;
-  border: 2px solid var(--md-sys-color-primary);
-  padding: 14px 15px;
+  border-color: var(--md-sys-color-primary);
+}
+.campo textarea[readonly] {
+  background: var(--md-sys-color-surface-container-low);
+  border-width: 1px;
+  padding: 11px 13px;
 }
 .campo label {
-  position: absolute;
-  left: 12px;
-  top: -8px;
-  padding: 0 4px;
-  background: var(--fondo-campo, var(--md-sys-color-surface));
-  font-size: 12px;
-  line-height: 16px;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
   color: var(--md-sys-color-on-surface-variant);
 }
 .campo:focus-within label {
   color: var(--md-sys-color-primary);
-}
-.campo .sufijo {
-  position: absolute;
-  right: 16px;
-  top: 16px;
-  color: var(--md-sys-color-on-surface-variant);
-  pointer-events: none;
-}
-.campo .apoyo {
-  font-size: 12px;
-  line-height: 16px;
-  letter-spacing: 0.4px;
-  color: var(--md-sys-color-on-surface-variant);
-  padding: 4px 16px 0;
 }
 
 /* Grupo de campos de un formulario */
 .grupo {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 .grupo p {
   margin: 0;
 }
 
-/* Tarjetas */
+/* Tarjetas. Bordes: lo interactivo usa outline-variant; los divisores decorativos, surface-container-highest */
 .tarjeta {
-  border-radius: var(--shape-l);
+  border-radius: var(--shape-s);
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-.tarjeta.contorno {
-  border: 1px solid var(--md-sys-color-outline-variant);
-}
-.tarjeta.relleno {
-  background: var(--md-sys-color-surface-container-highest);
+  background: var(--md-sys-color-surface-container-lowest);
+  border: 1px solid var(--md-sys-color-surface-container-highest);
 }
 
-/* Chips de flecha (color del anillo). Blanco sobre rojo da 4:1: los chips pequeños lo refuerzan con negrita */
+/* Fichas de flecha (color del anillo). Blanco sobre rojo da 4:1: se usan en negrita y a tamaño grande */
 .z-oro {
   background: var(--diana-oro);
   color: var(--diana-tinta);
@@ -364,67 +400,68 @@ svg.ic {
 .z-blanco {
   background: var(--diana-blanco);
   color: var(--diana-tinta);
-  box-shadow: inset 0 0 0 1.5px #8a8a8a;
+  box-shadow: inset 0 0 0 1px var(--diana-tinta);
 }
 .z-fuera {
-  background: var(--md-sys-color-surface-container-highest);
-  color: var(--md-sys-color-on-surface-variant);
+  background: var(--diana-fallo);
+  color: #fff;
 }
 
 /* Hoja de puntuación */
 .hoja {
-  border-radius: var(--shape-l);
-  background: var(--md-sys-color-surface-container-low);
+  border-radius: var(--shape-s);
+  border: 1px solid var(--md-sys-color-surface-container-highest);
+  background: var(--md-sys-color-surface-container-lowest);
   overflow-x: auto;
 }
 .hoja table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
-  line-height: 20px;
+  font-family: var(--font-marcador);
+  font-variant-numeric: tabular-nums;
 }
 .hoja th {
+  height: 32px;
+  padding: 0 8px;
   text-align: left;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.5px;
+  background: var(--md-sys-color-surface-container);
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
   color: var(--md-sys-color-on-surface-variant);
-  padding: 10px 12px 6px;
 }
 .hoja td {
-  padding: 8px 12px;
-  border-top: 1px solid var(--md-sys-color-outline-variant);
+  height: 52px;
+  padding: 0 8px;
+  border-top: 1px solid var(--md-sys-color-surface-container-highest);
   white-space: nowrap;
+  font-size: 22px;
+  font-weight: 700;
 }
 .hoja .r {
   text-align: right;
 }
 .hoja td.acum {
-  font-weight: 500;
+  color: var(--md-sys-color-primary);
 }
 .mini {
   display: inline-flex;
   gap: 3px;
+  vertical-align: middle;
 }
 .mini span {
-  width: 22px;
-  height: 22px;
-  border-radius: var(--shape-full);
+  width: 26px;
+  height: 28px;
+  border-radius: var(--shape-xs);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
-  font-weight: 500;
-}
-.mini span.z-rojo {
+  font-size: 17px;
   font-weight: 700;
 }
 
 h2.sec {
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
-  letter-spacing: 0.1px;
   margin: 8px 0 0;
-  color: var(--md-sys-color-on-surface-variant);
 }

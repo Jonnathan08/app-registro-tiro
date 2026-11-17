@@ -8,8 +8,11 @@ import {
   ordenHoja,
   resumen,
   rondaGuardable,
+  rondaEnCurso,
   rondaLlena,
   todasGuardadas,
+  totalCerrado,
+  totalesHistorial,
   validarConfig,
   type Flecha,
 } from './modelo';
@@ -92,5 +95,38 @@ describe('validarConfig', () => {
   it('lo que no es un objeto da la configuración por defecto', () => {
     expect(validarConfig(null)).toEqual(CONFIG_DEFECTO);
     expect(validarConfig('x')).toEqual(CONFIG_DEFECTO);
+  });
+});
+
+describe('tablero de la sesión', () => {
+  const control = () => nuevaSesion({ ...CONFIG_DEFECTO, perfil: 'control' }, fecha);
+  it('totalCerrado suma solo las rondas guardadas, no la que está en curso', () => {
+    const s = control();
+    expect(totalCerrado(s)).toBe(0);
+    s.registro.push({ flechas: [f(10, true), f(9)] }, { flechas: [f(8)] });
+    s.enCurso.push(f(7));
+    expect(totalCerrado(s)).toBe(27);
+  });
+  it('rondaEnCurso no pasa de la última ronda', () => {
+    const s = control();
+    expect(rondaEnCurso(s)).toBe(1);
+    for (let i = 0; i < 2; i++) s.registro.push({ flechas: [f(9)] });
+    expect(rondaEnCurso(s)).toBe(3);
+    for (let i = 0; i < 10; i++) s.registro.push({ flechas: [f(9)] });
+    expect(rondaEnCurso(s)).toBe(12);
+  });
+  it('en Libre rondaEnCurso no tiene tope', () => {
+    const s = nuevaSesion({ ...CONFIG_DEFECTO, perfil: 'libre' }, fecha);
+    for (let i = 0; i < 20; i++) s.registro.push({ flechas: [f(9)] });
+    expect(rondaEnCurso(s)).toBe(21);
+  });
+  it('totalesHistorial cuenta sesiones y todas sus flechas', () => {
+    expect(totalesHistorial([])).toEqual({ sesiones: 0, flechas: 0 });
+    const a = control();
+    a.registro.push({ flechas: [f(9), f(8)] });
+    a.enCurso.push(f(7));
+    const b = control();
+    b.registro.push({ flechas: [f(10)] });
+    expect(totalesHistorial([a, b])).toEqual({ sesiones: 2, flechas: 4 });
   });
 });

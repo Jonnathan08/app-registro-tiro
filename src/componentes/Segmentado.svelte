@@ -1,6 +1,4 @@
 <script lang="ts" generics="T extends string">
-  import Icono from './Icono.svelte';
-
   let {
     opciones,
     valor = $bindable(),
@@ -25,7 +23,6 @@
         alCambiar?.(o.valor);
       }}
     >
-      {#if valor === o.valor}<Icono nombre="check" clase="" />{/if}
       {o.texto}
     </button>
   {/each}

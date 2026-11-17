@@ -54,15 +54,15 @@
   {/snippet}
 </Barra>
 
-<div class="cuerpo">
-  <Resumen {sesion} />
+<Resumen {sesion} variante="tablero" />
 
+<div class="cuerpo">
   {#if conPosiciones}
     <DianaRonda bind:this={dianaRonda} dianaCm={sesion.dianaCm} registro={sesion.registro} bind:ronda />
   {/if}
 
   {#if porRonda.length > 1}
-    <section class="tarjeta-grafico" aria-labelledby="titulo-rondas">
+    <section class="tarjeta" aria-labelledby="titulo-rondas">
       <div class="cabeza">
         <h2 id="titulo-rondas" class="sec">{porFlecha ? 'Promedio por flecha en cada ronda' : 'Puntos por ronda'}</h2>
         {#if ronda !== null && porRonda[ronda] !== undefined}
@@ -77,11 +77,12 @@
         seleccionado={ronda}
         alElegir={(i) => (ronda = i)}
         descripcion={porFlecha ? 'Promedio por flecha en cada ronda' : 'Puntos por ronda'}
+        maxValores={porFlecha ? 8 : 12}
       />
     </section>
   {/if}
 
-  <h2 class="sec">Hoja de puntuación</h2>
+  <h2 class="sec hoja-titulo">Hoja de puntuación</h2>
   <Hoja
     registro={sesion.registro}
     seleccionada={ronda}
@@ -114,35 +115,34 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
-    padding: 4px 16px 24px;
+    padding: 16px 16px 24px;
   }
   .borrar {
-    align-self: flex-start;
+    align-self: center;
   }
-  .tarjeta-grafico {
-    border-radius: var(--shape-l);
-    background: var(--md-sys-color-surface-container-low);
-    padding: 12px 12px 4px;
+  .hoja-titulo {
+    margin: 0 0 -8px;
   }
   .cabeza {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
     gap: 8px;
-    margin-bottom: 8px;
   }
   .cabeza .sec {
     margin: 0;
   }
   .lectura {
-    font-size: 12px;
-    line-height: 16px;
+    font-family: var(--font-marcador);
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
     color: var(--md-sys-color-on-surface-variant);
     white-space: nowrap;
   }
   .lectura b {
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 18px;
+    font-weight: 700;
     color: var(--md-sys-color-on-surface);
   }
 </style>

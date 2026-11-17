@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Gráfico de línea de una sola serie. Tocar un punto lo selecciona (y otra vez lo deselecciona).
+  // Gráfico de barras de una sola serie. Tocar una barra la selecciona (y otra vez la deselecciona).
   let {
     valores,
     etiquetaX,
@@ -8,167 +8,125 @@
     seleccionado = null,
     alElegir,
     descripcion,
+    maxValores = 12,
   }: {
     valores: number[];
-    /** Texto bajo el eje X para el punto i. */
+    /** Texto bajo la barra i. */
     etiquetaX: (i: number) => string;
-    /** Nombre del punto i para el lector de pantalla. */
+    /** Nombre de la barra i para el lector de pantalla. */
     nombrePunto: (i: number) => string;
     formato?: (v: number) => string;
     seleccionado?: number | null;
     alElegir?: (i: number | null) => void;
     descripcion: string;
+    /** Con más barras que estas, solo se rotula la elegida (los valores se solaparían). */
+    maxValores?: number;
   } = $props();
 
-  const ALTO = 168;
-  const M = { izq: 40, der: 16, arr: 12, aba: 28 };
-  let ancho = $state(320);
-
-  // Escala Y con marcas redondas, sin empezar en cero: interesa la variación
+  // Escala sin empezar en cero (interesa la variación), con una altura mínima visible
   const escala = $derived.by(() => {
-    if (!valores.length) return { lo: 0, hi: 1, marcas: [] };
-    let min = Math.min(...valores),
+    if (!valores.length) return { lo: 0, hi: 1 };
+    const min = Math.min(...valores),
       max = Math.max(...valores);
-    if (min === max) {
-      min -= 1;
-      max += 1;
-    }
-    const paso =
-      [0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10, 20, 25, 50, 100].find((p) => Math.ceil(max / p) - Math.floor(min / p) <= 4) ??
-      100;
-    const lo = Math.max(0, Math.floor(min / paso) * paso),
-      hi = Math.ceil(max / paso) * paso;
-    const marcas: number[] = [];
-    for (let t = lo; t <= hi + paso / 2; t += paso) marcas.push(+t.toFixed(2));
-    return { lo, hi: hi > lo ? hi : lo + paso, marcas };
+    return min === max ? { lo: min - 1, hi: max + 1 } : { lo: min - (max - min) * 0.15, hi: max };
   });
-
-  const n = $derived(valores.length);
-  const plano = $derived(ancho - M.izq - M.der);
-  const x = (i: number) => M.izq + (n > 1 ? (i * plano) / (n - 1) : plano / 2);
-  const y = (v: number) => M.arr + (1 - (v - escala.lo) / (escala.hi - escala.lo)) * (ALTO - M.arr - M.aba);
-  const linea = $derived(valores.map((v, i) => `${i ? 'L' : 'M'}${x(i)} ${y(v)}`).join(''));
-  const area = $derived(n > 1 ? `${linea}L${x(n - 1)} ${ALTO - M.aba}L${x(0)} ${ALTO - M.aba}Z` : '');
-
-  // Como mucho ~6 etiquetas en X, siempre la primera y la última
-  const marcasX = $derived.by(() => {
-    const cada = Math.max(1, Math.ceil(n / 6));
-    const idx = valores.map((_, i) => i).filter((i) => i % cada === 0);
-    if (idx.at(-1) !== n - 1) {
-      if (n - 1 - idx.at(-1)! < cada / 2) idx.pop();
-      idx.push(n - 1);
-    }
-    return idx;
-  });
-  const franja = $derived(n > 1 ? plano / (n - 1) : plano); // zona táctil de cada punto
+  const altoBarra = (v: number) => Math.round(8 + ((v - escala.lo) / (escala.hi - escala.lo)) * 52);
+  const conValores = $derived(valores.length <= maxValores);
 
   const elegir = (i: number) => alElegir?.(seleccionado === i ? null : i);
+
+  // Si se elige una ronda desde la hoja o con ◀ ▶ y su barra está fuera de la vista, el gráfico se desplaza de lado
+  // hasta ella (solo de lado: scrollIntoView movería también la página)
+  let caja = $state<HTMLElement>();
+  $effect(() => {
+    const b = seleccionado !== null ? caja?.querySelectorAll<HTMLElement>('.barra')[seleccionado] : undefined;
+    if (!caja || !b) return;
+    // .grafico es position: relative, así que offsetLeft se mide desde su borde
+    const izq = b.offsetLeft,
+      der = izq + b.offsetWidth;
+    if (izq < caja.scrollLeft) caja.scrollLeft = izq;
+    else if (der > caja.scrollLeft + caja.clientWidth) caja.scrollLeft = der - caja.clientWidth;
+  });
 </script>
 
-<div class="grafico" bind:clientWidth={ancho}>
-  <svg width={ancho} height={ALTO} role="group" aria-label={descripcion}>
-    {#each escala.marcas as t (t)}
-      <line class="rejilla" x1={M.izq} x2={ancho - M.der} y1={y(t)} y2={y(t)} />
-      <text class="eje" x={M.izq - 6} y={y(t) + 4} text-anchor="end">{formato(t)}</text>
-    {/each}
-    {#each marcasX as i (i)}
-      <text
-        class="eje"
-        x={x(i)}
-        y={ALTO - 8}
-        text-anchor={n > 1 && i === 0 ? 'start' : n > 1 && i === n - 1 ? 'end' : 'middle'}>{etiquetaX(i)}</text
-      >
-    {/each}
-
-    {#if area}<path class="area" d={area} />{/if}
-    <path class="linea" d={linea} />
-
-    {#if seleccionado !== null && valores[seleccionado] !== undefined}
-      <line class="guia" x1={x(seleccionado)} x2={x(seleccionado)} y1={M.arr} y2={ALTO - M.aba} />
-    {/if}
+<!-- Con muchas rondas, las barras no bajan de 24 px de ancho y el gráfico se desplaza de lado -->
+<div class="grafico" bind:this={caja}>
+  <div class="barras" role="group" aria-label={descripcion}>
     {#each valores as v, i (i)}
-      <circle
-        class="punto"
-        class:activo={i === seleccionado}
-        cx={x(i)}
-        cy={y(v)}
-        r={i === seleccionado ? 6 : n > 30 ? 3 : 4}
-      />
+      <button
+        type="button"
+        class="barra"
+        class:activa={i === seleccionado}
+        aria-pressed={i === seleccionado}
+        aria-label={nombrePunto(i)}
+        disabled={!alElegir}
+        onclick={() => elegir(i)}
+      >
+        {#if conValores}<span class="v" aria-hidden="true">{formato(v)}</span>{/if}
+        <span class="b" style:height="{altoBarra(v)}px"></span>
+        <span class="x" aria-hidden="true">{conValores || i === seleccionado ? etiquetaX(i) : ''}</span>
+      </button>
     {/each}
-
-    {#if alElegir}
-      {#each valores as _, i (i)}
-        <rect
-          class="toque"
-          x={x(i) - franja / 2}
-          y={0}
-          width={franja}
-          height={ALTO}
-          role="button"
-          tabindex="0"
-          aria-pressed={i === seleccionado}
-          aria-label={nombrePunto(i)}
-          onclick={() => elegir(i)}
-          onkeydown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              elegir(i);
-            }
-          }}
-        />
-      {/each}
-    {/if}
-  </svg>
+  </div>
 </div>
 
 <style>
+  /* El margen vertical deja ver el contorno de foco de las barras, que el desplazamiento recortaría */
   .grafico {
-    width: 100%;
+    position: relative;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    padding-block: 4px;
   }
-  svg {
-    display: block;
-    font-family: var(--font);
-    overflow: visible;
-  }
-  .rejilla {
-    stroke: var(--md-sys-color-surface-variant);
-    stroke-width: 1;
-  }
-  .guia {
-    stroke: var(--md-sys-color-outline);
-    stroke-width: 1;
-  }
-  .eje {
-    font-size: 11px;
-    fill: var(--md-sys-color-on-surface-variant);
+  .barras {
+    height: 96px;
+    display: flex;
+    align-items: stretch;
+    gap: 4px;
+    font-family: var(--font-marcador);
     font-variant-numeric: tabular-nums;
   }
-  .area {
-    fill: var(--md-sys-color-primary);
-    fill-opacity: 0.1;
-  }
-  .linea {
-    fill: none;
-    stroke: var(--md-sys-color-primary);
-    stroke-width: 2;
-    stroke-linejoin: round;
-    stroke-linecap: round;
-  }
-  .punto {
-    fill: var(--md-sys-color-primary);
-    stroke: var(--md-sys-color-surface-container-low);
-    stroke-width: 2;
-  }
-  .punto.activo {
-    fill: var(--md-sys-color-tertiary);
-  }
-  .toque {
-    fill: transparent;
+  .barra {
+    flex: 1 0 24px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--md-sys-color-on-surface);
     cursor: pointer;
-    outline: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 2px;
   }
-  .toque:focus-visible {
-    fill: var(--md-sys-color-primary);
-    fill-opacity: 0.08;
+  /* El foco se dibuja hacia dentro: el desplazamiento lateral recortaría el de las barras de los extremos */
+  .barra:focus-visible {
+    outline-offset: -3px;
+  }
+  .barra:disabled {
+    cursor: default;
+  }
+  .v {
+    font-size: 13px;
+    line-height: 16px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .b {
+    width: 100%;
+    border-radius: var(--shape-xs) var(--shape-xs) 0 0;
+    background: var(--md-sys-color-primary-container);
+  }
+  .activa .b {
+    background: var(--diana-oro);
+    box-shadow: inset 0 0 0 2px var(--md-sys-color-on-surface);
+  }
+  .x {
+    min-height: 16px;
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface-variant);
+    white-space: nowrap;
   }
 </style>

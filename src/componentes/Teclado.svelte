@@ -35,28 +35,31 @@
       type="button"
       class="tecla estado num z-{zona(k.puntaje)}"
       disabled={deshabilitado}
+      aria-label={k.x ? 'X, 10 puntos' : k.puntaje === 0 ? 'Fallo' : undefined}
       onclick={() => alTocar(k.puntaje, !!k.x)}>{k.t}</button
     >
   {/each}
 </div>
 
 <style>
+  /* 3 × 4 teclas grandes con el color de su zona; todas con borde (la negra, para separarla del fondo oscuro) */
   .teclado {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
   }
   .tecla {
-    height: 64px;
-    border-radius: var(--shape-l);
-    border: 0;
-    font-size: 22px;
-    font-weight: 500;
+    height: var(--alto-tecla, 76px);
+    border-radius: var(--shape-s);
+    border: 2px solid var(--md-sys-color-on-surface);
+    font-family: var(--font-marcador);
+    font-size: 36px;
+    font-weight: 700;
     cursor: pointer;
   }
   .compacto .tecla {
-    height: 52px;
-    font-size: 20px;
+    height: 56px;
+    font-size: 30px;
   }
   .tecla:disabled {
     opacity: 0.38;
