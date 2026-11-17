@@ -99,6 +99,10 @@
     align-items: center;
     gap: 2px;
   }
+  /* El foco se dibuja hacia dentro: el desplazamiento lateral recortaría el de las barras de los extremos */
+  .barra:focus-visible {
+    outline-offset: -3px;
+  }
   .barra:disabled {
     cursor: default;
   }

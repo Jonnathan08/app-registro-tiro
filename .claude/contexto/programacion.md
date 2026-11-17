@@ -1,12 +1,13 @@
 # Contexto de programación — app de registro de tiro
 
 Memoria del agente `experto-programador`. Se actualiza en la misma rama que el cambio que la vuelve falsa.
-Última revisión: 2026-11-13 (versión 0.3.1).
+Última revisión: 2026-11-17 (versión 0.4.0).
 
 ## Pila
 
 - **Svelte 5** (runes) + **TypeScript** estricto + **Vite 8**, PWA con `vite-plugin-pwa` (Workbox, `autoUpdate`).
-- Única dependencia de ejecución: **`idb`** (IndexedDB). Todo lo demás es de desarrollo.
+- Dependencias de ejecución: **`idb`** (IndexedDB) y **`@fontsource/barlow-condensed`** 5.3.0 (fuente OFL: solo el subconjunto latin, pesos 600 y 700, woff2). Todo lo demás es de desarrollo.
+- La fuente se carga con `@font-face` propio en `src/estilos/fuentes.css` (Vite resuelve `url('@fontsource/…')`) y el precache incluye `woff2` (`globPatterns`).
 - Pruebas con **Vitest** (`src/**/*.test.ts`); tipos con `svelte-check`; **Prettier** (comillas simples, ancho 120, plugin Svelte) y **ESLint** (recomendado JS + TS + Svelte; `_` marca variables sin uso).
 - Node 24 vía nvm: `. ~/.nvm/nvm.sh && nvm use` (lee `.nvmrc`).
 - Publicada en GitHub Pages con `base: '/app-registro-tiro/'`.
@@ -16,9 +17,17 @@ Memoria del agente `experto-programador`. Se actualiza en la misma rama que el c
 ```
 src/main.ts, App.svelte   arranque, tema, navegación inferior, pantalla de error de almacenamiento
 src/pantallas/            una por destino: Configurar, Registro, Historial, Detalle, Ajustes
-src/componentes/          piezas reutilizables (Barra, Diana, DianaRonda, Teclado, Hoja, Grafico, Dialogo, Notas…)
+src/componentes/          piezas reutilizables (Barra, Marcador, Diana, DianaRonda, Teclado, Hoja, Grafico, Dialogo…)
+                          franja del tablero = bloques hermanos: Barra (variante pantalla|contexto, children opcional
+                          para el título) + Marcador (cifras en <dl>, tipo Cifra) + pestañas de Registro; hermanos
+                          porque las pestañas sticky deben ser hijas del flujo. Resumen: variantes caja|tablero.
+                          Grafico: solo barras (prop maxValores), desplazable de lado; lleva la barra elegida a la
+                          vista moviendo scrollLeft (no scrollIntoView, que movería la página) y por eso .grafico es
+                          position: relative. La tendencia del Historial es un SVG propio con puntosTendencia.
 src/lib/                  lógica sin interfaz, con pruebas al lado
   modelo.ts               tipos (Sesion, Ronda, Flecha, Configuracion), perfiles, LIMITES, validarConfig, migrar, cálculos
+                          (rondaEnCurso no pasa de N; totalCerrado sin enCurso; totalesHistorial)
+  progreso.ts             progreso del historial: gruposProgreso, diferencia, puntosTendencia, MAX_TENDENCIA = 12
   diana.ts                geometría y puntuación de dianas World Archery (mm desde el centro, y hacia arriba)
   estado.svelte.ts        clase Estado (singleton `estado`): estado global con $state y todas las acciones
   almacen.ts              IndexedDB 'registro-tiro' v1, store 'sesiones' (keyPath id, índice fecha)
@@ -27,7 +36,7 @@ src/lib/                  lógica sin interfaz, con pruebas al lado
   atras.ts                botón atrás de Android por capas: una sola entrada propia en history, contador `ignorar`,
                           scrollRestoration='manual'; `capa(cerrar)` se usa como limpieza de un $effect
   ayuda.ts                contador en localStorage (`registro-tiro:marcas-diana`) de la ayuda de la diana
-src/estilos/              tema.css (generado, no tocar) y base.css (componentes MD3)
+src/estilos/              tema.css (generado, no tocar), base.css (tokens del tablero y componentes) y fuentes.css
 ```
 
 Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las acciones mutan `$state` y luego `persistir()` guarda `$state.snapshot(...)` en `almacen`. No hay router ni store externo.
@@ -46,12 +55,22 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 - Capa de estado: `.estado::after` es solo la capa de hover/pulsación (hover solo en `@media (hover: hover)`); indicadores u otros adornos van en `::before` o en un elemento propio, nunca reutilizando `::after`.
 - Animaciones de entrada ligadas a una acción del usuario: clase CSS con `@keyframes` y un índice `$state` que se fija en la acción y se limpia en `animationend` (ver `nueva` en Registro); con `prefers-reduced-motion`, duración de 1 ms para que `animationend` llegue. Las transiciones `in:` de Svelte no admiten curvas CSS.
 - Tema oscuro en CSS de componente: `:global(html[class^='dark'])` (`aplicarTema` asigna `className` completo).
+- Estilo marcador: tokens `--tablero-fondo|texto|rotulo|acento|linea|tenue` (por defecto primary; en claro estándar y
+  en oscuro, `on-primary-fixed-variant`), `--font-marcador`, `--alto-nav` (76 px; los desplazamientos sobre la
+  navegación se calculan con él) y `--diana-fallo`. Los bloques de la franja llevan la clase `.tablero`; el borde
+  inferior en oscuro va en base.css (`.tablero:not(:has(+ .tablero))`).
+- Clases tipográficas `.t-cifra-xl`, `.t-cifra-l`, `.t-rotulo`, `.t-titulo-tablero`, `.t-contexto` y `h2.sec`. Mayúsculas
+  siempre con `text-transform`, nunca escritas así en el código. Ya no existen `.t-display`, `.t-headline`,
+  `.t-title-l`, `.t-label` ni `.btn.tonal`. `Cifra.rotuloLeido` lee completas las abreviaturas de los rótulos.
+- Registro: `.pagina` define `--resto` (lo que ocupa Anotar fuera de la diana o el teclado) y `--alto-tecla` (56–76 px
+  según el alto). Si cambia la altura de la barra, el marcador, las pestañas o la tira, actualizar `--resto`.
+- `colorBarraSistema()` (tema.ts) pone `theme-color` del color del tablero, o de la superficie mientras `body.entrando`.
 - Git: rama `feature/…` o `fix/…` desde `main`; merge `--no-ff`; versión en `package.json` + entrada en `CHANGELOG.md` en cada publicación.
 
 ## Seguridad (requisito del usuario: sin puertas traseras ni vulnerabilidades)
 
 - Se permiten librerías si dan mejor resultado: pocas, conocidas, mantenidas, versión exacta (`save-exact`).
-- **Nada de red en tiempo de ejecución** (analítica, CDNs, fuentes, telemetría). Los datos solo salen si el usuario comparte el CSV.
+- **Nada de red en tiempo de ejecución** (analítica, CDNs, fuentes, telemetría). Los datos solo salen si el usuario comparte el CSV. La fuente va incluida en la app (auto-alojada y precacheada).
 - CSP estricta inyectada al compilar en `vite.config.ts` (`default-src 'self'`, `form-action 'none'`, `object-src 'none'`…). En desarrollo no se aplica.
 - `.npmrc`: `ignore-scripts=true`, `save-exact=true`, `audit=true`.
 - CI (`.github/workflows/publicar.yml`): permisos mínimos, acciones fijadas por hash; en PR corre audit (high), lint, test, check y build; en `main` además publica.
@@ -59,7 +78,7 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 
 ## Riesgos aceptados
 
-- `npm audit` muestra avisos moderados de `deepmerge` y `glob` en herramientas de compilación (`workbox-build`, `vite-plugin-svelte`); no llegan al teléfono (`--omit=dev` da 0) y no hay versión corregida compatible.
+- `npm audit` muestra 12 avisos moderados en herramientas de desarrollo (p. ej. `minimatch` vía `eslint`); no llegan al teléfono (`--omit=dev` da 0).
 
 ## Pendientes y deuda conocida
 
@@ -69,3 +88,6 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 
 - 2026-11-12 · feature/rediseno-ux · aprobado con cambios · capas del botón atrás (con «adelante» ignorado vía `state.capa`) y aviso con acción (la pausa se reinicia con cada aviso); ojo con las claves derivadas de fechas importadas.
 - 2026-11-13 · fix/tira-caja-y-pestanas · aprobado · tira en caja tonal con pop en la flecha nueva; el indicador de la pestaña compartía `::after` con la capa de estado y destellaba en la pestaña abandonada.
+- 2026-11-17 · feature/estilo-marcador · aprobado con cambios · rediseño marcador con fuente auto-alojada y precacheada; quedaron la variante de línea de Grafico sin uso y las barras/teclado por validar en pantallas pequeñas.
+- 2026-11-17 · feature/estilo-marcador (2.ª vuelta) · aprobado · Grafico solo barras con desplazamiento lateral; alturas de la diana y del teclado calculadas con --resto y --alto-nav; queda por probar en 360×640 en el teléfono.
+- 2026-11-17 · feature/estilo-marcador (3.ª vuelta) · aprobado · barra elegida a la vista con scrollLeft; queda por probar en 360×640 en el teléfono.
