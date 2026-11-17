@@ -5,6 +5,7 @@
   import EditarRonda from '../componentes/EditarRonda.svelte';
   import Hoja from '../componentes/Hoja.svelte';
   import Icono from '../componentes/Icono.svelte';
+  import Marcador, { type Cifra } from '../componentes/Marcador.svelte';
   import Notas from '../componentes/Notas.svelte';
   import Resumen from '../componentes/Resumen.svelte';
   import Teclado from '../componentes/Teclado.svelte';
@@ -17,11 +18,12 @@
   import {
     esLibre,
     NOMBRE_PERFIL,
-    numeroRonda,
+    rondaEnCurso,
     rondaGuardable,
     rondaLlena,
     suma,
     todasGuardadas,
+    totalCerrado,
     type Flecha,
     type Sesion,
   } from '../lib/modelo';
@@ -104,10 +106,26 @@
   const llena = $derived(rondaLlena(sesion));
   const anteriores = $derived(sesion.registro.flatMap((r) => r.flechas));
   const sumaActual = $derived(suma(sesion.enCurso));
+  // La pestaña Hoja resume las rondas guardadas, como «Sesión» en el tablero
+  const guardadas = $derived({ ...sesion, enCurso: [] });
   const perfil = $derived(NOMBRE_PERFIL[sesion.perfil]);
   const libre = $derived(esLibre(sesion));
-  const titulo = $derived(completa ? 'Rondas completas' : `Ronda ${numeroRonda(sesion)}`);
-  const conTotal = $derived(!completa && !libre);
+  // Tablero: ronda que se tira, puntos de esa ronda y total de las rondas guardadas
+  const cifras = $derived<Cifra[]>([
+    {
+      rotulo: 'Ronda',
+      valor: rondaEnCurso(sesion),
+      sufijo: libre ? undefined : `/${sesion.rondas}`,
+      sufijoLeido: libre ? undefined : ` de ${sesion.rondas}`,
+    },
+    {
+      rotulo: 'Esta ronda',
+      valor: completa ? '–' : sumaActual,
+      leido: completa ? 'sin ronda en curso' : undefined,
+      acento: true,
+    },
+    { rotulo: 'Sesión', valor: totalCerrado(sesion) },
+  ]);
   // En Libre la tira es una sola fila que se desplaza y siempre muestra la última flecha
   let tira = $state<HTMLElement>();
   $effect(() => {
@@ -119,13 +137,8 @@
   const huecos = $derived(libre ? sesion.enCurso.length + (llena ? 0 : 1) : sesion.flechasPorRonda);
 </script>
 
-<Barra
-  fija
-  {titulo}
-  sufijo={conTotal ? `/${sesion.rondas}` : undefined}
-  sufijoLeido={conTotal ? ` de ${sesion.rondas}` : undefined}
-  subtitulo="{sesion.distanciaM} m · Diana {sesion.dianaCm} cm · {perfil}"
->
+<Barra variante="contexto" titulo="{perfil} · {sesion.distanciaM} m · Diana {sesion.dianaCm} cm">
+  {perfil} · {sesion.distanciaM} m · Diana {sesion.dianaCm}<span class="oculto"> cm</span>
   {#snippet fin()}
     {#if pagina === 'anotar' && !completa}
       {#if entrada === 'diana'}
@@ -169,7 +182,7 @@
           <button
             type="button"
             role="menuitem"
-            class="estado"
+            class="estado peligro"
             onclick={() => {
               menu = false;
               confirmarDescartar = true;
@@ -181,7 +194,9 @@
   {/snippet}
 </Barra>
 
-<div class="pestanas" role="tablist" aria-label="Páginas de la sesión">
+<Marcador {cifras} etiqueta="Marcador de la sesión" />
+
+<div class="pestanas tablero" role="tablist" aria-label="Páginas de la sesión">
   <button
     type="button"
     role="tab"
@@ -200,7 +215,9 @@
     class="estado"
     onclick={() => ir('hoja')}
   >
-    Hoja{#if sesion.registro.length}<span class="insignia num">{sesion.registro.length}</span>{/if}
+    Hoja{#if sesion.registro.length}<span aria-hidden="true">&nbsp;· {sesion.registro.length}</span><span class="oculto"
+        >, {sesion.registro.length} {sesion.registro.length === 1 ? 'ronda guardada' : 'rondas guardadas'}</span
+      >{/if}
   </button>
 </div>
 
@@ -216,7 +233,7 @@
   {#if pagina === 'anotar'}
     <div id="pag-anotar" role="tabpanel" aria-labelledby="tab-anotar" class="pagina" in:fly={{ x: -40, duration: 150 }}>
       {#if !completa}
-        <section class="tira" aria-label="Ronda actual">
+        <section class="tira" aria-label="Ronda actual, {sumaActual} puntos">
           <div
             class="flechas num"
             class:libre
@@ -231,13 +248,11 @@
                 >
               {:else}
                 <!-- Los huecos numerados no se leen: se confundirían con puntajes -->
-                <span class="flecha vacia" aria-hidden="true">{i + 1}</span>
+                <span class="flecha vacia" class:siguiente={i === sesion.enCurso.length} aria-hidden="true"
+                  >{i + 1}</span
+                >
               {/if}
             {/each}
-          </div>
-          <div class="suma num">
-            <b aria-hidden="true">{sumaActual}</b><span aria-hidden="true">pts</span>
-            <span class="oculto">Suma: {sumaActual} puntos</span>
           </div>
         </section>
 
@@ -270,13 +285,14 @@
           <Teclado deshabilitado={llena} alTocar={(puntaje, x) => anotar({ puntaje, x, pos: null })} />
         {/if}
       {:else}
-        <section class="tarjeta relleno">
+        <section class="tarjeta">
+          <h2 class="sec">Rondas completas</h2>
           <span class="t-title-m">Terminaste las {sesion.rondas} rondas</span>
           <p class="t-body-s">
             Agrega las notas en la pestaña <b>Hoja</b> y termina: después quedan bloqueadas. Podrás exportarla desde el historial.
           </p>
           <div class="acciones">
-            <button type="button" class="btn tonal estado" onclick={irANotas}>Ir a las notas</button>
+            <button type="button" class="btn contorno estado" onclick={irANotas}>Ir a las notas</button>
             <button type="button" class="btn lleno estado crece" onclick={() => estado.terminar()}
               ><Icono nombre="check" />Terminar y guardar</button
             >
@@ -286,7 +302,7 @@
     </div>
   {:else}
     <div id="pag-hoja" role="tabpanel" aria-labelledby="tab-hoja" class="pagina" in:fly={{ x: 40, duration: 150 }}>
-      <Resumen {sesion} />
+      <Resumen sesion={guardadas} etiqueta="Resumen de las rondas guardadas" />
 
       <h2 class="sec">Hoja de puntuación</h2>
       {#if sesion.registro.length}
@@ -298,11 +314,11 @@
       <Notas {sesion} alCambiar={() => estado.notas()} />
 
       {#if completa}
-        <button type="button" class="btn lleno estado" onclick={() => estado.terminar()}
+        <button type="button" class="btn lleno grande estado" onclick={() => estado.terminar()}
           ><Icono nombre="check" />Terminar y guardar</button
         >
       {:else}
-        <button type="button" class="btn tonal estado" onclick={() => (confirmarTerminar = true)}
+        <button type="button" class="btn contorno grande estado" onclick={() => (confirmarTerminar = true)}
           ><Icono nombre="check" />Terminar sesión</button
         >
       {/if}
@@ -316,13 +332,13 @@
     <div class="dentro">
       <button
         type="button"
-        class="btn contorno estado"
+        class="btn contorno grande estado"
         disabled={!sesion.enCurso.length}
         onclick={() => estado.deshacer()}><Icono nombre="deshacer" />Deshacer</button
       >
       <button
         type="button"
-        class="btn lleno estado crece"
+        class="btn lleno grande estado"
         disabled={!rondaGuardable(sesion)}
         onclick={() => estado.guardarRonda()}><Icono nombre="check" />Guardar ronda</button
       >
@@ -370,8 +386,10 @@
     top: 48px;
     min-width: 220px;
     z-index: 10;
-    background: var(--md-sys-color-surface-container);
-    border-radius: var(--shape-xs);
+    background: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--shape-s);
     padding: 8px 0;
     box-shadow: 0 2px 6px rgb(0 0 0 / 0.25);
     display: flex;
@@ -379,22 +397,29 @@
   }
   .menu button {
     height: 48px;
-    padding: 0 12px;
+    padding: 0 16px;
     border: 0;
     background: none;
+    color: inherit;
     text-align: left;
-    font-size: 14px;
+    font-size: 16px;
     cursor: pointer;
   }
+  .menu button.peligro {
+    color: var(--md-sys-color-error);
+  }
 
+  /* Pestañas dentro del tablero; solo esta fila queda pegada arriba al desplazar */
   .pestanas {
     display: grid;
     grid-template-columns: 1fr 1fr;
     position: sticky;
-    top: calc(env(safe-area-inset-top, 0px) + 64px);
+    top: env(safe-area-inset-top, 0px);
     z-index: 4;
-    background: var(--md-sys-color-surface);
-    border-bottom: 1px solid var(--md-sys-color-surface-variant);
+    background: var(--tablero-fondo);
+  }
+  :global(html[class^='dark']) .pestanas {
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
   }
   .pestanas button {
     height: 48px;
@@ -405,14 +430,15 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 0.1px;
-    color: var(--md-sys-color-on-surface-variant);
+    font-family: var(--font-marcador);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--tablero-rotulo);
   }
   .pestanas button[aria-selected='true'] {
-    color: var(--md-sys-color-primary);
+    color: var(--tablero-texto);
   }
   /* Indicador en ::before, separado de la capa de estado (::after): si la compartiera, la pestaña que se deja
      destellaría al recuperar el tamaño completo mientras su opacidad baja */
@@ -420,31 +446,19 @@
     content: '';
     position: absolute;
     bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 64px;
-    height: 3px;
-    border-radius: 3px 3px 0 0;
-    background: var(--md-sys-color-primary);
-  }
-  .insignia {
-    min-width: 20px;
-    height: 20px;
-    padding: 0 6px;
-    border-radius: var(--shape-full);
-    font-size: 11px;
-    line-height: 20px;
-    background: var(--md-sys-color-primary);
-    color: var(--md-sys-color-on-primary);
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--tablero-acento);
   }
 
   .cuerpo {
     padding: 12px 16px 24px;
     min-height: 60dvh;
   }
-  /* Deja sitio a la barra fija de acciones (80 px + borde) */
+  /* Deja sitio a la barra fija de acciones (76 px + borde) */
   .cuerpo.con-acciones {
-    padding-bottom: 96px;
+    padding-bottom: 88px;
   }
   .pagina {
     display: flex;
@@ -455,10 +469,17 @@
     margin: 0;
     color: var(--md-sys-color-on-surface-variant);
   }
+  /* La diana, lo más grande posible sin obligar a desplazar: el resto de Anotar (tablero, pestañas, tira, leyenda,
+     barra fija y navegación) ocupa unos 446 px */
   .diana-wrap {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    align-self: center;
+    width: min(
+      100%,
+      max(260px, calc(100dvh - 446px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)))
+    );
   }
   .ayuda {
     margin: 0;
@@ -500,54 +521,36 @@
     stroke-width: 3.4;
   }
 
-  /* Ronda actual: panel tonal con las flechas y la suma en su compartimento */
-  .tira {
-    display: flex;
-    align-items: stretch;
-    background: var(--md-sys-color-surface-container);
-    border-radius: var(--shape-l);
-    overflow: hidden;
-  }
-  /* El margen va aquí y no en .tira: en Libre entra en el área desplazable y el pop no se recorta */
+  /* Ronda actual: casillas cuadradas con borde grueso; la suma está en el tablero */
   .flechas {
-    flex: 1;
-    min-width: 0;
-    padding: 12px;
     display: grid;
     grid-template-columns: repeat(var(--cols), 1fr);
     gap: 6px;
   }
+  /* En Libre, una fila que se desplaza; el margen deja sitio al pop sin recortarlo */
   .flechas.libre {
     display: flex;
     overflow-x: auto;
     scrollbar-width: none;
+    padding: 4px 0;
+    margin: -4px 0;
+    mask-image: linear-gradient(to right, transparent, #000 16px);
   }
   .libre .flecha {
     flex: none;
-    width: 40px;
+    width: 44px;
   }
   .flecha {
-    aspect-ratio: 1;
-    width: 100%;
-    max-width: 40px;
-    justify-self: center;
-    border-radius: var(--shape-full);
+    height: 50px;
+    min-width: 0;
+    border: 2px solid var(--md-sys-color-on-surface);
+    border-radius: var(--shape-s);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
-    font-weight: 600;
-  }
-  .flecha.z-rojo {
+    font-family: var(--font-marcador);
+    font-size: 30px;
     font-weight: 700;
-  }
-  /* Contorno donde la ficha se confunde con el panel: la M siempre y el negro en tema oscuro */
-  .flecha.z-fuera {
-    box-shadow: inset 0 0 0 1.5px var(--md-sys-color-outline);
-  }
-  /* aplicarTema (lib/tema.ts) sustituye toda la clase de <html>, que empieza siempre por dark o light */
-  :global(html[class^='dark']) .flecha.z-negro {
-    box-shadow: inset 0 0 0 1.5px var(--md-sys-color-outline);
   }
   .pop {
     animation: pop 320ms cubic-bezier(0.2, 1.6, 0.4, 1);
@@ -565,59 +568,37 @@
     }
   }
   .flecha.vacia {
-    border: 1.5px dashed var(--md-sys-color-outline);
+    border-color: var(--md-sys-color-outline-variant);
+    background: var(--md-sys-color-surface-container-lowest);
     color: var(--md-sys-color-on-surface-variant);
-    font-size: 13px;
-    font-weight: 400;
+    font-size: 16px;
+    font-weight: 600;
   }
-  .suma {
-    position: relative;
-    flex: none;
-    width: 72px;
-    padding: 8px 4px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
-  }
-  .suma b {
-    font-size: 26px;
-    line-height: 30px;
-    font-weight: 700;
-  }
-  /* Solo el rótulo visible: el texto oculto «Suma: N puntos» no debe pasar a mayúsculas */
-  .suma span[aria-hidden='true'] {
-    font-size: 10px;
-    line-height: 14px;
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
+  /* Dónde va la próxima flecha */
+  .flecha.vacia.siguiente {
+    border-color: var(--md-sys-color-primary);
   }
 
   /* Lo enfocado nunca queda debajo de la barra fija */
   :global(html:has(.acciones-fijas)) {
-    scroll-padding-bottom: calc(176px + env(safe-area-inset-bottom, 0px));
+    scroll-padding-bottom: calc(var(--alto-nav) + 96px + env(safe-area-inset-bottom, 0px));
   }
   .acciones-fijas {
     position: fixed;
     left: 0;
     right: 0;
-    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(var(--alto-nav) + env(safe-area-inset-bottom, 0px));
     z-index: 9;
-    padding: 12px 16px;
+    padding: 10px 16px;
     background: var(--md-sys-color-surface);
-    border-top: 1px solid var(--md-sys-color-outline-variant);
+    border-top: 1px solid var(--md-sys-color-surface-container-highest);
   }
   .dentro {
     max-width: 568px;
     margin: 0 auto;
-    display: flex;
-    gap: 12px;
-  }
-  .acciones-fijas .btn {
-    height: 56px;
-    font-size: 16px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+    gap: 8px;
   }
   .acciones {
     display: flex;

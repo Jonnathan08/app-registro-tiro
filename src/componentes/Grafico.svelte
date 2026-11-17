@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Gráfico de línea de una sola serie. Tocar un punto lo selecciona (y otra vez lo deselecciona).
+  // Gráfico de una sola serie, de línea o de barras. Tocar un punto o una barra lo selecciona (y otra vez lo deselecciona).
   let {
     valores,
     etiquetaX,
@@ -8,6 +8,7 @@
     seleccionado = null,
     alElegir,
     descripcion,
+    variante = 'linea',
   }: {
     valores: number[];
     /** Texto bajo el eje X para el punto i. */
@@ -18,6 +19,7 @@
     seleccionado?: number | null;
     alElegir?: (i: number | null) => void;
     descripcion: string;
+    variante?: 'linea' | 'barras';
   } = $props();
 
   const ALTO = 168;
@@ -63,65 +65,136 @@
   const franja = $derived(n > 1 ? plano / (n - 1) : plano); // zona táctil de cada punto
 
   const elegir = (i: number) => alElegir?.(seleccionado === i ? null : i);
+
+  // Barras: la misma escala sin cero, con un mínimo visible; con muchas, solo se rotula la elegida
+  const ALTO_BARRAS = 96;
+  const altoBarra = (v: number) => Math.round(8 + ((v - escala.lo) / (escala.hi - escala.lo)) * 52);
+  const conValores = $derived(n <= 12);
 </script>
 
-<div class="grafico" bind:clientWidth={ancho}>
-  <svg width={ancho} height={ALTO} role="group" aria-label={descripcion}>
-    {#each escala.marcas as t (t)}
-      <line class="rejilla" x1={M.izq} x2={ancho - M.der} y1={y(t)} y2={y(t)} />
-      <text class="eje" x={M.izq - 6} y={y(t) + 4} text-anchor="end">{formato(t)}</text>
-    {/each}
-    {#each marcasX as i (i)}
-      <text
-        class="eje"
-        x={x(i)}
-        y={ALTO - 8}
-        text-anchor={n > 1 && i === 0 ? 'start' : n > 1 && i === n - 1 ? 'end' : 'middle'}>{etiquetaX(i)}</text
-      >
-    {/each}
-
-    {#if area}<path class="area" d={area} />{/if}
-    <path class="linea" d={linea} />
-
-    {#if seleccionado !== null && valores[seleccionado] !== undefined}
-      <line class="guia" x1={x(seleccionado)} x2={x(seleccionado)} y1={M.arr} y2={ALTO - M.aba} />
-    {/if}
+{#if variante === 'barras'}
+  <div class="barras" role="group" aria-label={descripcion} style:height="{ALTO_BARRAS}px">
     {#each valores as v, i (i)}
-      <circle
-        class="punto"
-        class:activo={i === seleccionado}
-        cx={x(i)}
-        cy={y(v)}
-        r={i === seleccionado ? 6 : n > 30 ? 3 : 4}
-      />
+      <button
+        type="button"
+        class="barra"
+        class:activa={i === seleccionado}
+        aria-pressed={i === seleccionado}
+        aria-label={nombrePunto(i)}
+        disabled={!alElegir}
+        onclick={() => elegir(i)}
+      >
+        {#if conValores}<span class="v" aria-hidden="true">{formato(v)}</span>{/if}
+        <span class="b" style:height="{altoBarra(v)}px"></span>
+        <span class="x" aria-hidden="true">{conValores || i === seleccionado ? etiquetaX(i) : ''}</span>
+      </button>
     {/each}
+  </div>
+{:else}
+  <div class="grafico" bind:clientWidth={ancho}>
+    <svg width={ancho} height={ALTO} role="group" aria-label={descripcion}>
+      {#each escala.marcas as t (t)}
+        <line class="rejilla" x1={M.izq} x2={ancho - M.der} y1={y(t)} y2={y(t)} />
+        <text class="eje" x={M.izq - 6} y={y(t) + 4} text-anchor="end">{formato(t)}</text>
+      {/each}
+      {#each marcasX as i (i)}
+        <text
+          class="eje"
+          x={x(i)}
+          y={ALTO - 8}
+          text-anchor={n > 1 && i === 0 ? 'start' : n > 1 && i === n - 1 ? 'end' : 'middle'}>{etiquetaX(i)}</text
+        >
+      {/each}
 
-    {#if alElegir}
-      {#each valores as _, i (i)}
-        <rect
-          class="toque"
-          x={x(i) - franja / 2}
-          y={0}
-          width={franja}
-          height={ALTO}
-          role="button"
-          tabindex="0"
-          aria-pressed={i === seleccionado}
-          aria-label={nombrePunto(i)}
-          onclick={() => elegir(i)}
-          onkeydown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              elegir(i);
-            }
-          }}
+      {#if area}<path class="area" d={area} />{/if}
+      <path class="linea" d={linea} />
+
+      {#if seleccionado !== null && valores[seleccionado] !== undefined}
+        <line class="guia" x1={x(seleccionado)} x2={x(seleccionado)} y1={M.arr} y2={ALTO - M.aba} />
+      {/if}
+      {#each valores as v, i (i)}
+        <circle
+          class="punto"
+          class:activo={i === seleccionado}
+          cx={x(i)}
+          cy={y(v)}
+          r={i === seleccionado ? 6 : n > 30 ? 3 : 4}
         />
       {/each}
-    {/if}
-  </svg>
-</div>
+
+      {#if alElegir}
+        {#each valores as _, i (i)}
+          <rect
+            class="toque"
+            x={x(i) - franja / 2}
+            y={0}
+            width={franja}
+            height={ALTO}
+            role="button"
+            tabindex="0"
+            aria-pressed={i === seleccionado}
+            aria-label={nombrePunto(i)}
+            onclick={() => elegir(i)}
+            onkeydown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                elegir(i);
+              }
+            }}
+          />
+        {/each}
+      {/if}
+    </svg>
+  </div>
+{/if}
 
 <style>
+  .barras {
+    display: flex;
+    align-items: stretch;
+    gap: 4px;
+    font-family: var(--font-marcador);
+    font-variant-numeric: tabular-nums;
+  }
+  .barra {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--md-sys-color-on-surface);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 2px;
+  }
+  .barra:disabled {
+    cursor: default;
+  }
+  .v {
+    font-size: 13px;
+    line-height: 16px;
+    font-weight: 700;
+  }
+  .b {
+    width: 100%;
+    border-radius: var(--shape-xs) var(--shape-xs) 0 0;
+    background: var(--md-sys-color-primary-container);
+  }
+  .activa .b {
+    background: var(--diana-oro);
+    box-shadow: inset 0 0 0 2px var(--md-sys-color-on-surface);
+  }
+  .x {
+    min-height: 16px;
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface-variant);
+    white-space: nowrap;
+  }
   .grafico {
     width: 100%;
   }

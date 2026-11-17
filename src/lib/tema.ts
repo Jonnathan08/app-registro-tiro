@@ -41,9 +41,17 @@ export function aplicarTema(a: Ajustes): void {
   const oscuro = a.modo === 'oscuro' || (a.modo === 'sistema' && media().matches);
   const raiz = document.documentElement;
   raiz.className = (oscuro ? 'dark' : 'light') + SUFIJO[a.contraste];
-  // Color de la barra del sistema = superficie del tema
-  const superficie = getComputedStyle(raiz).getPropertyValue('--md-sys-color-surface').trim();
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', superficie);
+  colorBarraSistema();
+}
+
+/**
+ * Color de la barra del sistema: el del tablero, para que se vea como un solo bloque con la franja de arriba.
+ * Mientras dura la animación de entrada (body.entrando) va en el de la superficie, como la animación.
+ */
+export function colorBarraSistema(): void {
+  const token = document.body?.classList.contains('entrando') ? '--md-sys-color-surface' : '--tablero-fondo';
+  const color = getComputedStyle(document.documentElement).getPropertyValue(token).trim();
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', color);
 }
 
 export function alCambiarSistema(fn: () => void): void {

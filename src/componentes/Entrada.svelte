@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { colorBarraSistema } from '../lib/tema';
+
   // Animación de entrada: arranca idéntica a la pantalla de inicio que dibuja Android con
   // icono-512-mask-v2 (diana a color, pequeña y más arriba), se acerca y pasa a gris; dos flechas
   // fallan el centro, la tercera acierta y los colores se expanden anillo por anillo hacia afuera.
@@ -40,10 +42,14 @@
   // más arriba y se veía la barra de navegación (grabación del 2026-10-03). La app queda oculta
   // hasta que empieza la salida, y la diana espera a que el alto de la ventana se estabilice.
   let estable = $state(false);
-  if (animar) document.body.classList.add('entrando');
+  if (animar) {
+    document.body.classList.add('entrando');
+    colorBarraSistema();
+  }
 
   function mostrarApp() {
     document.body.classList.remove('entrando');
+    colorBarraSistema();
   }
 
   function terminar() {

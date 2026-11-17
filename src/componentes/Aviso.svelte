@@ -72,7 +72,7 @@
     left: 16px;
     right: 16px;
     z-index: 20;
-    bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(var(--alto-nav) + 16px + env(safe-area-inset-bottom, 0px));
     max-width: 560px;
     margin: 0 auto;
     display: flex;
@@ -81,7 +81,7 @@
     min-height: 48px;
     background: var(--md-sys-color-inverse-surface);
     color: var(--md-sys-color-inverse-on-surface);
-    border-radius: var(--shape-xs);
+    border-radius: var(--shape-s);
     padding: 4px 8px 4px 16px;
     font-size: 14px;
     line-height: 20px;
@@ -96,7 +96,7 @@
   }
   /* Con la barra de Deshacer / Guardar ronda en pantalla, el aviso queda encima de ella */
   :global(body:has(.acciones-fijas)) .snack {
-    bottom: calc(176px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(var(--alto-nav) + 92px + env(safe-area-inset-bottom, 0px));
   }
   .mensaje {
     flex: 1;
@@ -109,6 +109,7 @@
   .snack .btn {
     min-height: 48px;
     pointer-events: auto;
+    font-size: 16px;
     color: var(--md-sys-color-inverse-primary);
   }
   @media (prefers-reduced-motion: reduce) {

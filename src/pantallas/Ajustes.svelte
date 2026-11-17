@@ -1,13 +1,16 @@
 <script lang="ts">
   import Barra from '../componentes/Barra.svelte';
   import Icono from '../componentes/Icono.svelte';
+  import Marcador from '../componentes/Marcador.svelte';
   import Segmentado from '../componentes/Segmentado.svelte';
   import { estado } from '../lib/estado.svelte';
+  import { totalesHistorial } from '../lib/modelo';
   import { aCSV, compartir } from '../lib/exportar';
   import { deCSV } from '../lib/importar';
   import { aplicarTema, guardarAjustes, leerAjustes, type Contraste, type Modo } from '../lib/tema';
 
   const ajustes = $state(leerAjustes());
+  const totales = $derived(totalesHistorial(estado.historial));
   function cambiar() {
     guardarAjustes(ajustes);
     aplicarTema(ajustes);
@@ -45,10 +48,20 @@
 </script>
 
 <Barra titulo="Ajustes" />
+<Marcador
+  etiqueta="Datos guardados"
+  cifras={[
+    { rotulo: 'Sesiones', valor: totales.sesiones },
+    { rotulo: 'Flechas', valor: totales.flechas },
+  ]}
+>
+  <p class="aviso-local">Guardadas solo en este teléfono.</p>
+</Marcador>
 
 <div class="cuerpo">
   <section class="grupo">
     <h2 class="sec">Apariencia</h2>
+    <span class="rotulo" aria-hidden="true">Modo</span>
     <Segmentado
       etiqueta="Modo"
       bind:valor={ajustes.modo}
@@ -59,6 +72,7 @@
         { valor: 'oscuro' as Modo, texto: 'Oscuro' },
       ]}
     />
+    <span class="rotulo" aria-hidden="true">Contraste</span>
     <Segmentado
       etiqueta="Contraste"
       bind:valor={ajustes.contraste}
@@ -74,16 +88,16 @@
 
   <section class="grupo">
     <h2 class="sec">Datos</h2>
-    <button type="button" class="btn contorno estado" disabled={!estado.historial.length} onclick={exportarTodo}
+    <button type="button" class="btn contorno estado ancho" disabled={!estado.historial.length} onclick={exportarTodo}
       ><Icono nombre="compartir" />Exportar todas las sesiones</button
     >
-    <button type="button" class="btn contorno estado" disabled={importando} onclick={() => archivo.click()}
+    <button type="button" class="btn contorno estado ancho" disabled={importando} onclick={() => archivo.click()}
       ><Icono nombre="importar" />Importar sesiones (CSV)</button
     >
     <input bind:this={archivo} type="file" accept=".csv,text/csv" hidden onchange={importar} />
     <p class="t-body-s">
-      Tus sesiones se guardan solo en este teléfono. La app no se conecta a ningún servidor: para llevarlas a Drive,
-      compártelas desde aquí o desde cada sesión.
+      La app no se conecta a ningún servidor: para llevar tus sesiones a Drive, compártelas desde aquí o desde cada
+      sesión.
     </p>
     <p class="t-body-s">
       Para recuperarlas (por ejemplo, en un teléfono nuevo), importa un CSV exportado por la app. Las sesiones que ya
@@ -91,18 +105,38 @@
     </p>
   </section>
 
-  <p class="t-body-s version num">Versión {__VERSION__}</p>
+  <p class="t-rotulo version">Versión {__VERSION__}</p>
 </div>
 
 <style>
   .cuerpo {
     display: flex;
     flex-direction: column;
-    gap: 24px;
-    padding: 8px 16px 24px;
+    gap: 22px;
+    padding: 18px 16px 24px;
+  }
+  .grupo h2 {
+    margin: 0;
+  }
+  .rotulo {
+    font-size: 13px;
+    line-height: 18px;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+  .ancho {
+    width: 100%;
+    min-height: 52px;
+  }
+  .aviso-local {
+    margin: 4px 0 0;
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--tablero-tenue);
   }
   .version {
     margin: 0;
     text-align: center;
+    color: var(--md-sys-color-on-surface-variant);
   }
 </style>

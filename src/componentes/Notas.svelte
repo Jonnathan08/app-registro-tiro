@@ -74,18 +74,19 @@
   .notas {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 12px;
+  }
+  .notas h2 {
+    margin: 0;
   }
   textarea::placeholder {
     color: var(--md-sys-color-on-surface-variant);
     opacity: 0.7;
   }
   textarea[readonly] {
-    border-style: dashed;
     resize: none;
   }
   textarea[readonly]:focus {
-    border: 1px dashed var(--md-sys-color-outline);
-    padding: 15px 16px;
+    border-color: var(--md-sys-color-surface-container-highest);
   }
 </style>

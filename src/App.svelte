@@ -55,12 +55,12 @@
   {#each DESTINOS as d (d.p)}
     <button
       type="button"
-      class="destino"
+      class="destino estado"
       aria-current={estado.pantalla === d.p ? 'page' : undefined}
       onclick={() => ir(d.p)}
     >
-      <span class="pill estado"><Icono nombre={d.icono} /></span>
-      <span class="t-label">{d.texto}</span>
+      <span class="recuadro"><Icono nombre={d.icono} /></span>
+      <span class="etiqueta">{d.texto}</span>
     </button>
   {/each}
 </nav>
@@ -69,7 +69,7 @@
   main {
     max-width: 600px;
     margin: 0 auto;
-    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(var(--alto-nav) + 20px + env(safe-area-inset-bottom, 0px));
   }
   .cargando {
     text-align: center;
@@ -95,32 +95,43 @@
     z-index: 10;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    background: var(--md-sys-color-surface-container);
-    padding: 12px 0 calc(16px + env(safe-area-inset-bottom, 0px));
+    height: calc(var(--alto-nav) + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: var(--md-sys-color-surface-container-lowest);
+    border-top: 1px solid var(--md-sys-color-surface-container-highest);
   }
   .destino {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 4px;
     background: none;
     border: 0;
     cursor: pointer;
     color: var(--md-sys-color-on-surface-variant);
   }
-  .pill {
-    width: 64px;
+  .recuadro {
+    width: 56px;
     height: 32px;
-    border-radius: var(--shape-full);
+    border-radius: var(--shape-s);
     display: flex;
     align-items: center;
     justify-content: center;
   }
-  .destino[aria-current='page'] {
-    color: var(--md-sys-color-on-surface);
+  .etiqueta {
+    font-family: var(--font-marcador);
+    font-size: 14px;
+    line-height: 16px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
   }
-  .destino[aria-current='page'] .pill {
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
+  .destino[aria-current='page'] {
+    color: var(--md-sys-color-primary);
+  }
+  .destino[aria-current='page'] .recuadro {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
   }
 </style>
