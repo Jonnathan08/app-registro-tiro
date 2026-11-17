@@ -41,7 +41,8 @@
   $effect(() => {
     const b = seleccionado !== null ? caja?.querySelectorAll<HTMLElement>('.barra')[seleccionado] : undefined;
     if (!caja || !b) return;
-    const izq = b.offsetLeft - caja.offsetLeft,
+    // .grafico es position: relative, así que offsetLeft se mide desde su borde
+    const izq = b.offsetLeft,
       der = izq + b.offsetWidth;
     if (izq < caja.scrollLeft) caja.scrollLeft = izq;
     else if (der > caja.scrollLeft + caja.clientWidth) caja.scrollLeft = der - caja.clientWidth;
