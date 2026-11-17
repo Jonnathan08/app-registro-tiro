@@ -34,10 +34,22 @@
   const conValores = $derived(valores.length <= maxValores);
 
   const elegir = (i: number) => alElegir?.(seleccionado === i ? null : i);
+
+  // Si se elige una ronda desde la hoja o con ◀ ▶ y su barra está fuera de la vista, el gráfico se desplaza de lado
+  // hasta ella (solo de lado: scrollIntoView movería también la página)
+  let caja = $state<HTMLElement>();
+  $effect(() => {
+    const b = seleccionado !== null ? caja?.querySelectorAll<HTMLElement>('.barra')[seleccionado] : undefined;
+    if (!caja || !b) return;
+    const izq = b.offsetLeft - caja.offsetLeft,
+      der = izq + b.offsetWidth;
+    if (izq < caja.scrollLeft) caja.scrollLeft = izq;
+    else if (der > caja.scrollLeft + caja.clientWidth) caja.scrollLeft = der - caja.clientWidth;
+  });
 </script>
 
 <!-- Con muchas rondas, las barras no bajan de 24 px de ancho y el gráfico se desplaza de lado -->
-<div class="grafico">
+<div class="grafico" bind:this={caja}>
   <div class="barras" role="group" aria-label={descripcion}>
     {#each valores as v, i (i)}
       <button
@@ -58,9 +70,12 @@
 </div>
 
 <style>
+  /* El margen vertical deja ver el contorno de foco de las barras, que el desplazamiento recortaría */
   .grafico {
+    position: relative;
     overflow-x: auto;
     scrollbar-width: thin;
+    padding-block: 4px;
   }
   .barras {
     height: 96px;
