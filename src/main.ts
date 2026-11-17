@@ -1,3 +1,4 @@
+import './estilos/fuentes.css';
 import './estilos/tema.css';
 import './estilos/base.css';
 import { mount } from 'svelte';

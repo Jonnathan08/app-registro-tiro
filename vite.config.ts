@@ -57,7 +57,7 @@ export default defineConfig({
           { src: 'icono-512-mask-v2.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
-      workbox: { globPatterns: ['**/*.{js,css,html,svg,png}'] },
+      workbox: { globPatterns: ['**/*.{js,css,html,svg,png,woff2}'] },
     }),
   ],
   test: { include: ['src/**/*.test.ts'] },
