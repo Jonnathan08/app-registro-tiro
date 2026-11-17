@@ -8,6 +8,7 @@ App web instalable para registrar sesiones de tiro con arco recurvo. Funciona si
 
 - Perfiles de sesión: **Control** (12 rondas × 6 flechas), **Abierto** (rondas y flechas a elección) y **Libre** (sin formato: rondas de cualquier tamaño hasta terminar la sesión).
 - Distancia de tiro y diana de 122, 80 o 40 cm.
+- Estilo «marcador deportivo»: una franja oscura arriba con las cifras clave (ronda, puntos de la ronda en curso, total), legible a pleno sol.
 - Registro flecha a flecha tocando la diana (con lupa y regla de la línea) o con teclado manual; se cambia con el ícono de la barra superior. Deshacer y Guardar ronda quedan fijos sobre la navegación, y la diana se ve entera sin desplazar.
 - Al guardar una ronda, el aviso ofrece **Deshacer** para devolverla a la ronda en curso y corregirla.
 - Hoja de puntuación, total, X, 10+X, promedio y centro del grupo. La sesión en curso tiene dos pestañas: **Anotar** y **Hoja** (hoja y notas).
@@ -15,13 +16,14 @@ App web instalable para registrar sesiones de tiro con arco recurvo. Funciona si
 - Zoom con dos dedos sobre la diana y lupa fija en una esquina para afinar el impacto.
 - Edición de rondas ya guardadas durante la sesión en curso (lápiz en la hoja): corregir el valor con el teclado (descarta la posición) o volver a marcar en la diana (reemplaza posición y valor).
 - Notas personales y notas del entrenador; quedan bloqueadas al terminar la sesión.
-- Historial agrupado por mes, con un resumen de progreso plegable (último promedio, diferencia con la sesión anterior y tendencia) que se despliega en el gráfico por distancia; en cada sesión, gráfico de puntos por ronda y la ronda elegida resaltada en la diana.
+- Historial agrupado por mes, con el progreso en la franja de arriba (último promedio, diferencia con la sesión anterior y tendencia de las últimas 12 sesiones, por distancia); en cada sesión, puntos por ronda en barras y la ronda elegida resaltada en la diana (◀ ▶ para recorrerlas).
+- Ajustes muestra cuántas sesiones y flechas hay guardadas.
 - Exportación a CSV completo con el menú de compartir del teléfono (Drive, correo…). Nombre: `tiro_<fecha>_<distancia>m_<id>.csv`.
 - Importación del mismo CSV en Ajustes, para recuperar el historial en otro teléfono; las sesiones que ya están no se duplican.
 
 ## Seguridad
 
-- Sin analítica, sin servidores, sin fuentes ni scripts externos: la CSP solo permite recursos del propio origen.
+- Sin analítica, sin servidores, sin fuentes ni scripts externos: la CSP solo permite recursos del propio origen. La fuente Barlow Condensed (OFL) va incluida en la app desde `@fontsource/barlow-condensed` (solo latin, pesos 600 y 700) y el service worker la guarda para usarla sin conexión.
 - Los datos viven en IndexedDB del teléfono; solo salen si los compartes tú.
 - Dependencias con versión fija y `ignore-scripts` en `.npmrc` (ningún paquete ejecuta código al instalarse).
 - Acciones de GitHub fijadas por hash de commit.
@@ -35,7 +37,7 @@ Requiere Node 24 (`nvm use`, lee `.nvmrc`).
 ```
 npm ci            # instala dependencias exactas
 npm run dev       # servidor de desarrollo
-npm test          # pruebas (puntuación, modelo, estado, botón atrás, ayuda, exportación e importación)
+npm test          # pruebas (puntuación, modelo, progreso, estado, botón atrás, ayuda, exportación e importación)
 npm run check     # chequeo de tipos
 npm run lint      # formato (Prettier) y lint (ESLint)
 npm run format    # aplica el formato de Prettier
@@ -48,15 +50,16 @@ npm run build     # compila a dist/
 src/
   main.ts, App.svelte   arranque, navegación inferior y pantalla de error de almacenamiento
   pantallas/            una por destino: Configurar, Registro, Historial, Detalle, Ajustes
-  componentes/          piezas reutilizables (Barra, Diana, Teclado, Hoja, Grafico, Dialogo…)
+  componentes/          piezas reutilizables (Barra y Marcador: la franja oscura; Diana, Teclado, Hoja, Grafico, Dialogo…)
   lib/                  lógica sin interfaz, con pruebas *.test.ts al lado
     modelo.ts           tipos de datos, perfiles, validación, migración y cálculos
+    progreso.ts         progreso del historial: grupos por distancia, diferencia y tendencia
     diana.ts            geometría y puntuación de las dianas World Archery
     estado.svelte.ts    estado de la app y acciones (guarda en almacen.ts)
     almacen.ts          IndexedDB
     exportar.ts / importar.ts   CSV de ida y vuelta
     formato.ts, tema.ts formatos de número/fecha y tema claro/oscuro
-  estilos/              tema.css (generado por Material Theme Builder) y base.css
+  estilos/              tema.css (generado por Material Theme Builder), base.css (tokens del tablero y componentes) y fuentes.css
 ```
 
 Cambios en el formato de los datos guardados: subir `VERSION_DATOS` en `modelo.ts` y añadir el paso en `migrar()`.
