@@ -1,5 +1,10 @@
 # Cambios
 
+## 0.4.1 — 2026-11-17
+
+- Rondas completas: «Terminar y guardar» e «Ir a las notas» van uno sobre otro a todo el ancho; antes «Terminar y guardar» se salía de la tarjeta y su ícono se aplastaba. Ningún botón encoge ya su ícono.
+- Resumen de la Hoja y tablero del Detalle: el rótulo es «Total» y las flechas van debajo de la cifra («9 flechas»); antes se cortaban.
+
 ## 0.4.0 — 2026-11-17
 
 - Nuevo estilo **Marcador deportivo** en toda la app: franja oscura arriba con las cifras grandes en Barlow Condensed (incluida en la app, sin fuentes externas), rótulos en mayúsculas, botones y casillas cuadrados con borde grueso y el amarillo de la diana como acento. La barra de estado del teléfono toma el color de la franja.

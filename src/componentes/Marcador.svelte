@@ -7,6 +7,8 @@
     /** Continuación en el color de los rótulos (p. ej. «/12»), oculta al lector si hay sufijoLeido. */
     sufijo?: string;
     sufijoLeido?: string;
+    /** Línea pequeña bajo la cifra (p. ej. «9 flechas»); se lee junto al valor. */
+    nota?: string;
     /** Lo que lee el lector de pantalla en lugar del valor visible (p. ej. «–» → «sin ronda en curso»). */
     leido?: string;
     /** Cifra en el amarillo de la diana. */
@@ -28,7 +30,7 @@
 </script>
 
 <div class="tablero marcador" role={etiqueta ? 'group' : undefined} aria-label={etiqueta}>
-  <dl style:grid-template-columns={columnas}>
+  <dl style:grid-template-columns={columnas} class:con-nota={!!cifras[0]?.nota}>
     {#each cifras as c (c.rotulo)}
       {@const largo = String(c.valor).length >= 4}
       <div class="celda" class:abajo={c.tamano === 'l'}>
@@ -42,7 +44,7 @@
               >{/if}</span
           >{#if c.leido}<span class="oculto">{c.leido}</span>{:else if c.sufijoLeido}<span class="oculto"
               >{c.sufijoLeido}</span
-            >{/if}
+            >{/if}{#if c.nota}<span class="nota">{c.nota}</span>{/if}
         </dd>
       </div>
     {/each}
@@ -93,6 +95,19 @@
   }
   dd.largo.t-cifra-xl {
     font-size: 38px;
+  }
+  .nota {
+    display: block;
+    font-family: var(--font);
+    font-size: 13px;
+    line-height: 16px;
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--tablero-rotulo);
+  }
+  /* Con nota bajo la primera cifra, las secundarias se alinean con la cifra y no con la nota */
+  .con-nota .celda.abajo {
+    padding-bottom: 16px;
   }
   .acento {
     color: var(--tablero-acento);

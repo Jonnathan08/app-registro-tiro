@@ -19,10 +19,11 @@
     {etiqueta}
     cifras={[
       {
-        rotulo: `Total · ${flechas}`,
+        rotulo: 'Total',
+        nota: flechas,
         valor: r.total,
         sufijo: ` /${r.maximo}`,
-        sufijoLeido: ` de ${r.maximo}`,
+        sufijoLeido: ` de ${r.maximo},`,
         acento: true,
         ancha: true,
       },
@@ -34,10 +35,11 @@
 {:else}
   <section class="resumen" aria-label={etiqueta}>
     <div class="total">
-      <span class="t-rotulo">Total · {flechas}</span>
+      <span class="t-rotulo">Total</span>
       <span class="cifra"
-        >{r.total}<small aria-hidden="true"> /{r.maximo}</small><span class="oculto"> de {r.maximo}</span></span
+        >{r.total}<small aria-hidden="true"> /{r.maximo}</small><span class="oculto"> de {r.maximo},</span></span
       >
+      <span class="nota">{flechas}</span>
     </div>
     <div class="dato"><b>{r.x}</b><span class="t-rotulo">X</span></div>
     <div class="dato"><b>{r.dieces}</b><span class="t-rotulo">10+X</span></div>
@@ -67,9 +69,13 @@
   }
   .total .t-rotulo {
     color: var(--md-sys-color-on-surface-variant);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  }
+  .nota {
+    font-family: var(--font);
+    font-size: 13px;
+    line-height: 16px;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface-variant);
   }
   .cifra {
     font-size: 44px;
@@ -90,6 +96,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
+    /* Alineadas con la cifra del total, no con la nota de debajo */
+    padding-bottom: 26px;
   }
   .dato b {
     font-size: 30px;
