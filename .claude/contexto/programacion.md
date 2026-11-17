@@ -104,3 +104,4 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 - 2026-11-17 · feature/estilo-marcador (3.ª vuelta) · aprobado · barra elegida a la vista con scrollLeft; queda por probar en 360×640 en el teléfono.
 - 2026-11-17 · fix/hoja-y-terminar · aprobado · botones de Rondas completas en columna, el ícono del botón no se encoge y el total con las flechas como nota bajo la cifra.
 - 2026-11-17 · fix/hoja-desborde · aprobado con cambios · .hoja posicionada para que los .oculto no ensanchen la página (diálogo y navegación descolocados en Chrome Android); el audit en alto falla por picomatch sin corrección publicada y bloquea la publicación en CI.
+- 2026-11-17 · fix/ci-audit · aprobado · el CI bloquea por altas sin dev y por críticas en todo; las altas de desarrollo, como aviso `::warning`; pendiente picomatch 4.0.8.

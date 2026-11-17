@@ -1,4 +1,5 @@
-# En cada pull request: auditoría de lo que llega al teléfono (y de críticas en todo), formato y lint, pruebas, tipos y compilación.
+# En cada pull request: auditoría de lo que llega al teléfono (y de críticas en todo),
+# formato y lint, pruebas, tipos y compilación.
 # Al integrar en main: lo mismo y además publica en GitHub Pages.
 name: Verificar y publicar
 
