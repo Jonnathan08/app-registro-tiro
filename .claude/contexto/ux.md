@@ -1,7 +1,7 @@
 # Contexto UX — app de registro de tiro
 
 Memoria del agente `experto-ux`. Se actualiza en la misma rama que el cambio que la vuelve falsa.
-Última revisión: 2026-11-17 (versión 0.4.1).
+Última revisión: 2026-11-17 (versión 0.4.2).
 
 ## Usuario y uso
 
@@ -69,6 +69,7 @@ Navegación inferior fija de 76 px (`--alto-nav`) con 3 destinos, **Sesión**, *
 - Fila elegida de la hoja con texto `on-surface` (con `--diana-tinta` en oscuro no llegaba a AA).
 - `prefers-reduced-motion` respetado en `Entrada`, `Aviso` y el pop de la tira.
 - Capa de estado: `:hover` solo dentro de `@media (hover: hover)` (en táctil se quedaba pegado); el indicador de pestaña va en `::before`, separado de la capa `::after`.
+- Todo contenedor con `overflow` que contenga `.oculto` debe ser posicionado (`position: relative`, como `.hoja` y `.grafico`); si no, el texto oculto escapa, ensancha la página y en Android agranda el viewport y descoloca los diálogos y la navegación fija.
 
 ## Pendientes y deuda conocida
 
@@ -84,3 +85,4 @@ Navegación inferior fija de 76 px (`--alto-nav`) con 3 destinos, **Sesión**, *
 - 2026-11-13 · fix/tira-caja-y-pestanas · aprobado con cambios: tira en caja tonal con pop; el destello en la pestaña que se deja venía de compartir `::after` con la capa de estado y del hover pegado en táctil (supera la nota anterior sobre `::after`); corregido.
 - 2026-11-17 · feature/estilo-marcador · rediseño «marcador deportivo»; aprobado tras corregir el contraste de la fila elegida en oscuro y la altura de Anotar con la ayuda visible.
 - 2026-11-17 · fix/hoja-y-terminar (0.4.1) · aprobado: botones de «Rondas completas» en columna y nota de flechas bajo el total.
+- 2026-11-17 · fix/hoja-desborde (0.4.2) · aprobado: `.hoja` posicionada para que los `.oculto` de la cabecera no ensanchen la página; pendiente validar en el Pixel 8.

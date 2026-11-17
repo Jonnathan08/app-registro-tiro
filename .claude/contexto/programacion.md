@@ -1,7 +1,7 @@
 # Contexto de programación — app de registro de tiro
 
 Memoria del agente `experto-programador`. Se actualiza en la misma rama que el cambio que la vuelve falsa.
-Última revisión: 2026-11-17 (versión 0.4.1).
+Última revisión: 2026-11-17 (versión 0.4.2).
 
 ## Pila
 
@@ -67,6 +67,8 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 - Registro: `.pagina` define `--resto` (lo que ocupa Anotar fuera de la diana o el teclado) y `--alto-tecla` (56–76 px
   según el alto). Si cambia la altura de la barra, el marcador, las pestañas o la tira, actualizar `--resto`.
 - `colorBarraSistema()` (tema.ts) pone `theme-color` del color del tablero, o de la superficie mientras `body.entrando`.
+- Todo contenedor con `overflow-x: auto` que tenga descendientes absolutos (`.oculto`, `::before`) lleva `position: relative`;
+  si no, ensancha la página y Chrome Android descoloca los fijos y los diálogos (`.hoja`, `.grafico`).
 - Git: rama `feature/…` o `fix/…` desde `main`; merge `--no-ff`; versión en `package.json` + entrada en `CHANGELOG.md` en cada publicación.
 
 ## Seguridad (requisito del usuario: sin puertas traseras ni vulnerabilidades)
@@ -81,6 +83,9 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 ## Riesgos aceptados
 
 - `npm audit` muestra 12 avisos moderados en herramientas de desarrollo (p. ej. `minimatch` vía `eslint`); no llegan al teléfono (`--omit=dev` da 0).
+- Además, 14 altas solo de desarrollo y compilación por GHSA-fc5q-39xc-vjpf (`picomatch` <=4.0.7, sin versión corregida a
+  2026-11-17), vía vite, vitest, svelte-check y vite-plugin-pwa; `--omit=dev` da 0. El paso `npm audit --audit-level=high`
+  del CI (`publicar.yml`) falla hasta que salga la corrección o el usuario decida otra cosa.
 
 ## Pendientes y deuda conocida
 
@@ -94,3 +99,4 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 - 2026-11-17 · feature/estilo-marcador (2.ª vuelta) · aprobado · Grafico solo barras con desplazamiento lateral; alturas de la diana y del teclado calculadas con --resto y --alto-nav; queda por probar en 360×640 en el teléfono.
 - 2026-11-17 · feature/estilo-marcador (3.ª vuelta) · aprobado · barra elegida a la vista con scrollLeft; queda por probar en 360×640 en el teléfono.
 - 2026-11-17 · fix/hoja-y-terminar · aprobado · botones de Rondas completas en columna, el ícono del botón no se encoge y el total con las flechas como nota bajo la cifra.
+- 2026-11-17 · fix/hoja-desborde · aprobado con cambios · .hoja posicionada para que los .oculto no ensanchen la página (diálogo y navegación descolocados en Chrome Android); el audit en alto falla por picomatch sin corrección publicada y bloquea la publicación en CI.
