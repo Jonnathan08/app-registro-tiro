@@ -153,6 +153,15 @@ export function centroGrupo(fl: Flecha[]): { x: number; y: number } | null {
 
 /** Número (desde 1) de la ronda en curso. */
 export const numeroRonda = (s: Sesion) => s.registro.length + 1;
+/** Ronda que se está tirando, sin pasar de la última: con todas guardadas sigue en N (no N+1). */
+export const rondaEnCurso = (s: Sesion) => (esLibre(s) ? numeroRonda(s) : Math.min(numeroRonda(s), s.rondas));
+/** Puntos de las rondas guardadas, sin la ronda en curso. */
+export const totalCerrado = (s: Sesion) => suma(s.registro.flatMap((r) => r.flechas));
+
+/** Sesiones guardadas y flechas tiradas en ellas. */
+export function totalesHistorial(h: Sesion[]): { sesiones: number; flechas: number } {
+  return { sesiones: h.length, flechas: h.reduce((a, s) => a + todasLasFlechas(s).length, 0) };
+}
 export const rondaLlena = (s: Sesion) => s.enCurso.length >= (esLibre(s) ? LIBRE_MAX_FLECHAS : s.flechasPorRonda);
 export const todasGuardadas = (s: Sesion) => !esLibre(s) && s.registro.length >= s.rondas;
 /** Se puede guardar la ronda: llena o, en Libre, con al menos una flecha. */
