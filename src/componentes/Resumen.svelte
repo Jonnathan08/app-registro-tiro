@@ -23,7 +23,7 @@
         nota: flechas,
         valor: r.total,
         sufijo: ` /${r.maximo}`,
-        sufijoLeido: ` de ${r.maximo}`,
+        sufijoLeido: ` de ${r.maximo},`,
         acento: true,
         ancha: true,
       },
@@ -37,7 +37,7 @@
     <div class="total">
       <span class="t-rotulo">Total</span>
       <span class="cifra"
-        >{r.total}<small aria-hidden="true"> /{r.maximo}</small><span class="oculto"> de {r.maximo}</span></span
+        >{r.total}<small aria-hidden="true"> /{r.maximo}</small><span class="oculto"> de {r.maximo},</span></span
       >
       <span class="nota">{flechas}</span>
     </div>
