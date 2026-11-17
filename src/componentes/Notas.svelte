@@ -86,7 +86,7 @@
   textarea[readonly] {
     resize: none;
   }
-  textarea[readonly]:focus {
-    border-color: var(--md-sys-color-surface-container-highest);
+  textarea[readonly]:focus-visible {
+    border-color: var(--md-sys-color-primary);
   }
 </style>

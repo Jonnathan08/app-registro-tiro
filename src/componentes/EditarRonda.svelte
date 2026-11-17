@@ -119,7 +119,6 @@
     padding: 8px 16px calc(16px + env(safe-area-inset-bottom, 0px));
     background: var(--md-sys-color-surface-container-low);
     color: var(--md-sys-color-on-surface);
-    --fondo-campo: var(--md-sys-color-surface-container-low);
   }
   .hoja-inferior[open] {
     display: flex;

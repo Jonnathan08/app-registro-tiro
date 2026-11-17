@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Gráfico de una sola serie, de línea o de barras. Tocar un punto o una barra lo selecciona (y otra vez lo deselecciona).
+  // Gráfico de barras de una sola serie. Tocar una barra la selecciona (y otra vez la deselecciona).
   let {
     valores,
     etiquetaX,
@@ -8,72 +8,37 @@
     seleccionado = null,
     alElegir,
     descripcion,
-    variante = 'linea',
+    maxValores = 12,
   }: {
     valores: number[];
-    /** Texto bajo el eje X para el punto i. */
+    /** Texto bajo la barra i. */
     etiquetaX: (i: number) => string;
-    /** Nombre del punto i para el lector de pantalla. */
+    /** Nombre de la barra i para el lector de pantalla. */
     nombrePunto: (i: number) => string;
     formato?: (v: number) => string;
     seleccionado?: number | null;
     alElegir?: (i: number | null) => void;
     descripcion: string;
-    variante?: 'linea' | 'barras';
+    /** Con más barras que estas, solo se rotula la elegida (los valores se solaparían). */
+    maxValores?: number;
   } = $props();
 
-  const ALTO = 168;
-  const M = { izq: 40, der: 16, arr: 12, aba: 28 };
-  let ancho = $state(320);
-
-  // Escala Y con marcas redondas, sin empezar en cero: interesa la variación
+  // Escala sin empezar en cero (interesa la variación), con una altura mínima visible
   const escala = $derived.by(() => {
-    if (!valores.length) return { lo: 0, hi: 1, marcas: [] };
-    let min = Math.min(...valores),
+    if (!valores.length) return { lo: 0, hi: 1 };
+    const min = Math.min(...valores),
       max = Math.max(...valores);
-    if (min === max) {
-      min -= 1;
-      max += 1;
-    }
-    const paso =
-      [0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10, 20, 25, 50, 100].find((p) => Math.ceil(max / p) - Math.floor(min / p) <= 4) ??
-      100;
-    const lo = Math.max(0, Math.floor(min / paso) * paso),
-      hi = Math.ceil(max / paso) * paso;
-    const marcas: number[] = [];
-    for (let t = lo; t <= hi + paso / 2; t += paso) marcas.push(+t.toFixed(2));
-    return { lo, hi: hi > lo ? hi : lo + paso, marcas };
+    return min === max ? { lo: min - 1, hi: max + 1 } : { lo: min - (max - min) * 0.15, hi: max };
   });
-
-  const n = $derived(valores.length);
-  const plano = $derived(ancho - M.izq - M.der);
-  const x = (i: number) => M.izq + (n > 1 ? (i * plano) / (n - 1) : plano / 2);
-  const y = (v: number) => M.arr + (1 - (v - escala.lo) / (escala.hi - escala.lo)) * (ALTO - M.arr - M.aba);
-  const linea = $derived(valores.map((v, i) => `${i ? 'L' : 'M'}${x(i)} ${y(v)}`).join(''));
-  const area = $derived(n > 1 ? `${linea}L${x(n - 1)} ${ALTO - M.aba}L${x(0)} ${ALTO - M.aba}Z` : '');
-
-  // Como mucho ~6 etiquetas en X, siempre la primera y la última
-  const marcasX = $derived.by(() => {
-    const cada = Math.max(1, Math.ceil(n / 6));
-    const idx = valores.map((_, i) => i).filter((i) => i % cada === 0);
-    if (idx.at(-1) !== n - 1) {
-      if (n - 1 - idx.at(-1)! < cada / 2) idx.pop();
-      idx.push(n - 1);
-    }
-    return idx;
-  });
-  const franja = $derived(n > 1 ? plano / (n - 1) : plano); // zona táctil de cada punto
+  const altoBarra = (v: number) => Math.round(8 + ((v - escala.lo) / (escala.hi - escala.lo)) * 52);
+  const conValores = $derived(valores.length <= maxValores);
 
   const elegir = (i: number) => alElegir?.(seleccionado === i ? null : i);
-
-  // Barras: la misma escala sin cero, con un mínimo visible; con muchas, solo se rotula la elegida
-  const ALTO_BARRAS = 96;
-  const altoBarra = (v: number) => Math.round(8 + ((v - escala.lo) / (escala.hi - escala.lo)) * 52);
-  const conValores = $derived(n <= 12);
 </script>
 
-{#if variante === 'barras'}
-  <div class="barras" role="group" aria-label={descripcion} style:height="{ALTO_BARRAS}px">
+<!-- Con muchas rondas, las barras no bajan de 24 px de ancho y el gráfico se desplaza de lado -->
+<div class="grafico">
+  <div class="barras" role="group" aria-label={descripcion}>
     {#each valores as v, i (i)}
       <button
         type="button"
@@ -90,66 +55,15 @@
       </button>
     {/each}
   </div>
-{:else}
-  <div class="grafico" bind:clientWidth={ancho}>
-    <svg width={ancho} height={ALTO} role="group" aria-label={descripcion}>
-      {#each escala.marcas as t (t)}
-        <line class="rejilla" x1={M.izq} x2={ancho - M.der} y1={y(t)} y2={y(t)} />
-        <text class="eje" x={M.izq - 6} y={y(t) + 4} text-anchor="end">{formato(t)}</text>
-      {/each}
-      {#each marcasX as i (i)}
-        <text
-          class="eje"
-          x={x(i)}
-          y={ALTO - 8}
-          text-anchor={n > 1 && i === 0 ? 'start' : n > 1 && i === n - 1 ? 'end' : 'middle'}>{etiquetaX(i)}</text
-        >
-      {/each}
-
-      {#if area}<path class="area" d={area} />{/if}
-      <path class="linea" d={linea} />
-
-      {#if seleccionado !== null && valores[seleccionado] !== undefined}
-        <line class="guia" x1={x(seleccionado)} x2={x(seleccionado)} y1={M.arr} y2={ALTO - M.aba} />
-      {/if}
-      {#each valores as v, i (i)}
-        <circle
-          class="punto"
-          class:activo={i === seleccionado}
-          cx={x(i)}
-          cy={y(v)}
-          r={i === seleccionado ? 6 : n > 30 ? 3 : 4}
-        />
-      {/each}
-
-      {#if alElegir}
-        {#each valores as _, i (i)}
-          <rect
-            class="toque"
-            x={x(i) - franja / 2}
-            y={0}
-            width={franja}
-            height={ALTO}
-            role="button"
-            tabindex="0"
-            aria-pressed={i === seleccionado}
-            aria-label={nombrePunto(i)}
-            onclick={() => elegir(i)}
-            onkeydown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                elegir(i);
-              }
-            }}
-          />
-        {/each}
-      {/if}
-    </svg>
-  </div>
-{/if}
+</div>
 
 <style>
+  .grafico {
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
   .barras {
+    height: 96px;
     display: flex;
     align-items: stretch;
     gap: 4px;
@@ -157,8 +71,7 @@
     font-variant-numeric: tabular-nums;
   }
   .barra {
-    flex: 1 1 0;
-    min-width: 0;
+    flex: 1 0 24px;
     padding: 0;
     border: 0;
     background: none;
@@ -177,6 +90,7 @@
     font-size: 13px;
     line-height: 16px;
     font-weight: 700;
+    white-space: nowrap;
   }
   .b {
     width: 100%;
@@ -194,54 +108,5 @@
     font-weight: 600;
     color: var(--md-sys-color-on-surface-variant);
     white-space: nowrap;
-  }
-  .grafico {
-    width: 100%;
-  }
-  svg {
-    display: block;
-    font-family: var(--font);
-    overflow: visible;
-  }
-  .rejilla {
-    stroke: var(--md-sys-color-surface-variant);
-    stroke-width: 1;
-  }
-  .guia {
-    stroke: var(--md-sys-color-outline);
-    stroke-width: 1;
-  }
-  .eje {
-    font-size: 11px;
-    fill: var(--md-sys-color-on-surface-variant);
-    font-variant-numeric: tabular-nums;
-  }
-  .area {
-    fill: var(--md-sys-color-primary);
-    fill-opacity: 0.1;
-  }
-  .linea {
-    fill: none;
-    stroke: var(--md-sys-color-primary);
-    stroke-width: 2;
-    stroke-linejoin: round;
-    stroke-linecap: round;
-  }
-  .punto {
-    fill: var(--md-sys-color-primary);
-    stroke: var(--md-sys-color-surface-container-low);
-    stroke-width: 2;
-  }
-  .punto.activo {
-    fill: var(--md-sys-color-tertiary);
-  }
-  .toque {
-    fill: transparent;
-    cursor: pointer;
-    outline: none;
-  }
-  .toque:focus-visible {
-    fill: var(--md-sys-color-primary);
-    fill-opacity: 0.08;
   }
 </style>

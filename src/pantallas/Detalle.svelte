@@ -77,7 +77,7 @@
         seleccionado={ronda}
         alElegir={(i) => (ronda = i)}
         descripcion={porFlecha ? 'Promedio por flecha en cada ronda' : 'Puntos por ronda'}
-        variante="barras"
+        maxValores={porFlecha ? 8 : 12}
       />
     </section>
   {/if}

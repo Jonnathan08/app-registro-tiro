@@ -128,6 +128,7 @@
   ]);
   // En Libre la tira es una sola fila que se desplaza y siempre muestra la última flecha
   let tira = $state<HTMLElement>();
+  let desplazada = $state(false);
   $effect(() => {
     void sesion.enCurso.length;
     if (libre) tira?.scrollTo({ left: tira.scrollWidth });
@@ -237,7 +238,9 @@
           <div
             class="flechas num"
             class:libre
+            class:desplazada
             bind:this={tira}
+            onscroll={() => (desplazada = !!tira && tira.scrollLeft > 0)}
             style:--cols={libre ? 6 : Math.min(sesion.flechasPorRonda, 6)}
           >
             {#each { length: huecos } as _, i (i)}
@@ -418,9 +421,6 @@
     z-index: 4;
     background: var(--tablero-fondo);
   }
-  :global(html[class^='dark']) .pestanas {
-    border-bottom: 1px solid var(--md-sys-color-outline-variant);
-  }
   .pestanas button {
     height: 48px;
     border: 0;
@@ -456,9 +456,9 @@
     padding: 12px 16px 24px;
     min-height: 60dvh;
   }
-  /* Deja sitio a la barra fija de acciones (76 px + borde) */
+  /* Deja sitio a la barra fija de acciones (77 px); main ya reserva la navegación + 20 */
   .cuerpo.con-acciones {
-    padding-bottom: 88px;
+    padding-bottom: 65px;
   }
   .pagina {
     display: flex;
@@ -469,17 +469,25 @@
     margin: 0;
     color: var(--md-sys-color-on-surface-variant);
   }
-  /* La diana, lo más grande posible sin obligar a desplazar: el resto de Anotar (tablero, pestañas, tira, leyenda,
-     barra fija y navegación) ocupa unos 446 px */
+  /* Lo que ocupa Anotar fuera de la diana o el teclado: barra 52 + marcador 80 + pestañas 48 + margen 12 + tira 50
+     + separación 16 + margen inferior 65 + 20 de main + navegación */
+  .pagina {
+    --resto: calc(343px + var(--alto-nav) + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px));
+    /* Teclas lo más altas posible (de 56 a 76 px) sin desplazar: 4 filas y 3 separaciones de 8 */
+    --alto-tecla: clamp(56px, calc((100dvh - var(--resto) - 24px) / 4), 76px);
+  }
+  /* La diana, lo más grande posible sin obligar a desplazar: resta además la leyenda (8 + 16) y, si está visible,
+     la ayuda (8 + 32) */
   .diana-wrap {
+    --ayuda: 0px;
     display: flex;
     flex-direction: column;
     gap: 8px;
     align-self: center;
-    width: min(
-      100%,
-      max(260px, calc(100dvh - 446px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)))
-    );
+    width: min(100%, max(260px, calc(100dvh - var(--resto) - 24px - var(--ayuda))));
+  }
+  .diana-wrap:has(#ayuda-diana:not([hidden])) {
+    --ayuda: 40px;
   }
   .ayuda {
     margin: 0;
@@ -534,6 +542,9 @@
     scrollbar-width: none;
     padding: 4px 0;
     margin: -4px 0;
+  }
+  /* Indica que hay flechas a la izquierda, solo cuando las hay */
+  .flechas.libre.desplazada {
     mask-image: linear-gradient(to right, transparent, #000 16px);
   }
   .libre .flecha {

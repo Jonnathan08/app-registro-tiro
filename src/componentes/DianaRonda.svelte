@@ -57,7 +57,9 @@
   {#if sinPosiciones}
     <p class="t-body-s nota">Esta ronda se registró en modo manual: sus flechas no tienen posición.</p>
   {:else}
-    <p class="t-body-s nota">Toca una ronda en la hoja o en el gráfico para verla aquí.</p>
+    <p class="t-body-s nota">
+      Toca una ronda en la hoja{registro.length > 1 ? ' o en el gráfico' : ''} para verla aquí.
+    </p>
   {/if}
 </section>
 

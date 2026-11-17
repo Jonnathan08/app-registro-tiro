@@ -111,11 +111,8 @@
     color: var(--md-sys-color-on-surface);
     box-shadow: inset 4px 0 0 var(--md-sys-color-primary);
   }
-  :global(html[class^='dark']) .activa {
-    color: var(--diana-tinta);
-  }
-  :global(html[class^='dark']) .activa .acum {
-    color: var(--diana-tinta);
+  .activa .acum {
+    color: inherit;
   }
   td:first-child {
     width: 40px;

@@ -67,6 +67,10 @@ textarea {
   outline: 3px solid var(--md-sys-color-primary);
   outline-offset: 2px;
 }
+/* En oscuro (sobre todo con alto contraste) el tablero casi se funde con la página: borde bajo el último bloque */
+:root[class^='dark'] .tablero:not(:has(+ .tablero)) {
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
 /* Sobre el tablero, el contorno primary no se vería en claro */
 .tablero :focus-visible {
   outline-color: var(--tablero-acento);

@@ -28,7 +28,7 @@
       },
       { rotulo: 'X', valor: r.x, tamano: 'l' },
       { rotulo: '10+X', valor: r.dieces, tamano: 'l' },
-      { rotulo: 'Prom.', valor: promedio, leido: `promedio ${promedio}`, tamano: 'l' },
+      { rotulo: 'Prom.', rotuloLeido: 'Promedio', valor: promedio, tamano: 'l' },
     ]}
   />
 {:else}

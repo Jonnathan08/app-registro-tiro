@@ -1,6 +1,8 @@
 <script lang="ts" module>
   export interface Cifra {
     rotulo: string;
+    /** Cómo se lee el rótulo, si es una abreviatura (p. ej. «Prom.» → «Promedio»). */
+    rotuloLeido?: string;
     valor: string | number;
     /** Continuación en el color de los rótulos (p. ej. «/12»), oculta al lector si hay sufijoLeido. */
     sufijo?: string;
@@ -25,12 +27,15 @@
   const columnas = $derived(cifras.map((c) => (c.ancha ? '1.6fr' : '1fr')).join(' '));
 </script>
 
-<div class="tablero marcador">
-  <dl style:grid-template-columns={columnas} aria-label={etiqueta}>
+<div class="tablero marcador" role={etiqueta ? 'group' : undefined} aria-label={etiqueta}>
+  <dl style:grid-template-columns={columnas}>
     {#each cifras as c (c.rotulo)}
-      {@const largo = String(c.valor).length + (c.sufijo?.length ?? 0) >= 5}
+      {@const largo = String(c.valor).length >= 4}
       <div class="celda" class:abajo={c.tamano === 'l'}>
-        <dt class="t-rotulo">{c.rotulo}</dt>
+        <dt class="t-rotulo">
+          {#if c.rotuloLeido}<span aria-hidden="true">{c.rotulo}</span><span class="oculto">{c.rotuloLeido}</span
+            >{:else}{c.rotulo}{/if}
+        </dt>
         <dd class={c.tamano === 'l' ? 't-cifra-l' : 't-cifra-xl'} class:acento={c.acento} class:largo>
           <span aria-hidden={c.leido ? 'true' : undefined}
             >{c.valor}{#if c.sufijo}<small aria-hidden={c.sufijoLeido ? 'true' : undefined}>{c.sufijo}</small

@@ -35,6 +35,7 @@
       type="button"
       class="tecla estado num z-{zona(k.puntaje)}"
       disabled={deshabilitado}
+      aria-label={k.x ? 'X, 10 puntos' : k.puntaje === 0 ? 'Fallo' : undefined}
       onclick={() => alTocar(k.puntaje, !!k.x)}>{k.t}</button
     >
   {/each}
@@ -48,7 +49,7 @@
     gap: 8px;
   }
   .tecla {
-    height: 76px;
+    height: var(--alto-tecla, 76px);
     border-radius: var(--shape-s);
     border: 2px solid var(--md-sys-color-on-surface);
     font-family: var(--font-marcador);

@@ -226,9 +226,6 @@
     flex-direction: column;
     gap: 10px;
   }
-  :global(html[class^='dark']) .progreso {
-    border-bottom: 1px solid var(--md-sys-color-outline-variant);
-  }
   .distancias {
     display: flex;
     flex-wrap: wrap;

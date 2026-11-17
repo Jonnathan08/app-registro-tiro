@@ -3,7 +3,7 @@
 ## 0.4.0 — 2026-11-17
 
 - Nuevo estilo **Marcador deportivo** en toda la app: franja oscura arriba con las cifras grandes en Barlow Condensed (incluida en la app, sin fuentes externas), rótulos en mayúsculas, botones y casillas cuadrados con borde grueso y el amarillo de la diana como acento. La barra de estado del teléfono toma el color de la franja.
-- Anotar: el tablero muestra la ronda, los puntos de esta ronda y el total de las rondas guardadas; las pestañas van en la franja. Las flechas, en casillas cuadradas (el hueco siguiente resaltado); la diana ocupa todo el ancho que permite la pantalla sin desplazar; teclado de 3 × 4 teclas de 76 px.
+- Anotar: el tablero muestra la ronda, los puntos de esta ronda y el total de las rondas guardadas; las pestañas van en la franja. Las flechas, en casillas cuadradas (el hueco siguiente resaltado); la diana ocupa todo el ancho que permite la pantalla sin desplazar; teclado de 3 × 4 teclas de hasta 76 px. El resumen de la pestaña Hoja cuenta solo las rondas guardadas, como «Sesión» en el tablero.
 - Nueva sesión: el tablero muestra el formato, las flechas y el máximo mientras eliges; aviso si la distancia no es válida; «Empezar sesión» siempre a la vista.
 - Historial: el progreso pasa a la franja (promedio de la última sesión, diferencia con la anterior y tendencia de las últimas 12 sesiones por distancia, con selector de distancia). Lista con el total destacado.
 - Detalle: ◀ ▶ para recorrer las rondas en la diana; puntos por ronda en barras, con la ronda elegida en amarillo y resaltada en la hoja.
