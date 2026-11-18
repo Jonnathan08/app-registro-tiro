@@ -6,12 +6,14 @@
   import Ajustes from './pantallas/Ajustes.svelte';
   import Configurar from './pantallas/Configurar.svelte';
   import Detalle from './pantallas/Detalle.svelte';
+  import Estadisticas from './pantallas/Estadisticas.svelte';
   import Historial from './pantallas/Historial.svelte';
   import Registro from './pantallas/Registro.svelte';
 
   const DESTINOS: { p: Pantalla; texto: string; icono: NombreIcono }[] = [
     { p: 'sesion', texto: 'Sesión', icono: 'diana' },
     { p: 'historial', texto: 'Historial', icono: 'historial' },
+    { p: 'estadisticas', texto: 'Estadísticas', icono: 'estadisticas' },
     { p: 'ajustes', texto: 'Ajustes', icono: 'ajustes' },
   ];
 
@@ -43,6 +45,8 @@
     {:else}
       <Historial />
     {/if}
+  {:else if estado.pantalla === 'estadisticas'}
+    <Estadisticas />
   {:else}
     <Ajustes />
   {/if}
@@ -94,7 +98,7 @@
     bottom: 0;
     z-index: 10;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     height: calc(var(--alto-nav) + env(safe-area-inset-bottom, 0px));
     padding-bottom: env(safe-area-inset-bottom, 0px);
     background: var(--md-sys-color-surface-container-lowest);
@@ -119,13 +123,15 @@
     align-items: center;
     justify-content: center;
   }
+  /* 13 px y 0,8 de interletra: «Estadísticas» cabe en un cuarto de 360 px */
   .etiqueta {
     font-family: var(--font-marcador);
-    font-size: 14px;
+    font-size: 13px;
     line-height: 16px;
     font-weight: 700;
-    letter-spacing: 1.2px;
+    letter-spacing: 0.8px;
     text-transform: uppercase;
+    white-space: nowrap;
   }
   .destino[aria-current='page'] {
     color: var(--md-sys-color-primary);

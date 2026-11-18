@@ -72,7 +72,7 @@
         {#each grupos as g (g.k)}
           <button
             type="button"
-            class="distancia estado"
+            class="chip-tablero estado"
             aria-pressed={g.k === grupo.k}
             onclick={() => {
               elegido = g.k;
@@ -230,34 +230,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-  }
-  /* 36 px visibles; la zona táctil llega a 48 */
-  .distancia {
-    position: relative;
-    height: 36px;
-    margin: 6px 0;
-    padding: 0 14px;
-    border: 1.5px solid var(--tablero-rotulo);
-    border-radius: var(--shape-s);
-    background: none;
-    color: var(--tablero-texto);
-    font-family: var(--font-marcador);
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    font-variant-numeric: tabular-nums;
-    cursor: pointer;
-  }
-  .distancia::before {
-    content: '';
-    position: absolute;
-    inset: -7px 0;
-  }
-  .distancia[aria-pressed='true'] {
-    background: var(--tablero-acento);
-    border-color: var(--tablero-acento);
-    color: var(--diana-tinta);
   }
   .cifra {
     display: flex;

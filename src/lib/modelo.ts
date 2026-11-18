@@ -141,14 +141,18 @@ export function resumen(s: Sesion) {
   };
 }
 
-/** Centro del grupo (media de las flechas con posición). */
-export function centroGrupo(fl: Flecha[]): { x: number; y: number } | null {
-  const p = fl.filter((f) => f.pos).map((f) => f.pos!);
+/** Media de unos puntos; null sin puntos. */
+export function mediaPuntos(p: { x: number; y: number }[]): { x: number; y: number } | null {
   if (!p.length) return null;
   return {
     x: p.reduce((a, q) => a + q.x, 0) / p.length,
     y: p.reduce((a, q) => a + q.y, 0) / p.length,
   };
+}
+
+/** Centro del grupo (media de las flechas con posición). */
+export function centroGrupo(fl: Flecha[]): { x: number; y: number } | null {
+  return mediaPuntos(fl.filter((f) => f.pos).map((f) => f.pos!));
 }
 
 /** Número (desde 1) de la ronda en curso. */

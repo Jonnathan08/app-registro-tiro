@@ -1,7 +1,7 @@
 # Contexto UX — app de registro de tiro
 
 Memoria del agente `experto-ux`. Se actualiza en la misma rama que el cambio que la vuelve falsa.
-Última revisión: 2026-11-18 (versión 0.5.0).
+Última revisión: 2026-11-18 (versión 0.6.0).
 
 ## Usuario y uso
 
@@ -16,6 +16,8 @@ Memoria del agente `experto-ux`. Se actualiza en la misma rama que el cambio que
 - `src/estilos/tema.css` = paleta **Petróleo** (predeterminada): tokens `--md-sys-color-*` exportados de Material Theme Builder (semilla #156683). Generado: no se edita a mano.
 - `src/estilos/paletas.css` (generado con material-color-utilities por `scripts/generar-paletas.mjs`; no se edita a mano): **Bosque** #2f6b3f, **Violeta** #6750a4 (terciario #156683) y **Grafito** #5d6168 (esquema Neutral, terciario #156683). Se aplica con `data-paleta` en `<html>` (también `petroleo`, sin CSS propio), nunca como clase. Nunca rojo ni amarillo en primario ni terciario.
 - `--paleta-muestra-*` en `base.css`: primary del claro estándar de cada paleta; única excepción de color fijo además de la diana.
+- `.chip-tablero` (`base.css`): chip de filtro sobre la franja (36 px visibles, 48 de zona táctil, lo elegido en oro con tinta), compartido por Historial y Estadísticas.
+- Mapa de calor: grises de la diana de fondo y escala negro → azul → rojo → oro → blanco son colores fijos como la diana; viven en `calor.ts`/`MapaCalor.svelte` (el canvas no lee variables CSS) y deben coincidir con `--diana-*`.
 - Variantes por clase en `<html>` (las pone `src/lib/tema.ts`): `light|dark` + `''|-medium-contrast|-high-contrast`. **Por defecto: contraste medio**, modo según el sistema.
 - **Franja del tablero** (`.tablero`; tokens `--tablero-fondo|texto|rotulo|acento|linea|tenue` en `base.css`): fondo primary en claro medio y alto, `on-primary-fixed-variant` en claro estándar y en los tres oscuros; rótulos `inverse-primary` (rgb(140 207 241) en Petróleo); las reglas del tablero valen por tono para las cuatro paletas sin ajustes propios y `paletas.test.ts` vigila sus contrastes en las 24 combinaciones; acento `--diana-oro`; foco amarillo dentro del tablero; en oscuro, el último bloque del tablero lleva borde inferior `outline-variant`. La forman bloques hermanos: `Barra.svelte` (título), `Marcador.svelte` (pares rótulo-valor en `<dl>`, dentro de un `role="group"`) y, en Registro, las pestañas.
 - **Fuente**: Barlow Condensed 600/700 incluida en la app (`fuentes.css`, desde @fontsource, precacheada) para cifras, rótulos, botones, pestañas y navegación; Roboto/sistema para el texto corrido. Las mayúsculas, solo con `text-transform` (el texto fuente va en minúscula para que el lector no deletree).
@@ -31,7 +33,7 @@ Memoria del agente `experto-ux`. Se actualiza en la misma rama que el cambio que
 
 ## Navegación y pantallas
 
-Navegación inferior fija de 76 px (`--alto-nav`) con 3 destinos, **Sesión**, **Historial**, **Ajustes**; el activo en un recuadro primary.
+Navegación inferior fija de 76 px (`--alto-nav`) con 4 destinos, **Sesión**, **Historial**, **Estadísticas**, **Ajustes**; el activo en un recuadro primary; etiqueta 13 px, interletra 0,8 px, sin corte a 360 px. La app abre en Sesión.
 
 - **Configurar**: tablero FORMATO / FLECHAS / MÁXIMO (en Libre: FORMATO / DISTANCIA / DIANA), al día con lo elegido. Perfil, caja de distancia (cifra grande, error en línea), atajos de distancia, diana 122/80/40 cm, rondas y flechas (solo Abierto). «Empezar sesión» pegado sobre la navegación.
 - **Registro**: barra de contexto «Perfil · d m · Diana cm» (« cm» oculto); marcador RONDA n/N (leído « de N»; en Libre sin /N; con todo guardado se queda en N) / ESTA RONDA (amarillo; «–» con todo guardado) / SESIÓN (solo rondas guardadas). Pestañas **Anotar** y **Hoja** dentro del tablero, pegadas arriba, indicador amarillo de 4 px en `::before`; Hoja se lee «Hoja, N rondas guardadas»; también se cambia deslizando.
@@ -40,6 +42,12 @@ Navegación inferior fija de 76 px (`--alto-nav`) con 3 destinos, **Sesión**, *
   - Hoja: Resumen en caja con borde 2px, solo de rondas guardadas, rótulo «Total» y «N flechas» como nota bajo la cifra; hoja; notas; «Terminar sesión».
 - **Historial**: progreso en la franja (chips de distancia si hay varias, promedio de la última sesión, insignia ± frente a la anterior —nunca rojo/verde—, tendencia de las últimas 12 sesiones con puntos tocables que abren la sesión); lista por mes con el total en casilla primary («N puntos»), fecha, perfil · flechas · promedio y distancia.
 - **Detalle**: fila del título pegada arriba (volver, «d m · Perfil», fecha · hora · id, compartir); tablero TOTAL (con «N flechas» como nota) / X / 10+X / PROM.; diana por ronda con ◀ ▶ (Todas → R1 … Rn → Todas, anunciado); gráfico de barras (mínimo 24 px, desplazable de lado, la elegida en oro y llevada a la vista); fila elegida de la hoja en oro con marca primary y texto `on-surface`; notas en solo lectura; «Borrar sesión».
+- **Estadísticas**: Barra fija con el resumen de filtros como subtítulo («Todo el periodo · todas las distancias»); franja con chips Periodo (30 días / 90 días / Todo) y Distancia (Todas + grupos de `gruposProgreso` de todo el historial, solo si hay más de uno); Marcador SESIONES / FLECHAS / PROM.
+  - Récords 2×2 en `<dl>`, no pulsables: Mejor sesión (mayor % sobre 10 por flecha, sesiones de 36+ flechas, cualquier perfil; «671/720», «93,2 % · 9,32 por flecha», lugar y la fecha en su propia línea), Mejor ronda (igual, rondas de 3+ flechas), Más X, Más 10+X. Empate: el más antiguo.
+  - Agrupación: mapa de calor en canvas, en radios de diana (122/80/40 superpuestas); diana en grises claros por zona (#f4f5f6, #a3a9ad, #cdd2d5, #b3b9bd, #e3e6e8), líneas `--diana-tinta` al 45 %, borde 2 px `on-surface`; escala negro → azul → rojo → oro → blanco con rampa de opacidad desde 0,05; contorno oscuro (isolínea al 90 %, rgb(35 31 32 / 0,65), 1,5 px) en la zona de más impactos; con menos de 30 flechas marcadas, impactos en tinta con borde blanco; ✕ del centro del grupo; lectura visible «Centro del grupo» y «Más impactos» (solo en el mapa) y nota de cuántas flechas cuentan.
+  - Puntos por zona: 12 filas fijas con fichas `z-*`, todas las flechas.
+  - Flechas por semana: últimas 12 (lunes a domingo), según la distancia y no el periodo; actual en oro; promedio de las semanas cerradas desde la primera sesión con su rótulo en un margen derecho propio; etiquetas cada 4 semanas, omitidas a menos de 4 de la actual; tabla `.oculto` y resumen en texto («Tu semana con más flechas de las últimas 12.» solo si hay semanas anteriores con flechas).
+  - Vacíos: «Todavía no hay estadísticas…»; filtro sin sesiones: «Sin sesiones…» y «Ver todo el periodo» (foco al chip «Todo»).
 - **Ajustes**: tablero SESIONES / FLECHAS y «Guardadas solo en este teléfono.»; Apariencia: Color (Segmentado 2×2 con muestra; «Los colores de la diana no cambian.»), Modo, Contraste; exportar/importar CSV, versión.
 - `Entrada.svelte`: animación de arranque (ver decisiones).
 
@@ -56,6 +64,7 @@ Navegación inferior fija de 76 px (`--alto-nav`) con 3 destinos, **Sesión**, *
 - En Anotar **no hay gráfico**; la diana, lo más grande posible. Se mantiene la barra Deshacer + Guardar ronda.
 - Detalle con gráfico de **barras**. Progreso del Historial **por distancia, últimas 12**, en la franja (sin tarjeta plegable).
 - Barra de estado **oscura** (color del tablero), clara durante Entrada. `--diana-fallo` aceptado.
+- **Estadísticas** (2026-11-18): pestaña propia (no Inicio), la app sigue abriendo en Sesión; contenido y orden: franja con filtros y cifras, Récords, Agrupación, Puntos por zona, Flechas por semana. Descartado «Camino a 70 m». Récords por proporción con los mínimos de arriba; chips de distancia de todo el historial; diana del mapa en grises claros por zona; escala hasta blanco con contorno oscuro (frente a bajar la opacidad); umbral de 30; récords no pulsables; semanas independientes del periodo.
 - **Color de la app** (2026-11-18): cuatro paletas exactas, Petróleo por defecto, sin rojo ni amarillo; Grafito con esquema Neutral; terciario #156683 en Violeta y Grafito; la diana, el ícono y el manifiesto no cambian con la paleta. Petróleo generado se acepta con ±1/255 por canal.
 - El ícono maskable lleva versión en el nombre (`icono-512-mask-v2`): Brave lo guarda en caché, así que cambiarlo implica un nombre nuevo (v3…).
 
@@ -71,6 +80,7 @@ Navegación inferior fija de 76 px (`--alto-nav`) con 3 destinos, **Sesión**, *
 - Todas las casillas y teclas llevan borde 2px `on-surface` (separa la negra del fondo oscuro y la M del resto).
 - Fila elegida de la hoja con texto `on-surface` (con `--diana-tinta` en oscuro no llegaba a AA).
 - `prefers-reduced-motion` respetado en `Entrada`, `Aviso` y el pop de la tira.
+- Todo gráfico tiene un equivalente textual visible o una tabla `.oculto` dentro de un contenedor posicionado.
 - Capa de estado: `:hover` solo dentro de `@media (hover: hover)` (en táctil se quedaba pegado); el indicador de pestaña va en `::before`, separado de la capa `::after`.
 - Todo contenedor con `overflow` que contenga `.oculto` debe ser posicionado (`position: relative`, como `.hoja` y `.grafico`); si no, el texto oculto escapa, ensancha la página y en Android agranda el viewport y descoloca los diálogos y la navegación fija.
 
@@ -82,6 +92,8 @@ Navegación inferior fija de 76 px (`--alto-nav`) con 3 destinos, **Sesión**, *
 - Teclado en 360×640: con teclas de 56 px se desplazan unos 27 px (aceptado; no es el equipo del usuario).
 - El rediseño 0.4.0 se revisó leyendo código, sin verlo renderizado: validarlo en el Pixel 8.
 - Validar en el Pixel 8 Grafito frente a la M (tira y hoja) y el borde de la lupa sobre los anillos negro y azul.
+- Validar en el Pixel 8, al sol, el mapa de calor (contorno y blanco de la zona de más impactos).
+- Atrás desde Estadísticas vuelve a Sesión, como desde Historial y Ajustes: sigue pendiente de decisión del usuario.
 
 ## Historial de revisiones
 
@@ -91,3 +103,4 @@ Navegación inferior fija de 76 px (`--alto-nav`) con 3 destinos, **Sesión**, *
 - 2026-11-17 · fix/hoja-y-terminar (0.4.1) · aprobado: botones de «Rondas completas» en columna y nota de flechas bajo el total.
 - 2026-11-17 · fix/hoja-desborde (0.4.2) · aprobado: `.hoja` posicionada para que los `.oculto` de la cabecera no ensanchen la página; pendiente validar en el Pixel 8.
 - 2026-11-18 · feature/paleta-color (0.5.0) · cuatro paletas de color en Ajustes; aprobado tras rellenar la muestra elegida; pendiente Grafito frente a la M y la lupa en el Pixel 8.
+- 2026-11-18 · feature/estadisticas (0.6.0) · pestaña Estadísticas (4 destinos); aprobado con cambios (impactos en tinta, fecha sin partir, lista de dianas, semana récord, rótulo del promedio); re-revisión aprobada: contorno oscuro de la zona de más impactos (decisión del usuario).
