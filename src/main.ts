@@ -1,5 +1,6 @@
 import './estilos/fuentes.css';
 import './estilos/tema.css';
+import './estilos/paletas.css';
 import './estilos/base.css';
 import { mount } from 'svelte';
 import App from './App.svelte';

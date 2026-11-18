@@ -20,11 +20,18 @@
   --diana-tinta: #231f20;
   /* Fallo (M): fijo como los anillos, para que se vea igual en los dos temas; blanco encima da 7,6:1 */
   --diana-fallo: #4c5458;
+  /* Muestras del control Color de Ajustes: vista previa de cada paleta, así que no dependen del tema activo.
+     Son el primary del claro estándar de cada una (lo comprueba paletas.test.ts) */
+  --paleta-muestra-petroleo: #156683;
+  --paleta-muestra-bosque: #336940;
+  --paleta-muestra-violeta: #65558f;
+  --paleta-muestra-grafito: #575f6b;
 
   /* Tablero: la franja oscura de arriba. Claro medio y alto: primary */
   --tablero-fondo: var(--md-sys-color-primary);
   --tablero-texto: var(--md-sys-color-on-primary);
-  /* Rótulos: rgb(140 207 241) en las seis variantes, ≥5,5:1 sobre cualquier fondo del tablero */
+  /* Rótulos: en Petróleo, rgb(140 207 241) en las seis variantes. paletas.test.ts exige ≥4,5:1 sobre el fondo
+     del tablero en todas las paletas y variantes */
   --tablero-rotulo: var(--md-sys-color-inverse-primary);
   --tablero-acento: var(--diana-oro);
   --tablero-linea: color-mix(in srgb, var(--tablero-texto) 22%, transparent);
@@ -284,6 +291,20 @@ h2.sec {
   grid-auto-columns: minmax(0, 1fr);
   gap: 6px;
   width: 100%;
+}
+/* En cuadrícula (Segmentado con columnas): cuatro opciones no caben en una fila a 360 px */
+.seg.cuadricula {
+  grid-auto-flow: row;
+  grid-template-columns: repeat(var(--columnas), minmax(0, 1fr));
+}
+/* Muestra de color delante del texto: decorativa. El borde la separa del fondo elegido y del oscuro */
+.seg .muestra {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  border: 2px solid currentColor;
+  border-radius: var(--shape-full);
 }
 .seg button,
 .chip {

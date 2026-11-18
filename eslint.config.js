@@ -10,6 +10,8 @@ export default ts.config(
   ts.configs.recommended,
   svelte.configs.recommended,
   { languageOptions: { globals: { ...globals.browser, __VERSION__: 'readonly' } } },
+  // Scripts de mantenimiento: corren en Node, no en el teléfono
+  { files: ['scripts/**'], languageOptions: { globals: globals.node } },
   {
     files: ['**/*.svelte', '**/*.svelte.ts'],
     languageOptions: {

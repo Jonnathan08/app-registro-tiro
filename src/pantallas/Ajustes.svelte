@@ -7,9 +7,22 @@
   import { totalesHistorial } from '../lib/modelo';
   import { aCSV, compartir } from '../lib/exportar';
   import { deCSV } from '../lib/importar';
-  import { aplicarTema, guardarAjustes, leerAjustes, type Contraste, type Modo } from '../lib/tema';
+  import {
+    aplicarTema,
+    guardarAjustes,
+    leerAjustes,
+    PALETAS,
+    type Contraste,
+    type Modo,
+    type Paleta,
+  } from '../lib/tema';
 
   const ajustes = $state(leerAjustes());
+  const paletas = (Object.keys(PALETAS) as Paleta[]).map((p) => ({
+    valor: p,
+    texto: PALETAS[p].nombre,
+    muestra: `var(--paleta-muestra-${p})`,
+  }));
   const totales = $derived(totalesHistorial(estado.historial));
   function cambiar() {
     guardarAjustes(ajustes);
@@ -61,6 +74,9 @@
 <div class="cuerpo">
   <section class="grupo">
     <h2 class="sec">Apariencia</h2>
+    <span class="rotulo" aria-hidden="true">Color</span>
+    <Segmentado etiqueta="Color" bind:valor={ajustes.paleta} alCambiar={cambiar} columnas={2} opciones={paletas} />
+    <p class="t-body-s">Los colores de la diana no cambian.</p>
     <span class="rotulo" aria-hidden="true">Modo</span>
     <Segmentado
       etiqueta="Modo"

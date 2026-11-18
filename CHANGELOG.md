@@ -1,5 +1,9 @@
 # Cambios
 
+## 0.5.0 — 2026-11-18
+
+- Ajustes: nuevo control **Color** para elegir el color de la app entre Petróleo (el de siempre, predeterminado), Bosque, Violeta y Grafito. Se combina con el modo y el contraste; la franja de arriba y la barra de estado toman el color elegido. Los colores de la diana, el ícono y la pantalla de bienvenida no cambian.
+
 ## 0.4.2 — 2026-11-17
 
 - Corrección: con una ronda de muchas flechas en la Hoja (Libre), la página se ensanchaba; los diálogos salían desplazados y cortados y la navegación inferior desaparecía.
