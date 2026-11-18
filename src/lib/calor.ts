@@ -157,3 +157,46 @@ export function direccion(p: Punto): string {
 
 /** «9 · abajo a la izquierda» */
 export const describir = (p: Punto) => `${anillo(p)} · ${direccion(p)}`;
+/** Para el lector de pantalla, sin el punto medio que algunos leen en voz alta: «9, abajo a la izquierda» */
+export const describirLeido = (p: Punto) => `${anillo(p)}, ${direccion(p)}`;
+
+/** Nivel de densidad del contorno oscuro: separa la zona de más impactos (blanca) del centro claro de la diana. */
+export const NIVEL_CONTORNO = 0.9;
+
+/**
+ * Segmentos de la línea donde la densidad vale `nivel` (marching squares sobre los centros de las celdas),
+ * en radios de diana; vacío si nada llega al nivel.
+ */
+export function isolinea(d: Float32Array, n: number, nivel: number): [Punto, Punto][] {
+  const seg: [Punto, Punto][] = [];
+  const corte = (i0: number, j0: number, i1: number, j1: number): Punto => {
+    const a = d[j0 * n + i0],
+      b = d[j1 * n + i1];
+    const t = (nivel - a) / (b - a);
+    const p = centroCelda(i0, j0, n),
+      q = centroCelda(i1, j1, n);
+    return { x: p.x + (q.x - p.x) * t, y: p.y + (q.y - p.y) * t };
+  };
+  for (let j = 0; j < n - 1; j++)
+    for (let i = 0; i < n - 1; i++) {
+      const k =
+        (d[j * n + i] >= nivel ? 8 : 0) |
+        (d[j * n + i + 1] >= nivel ? 4 : 0) |
+        (d[(j + 1) * n + i + 1] >= nivel ? 2 : 0) |
+        (d[(j + 1) * n + i] >= nivel ? 1 : 0);
+      if (k === 0 || k === 15) continue;
+      const arriba = () => corte(i, j, i + 1, j),
+        derecha = () => corte(i + 1, j, i + 1, j + 1),
+        abajo = () => corte(i, j + 1, i + 1, j + 1),
+        izquierda = () => corte(i, j, i, j + 1);
+      if (k === 1 || k === 14) seg.push([izquierda(), abajo()]);
+      else if (k === 2 || k === 13) seg.push([abajo(), derecha()]);
+      else if (k === 3 || k === 12) seg.push([izquierda(), derecha()]);
+      else if (k === 4 || k === 11) seg.push([arriba(), derecha()]);
+      else if (k === 6 || k === 9) seg.push([arriba(), abajo()]);
+      else if (k === 7 || k === 8) seg.push([izquierda(), arriba()]);
+      else if (k === 5) seg.push([izquierda(), arriba()], [abajo(), derecha()]);
+      else seg.push([arriba(), derecha()], [izquierda(), abajo()]);
+    }
+  return seg;
+}

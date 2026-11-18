@@ -1,6 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import base from '../estilos/base.css?raw';
-import { anillo, colorCalor, densidad, describir, direccion, maximo, PARADAS, puntosNormalizados } from './calor';
+import {
+  anillo,
+  colorCalor,
+  densidad,
+  describir,
+  describirLeido,
+  direccion,
+  isolinea,
+  maximo,
+  PARADAS,
+  puntosNormalizados,
+} from './calor';
 import { geometria } from './diana';
 import { CONFIG_DEFECTO, mediaPuntos, nuevaSesion, type Sesion } from './modelo';
 
@@ -81,5 +92,28 @@ describe('describir', () => {
         { x: 2, y: 3 },
       ]),
     ).toEqual({ x: 1, y: 2 });
+  });
+});
+
+describe('isolinea', () => {
+  it('rodea la zona de más densidad con una línea cerrada', () => {
+    const n = 32;
+    const seg = isolinea(densidad([{ x: 0.2, y: -0.1 }], n), n, 0.9);
+    expect(seg.length).toBeGreaterThan(3);
+    for (const [a, b] of seg)
+      for (const p of [a, b]) {
+        expect(Math.hypot(p.x - 0.2, p.y + 0.1)).toBeLessThan(0.15);
+      }
+    // Cerrada: cada extremo aparece en dos segmentos
+    const clave = (p: { x: number; y: number }) => `${p.x.toFixed(6)},${p.y.toFixed(6)}`;
+    const cuenta = new Map<string, number>();
+    for (const [a, b] of seg) for (const p of [a, b]) cuenta.set(clave(p), (cuenta.get(clave(p)) ?? 0) + 1);
+    expect([...cuenta.values()].every((c) => c === 2)).toBe(true);
+  });
+  it('sin densidad, sin línea', () => {
+    expect(isolinea(densidad([], 16), 16, 0.9)).toEqual([]);
+  });
+  it('describirLeido sin el punto medio', () => {
+    expect(describirLeido({ x: 0, y: 0.3 })).toBe('8, arriba');
   });
 });

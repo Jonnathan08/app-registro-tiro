@@ -10,7 +10,7 @@
   import Icono from '../componentes/Icono.svelte';
   import MapaCalor from '../componentes/MapaCalor.svelte';
   import Marcador, { type Cifra } from '../componentes/Marcador.svelte';
-  import { describir, densidad, maximo, MIN_CALOR, puntosNormalizados } from '../lib/calor';
+  import { describir, describirLeido, densidad, maximo, MIN_CALOR, puntosNormalizados } from '../lib/calor';
   import {
     conteoZonas,
     filtrar,
@@ -26,7 +26,7 @@
   } from '../lib/estadisticas';
   import { estado } from '../lib/estado.svelte';
   import { dosDecimales, fechaCorta, fechaLarga, porcentaje } from '../lib/formato';
-  import { mediaPuntos, todasLasFlechas, type Sesion } from '../lib/modelo';
+  import { mediaPuntos, todasLasFlechas } from '../lib/modelo';
   import { gruposProgreso } from '../lib/progreso';
 
   const ahora = new Date();
@@ -36,9 +36,8 @@
   // Distancias de todo el historial: no cambian al cambiar de periodo (no se mueven bajo el dedo)
   const grupos = $derived(gruposProgreso(estado.historial));
   const grupo = $derived(grupos.find((g) => g.k === clave) ?? null);
-  $effect(() => {
-    if (clave !== null && !grupo) clave = null;
-  });
+  // Si la distancia elegida ya no está (p. ej. se borró su última sesión), se ven todas
+  const claveEfectiva = $derived(grupo ? clave : null);
   $effect(() => {
     recordado = { periodo, clave };
   });
@@ -52,7 +51,7 @@
     `${PERIODOS.find((x) => x.p === periodo)!.largo} · ${grupo ? grupo.texto : 'todas las distancias'}`,
   );
 
-  const filtradas = $derived(filtrar(estado.historial, { periodo, clave }, ahora));
+  const filtradas = $derived(filtrar(estado.historial, { periodo, clave: claveEfectiva }, ahora));
   const flechas = $derived(filtradas.flatMap(todasLasFlechas));
   const t = $derived(totales(filtradas));
   const m = $derived(mejores(filtradas));
@@ -78,16 +77,17 @@
       (a, b) => b - a,
     ),
   );
+  const listaY = new Intl.ListFormat('es', { type: 'conjunction' });
   const notaMapa = $derived(
     (puntos.length === t.flechas
       ? `${puntos.length} flechas, todas marcadas en la diana.`
       : `${puntos.length} de ${t.flechas} flechas: solo cuentan las marcadas en la diana.`) +
-      (dianas.length > 1 ? ` Dianas de ${dianas.join(' y ')} cm superpuestas a escala.` : ''),
+      (dianas.length > 1 ? ` Dianas de ${listaY.format(dianas.map(String))} cm superpuestas a escala.` : ''),
   );
 
   // ---- Flechas por semana: últimas 12, sin importar el periodo; sí la distancia ----
   const ALTO = 120;
-  const deDistancia = $derived(filtrar(estado.historial, { periodo: 'todo', clave }, ahora));
+  const deDistancia = $derived(filtrar(estado.historial, { periodo: 'todo', clave: claveEfectiva }, ahora));
   const semanas = $derived(flechasPorSemana(deDistancia, ahora));
   const primera = $derived.by(() => {
     const ts = deDistancia.map((s) => Date.parse(s.fecha)).filter((x) => !Number.isNaN(x));
@@ -96,7 +96,12 @@
   const promSemana = $derived(promedioSemanal(semanas, primera));
   const maxSemana = $derived(Math.max(1, promSemana ?? 0, ...semanas.map((w) => w.flechas)));
   const estaSemana = $derived(semanas.at(-1)!.flechas);
-  const semanaRecord = $derived(estaSemana > 0 && semanas.slice(0, -1).every((w) => w.flechas < estaSemana));
+  // Solo si hay con qué comparar: con una única semana con flechas no dice nada
+  const semanaRecord = $derived(
+    estaSemana > 0 &&
+      semanas.slice(0, -1).some((w) => w.flechas > 0) &&
+      semanas.slice(0, -1).every((w) => w.flechas < estaSemana),
+  );
   const textoSemanas = $derived(
     [
       ...(semanas.every((w) => !w.flechas)
@@ -104,7 +109,7 @@
         : [
             `Esta semana: ${estaSemana} flechas.`,
             promSemana !== null ? `Promedio de las semanas anteriores: ${Math.round(promSemana)}.` : '',
-            semanaRecord ? 'Tu semana con más flechas.' : '',
+            semanaRecord ? 'Tu semana con más flechas de las últimas 12.' : '',
           ]),
       'Últimas 12 semanas, sin importar el periodo elegido.',
     ]
@@ -113,7 +118,6 @@
   );
 
   // ---- Récords ----
-  const lugar = (s: Sesion) => `${s.distanciaM} m · ${s.dianaCm} cm · ${fechaCorta(s.fecha)}`;
   interface Casilla {
     rotulo: string;
     rotuloLeido?: string;
@@ -139,7 +143,7 @@
       rotulo: 'Más 10+X',
       rotuloLeido: 'Más dieces en una sesión, con las X',
       marca: m.dieces,
-      vacio: 'Sin 10 todavía',
+      vacio: 'Ningún 10 todavía',
     },
   ]);
 
@@ -175,12 +179,18 @@
     </div>
     {#if grupos.length > 1}
       <div class="chips" role="group" aria-label="Distancia">
-        <button type="button" class="chip-tablero estado" aria-pressed={clave === null} onclick={() => (clave = null)}
-          >Todas</button
+        <button
+          type="button"
+          class="chip-tablero estado"
+          aria-pressed={claveEfectiva === null}
+          onclick={() => (clave = null)}>Todas</button
         >
         {#each grupos as g (g.k)}
-          <button type="button" class="chip-tablero estado" aria-pressed={clave === g.k} onclick={() => (clave = g.k)}
-            >{g.texto}</button
+          <button
+            type="button"
+            class="chip-tablero estado"
+            aria-pressed={claveEfectiva === g.k}
+            onclick={() => (clave = g.k)}>{g.texto}</button
           >
         {/each}
       </div>
@@ -216,7 +226,10 @@
                     >{/if}
                 </dd>
                 {#if k.linea}<dd class="t-body-s num">{k.linea(x)}</dd>{/if}
-                <dd class="t-body-s num">{lugar(x.sesion)}</dd>
+                <dd class="t-body-s num">
+                  {x.sesion.distanciaM} m · {x.sesion.dianaCm} cm ·
+                  <span class="sin-corte">{fechaCorta(x.sesion.fecha)}</span>
+                </dd>
               {:else}
                 <dd class="t-cifra-l valor"><span aria-hidden="true">–</span><span class="oculto">sin datos</span></dd>
                 <dd class="t-body-s">{k.vacio}</dd>
@@ -254,13 +267,20 @@
             {#if centro}
               <div>
                 <dt>Centro del grupo</dt>
-                <dd class="num">{describir(centro)}</dd>
+                <dd class="num">
+                  <span aria-hidden="true">{describir(centro)}</span><span class="oculto">{describirLeido(centro)}</span
+                  >
+                </dd>
               </div>
             {/if}
             {#if caliente}
               <div>
                 <dt>Más impactos</dt>
-                <dd class="num">{describir(caliente)}</dd>
+                <dd class="num">
+                  <span aria-hidden="true">{describir(caliente)}</span><span class="oculto"
+                    >{describirLeido(caliente)}</span
+                  >
+                </dd>
               </div>
             {/if}
           </dl>
@@ -505,11 +525,13 @@
   }
 
   /* Flechas por semana */
+  /* Margen a la derecha para el rótulo del promedio: así nunca tapa una barra */
   .semanas {
     position: relative;
     display: flex;
     align-items: flex-end;
     gap: 6px;
+    padding-right: 58px;
   }
   .col {
     flex: 1;
@@ -563,13 +585,15 @@
     position: absolute;
     right: 0;
     bottom: 2px;
-    padding: 0 4px;
     font-family: var(--font-marcador);
     font-weight: 600;
     font-size: 13px;
     line-height: 16px;
-    background: var(--md-sys-color-surface);
+    white-space: nowrap;
     color: var(--md-sys-color-on-surface-variant);
+  }
+  .sin-corte {
+    white-space: nowrap;
   }
   /* Contenedor posicionado de la tabla oculta: si no, ensancha la página */
   .tabla {

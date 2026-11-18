@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { colorCalor, type Punto } from '../lib/calor';
+  import { colorCalor, isolinea, NIVEL_CONTORNO, type Punto } from '../lib/calor';
 
   // Agrupación sobre una diana en grises: mapa de calor (canvas) o, con pocas flechas, los impactos.
   // Coordenadas en radios de diana (1 = borde del anillo 1), y hacia arriba.
@@ -49,6 +49,17 @@
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(aux, 0, 0, lado, lado);
+    // Contorno oscuro de la zona de más impactos: su blanco no se confunde con el centro claro de la diana
+    ctx.strokeStyle = 'rgb(35 31 32 / 0.65)';
+    ctx.lineWidth = 1.5 * (devicePixelRatio || 1);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    const px = (p: Punto) => [((p.x + 1) / 2) * lado, ((1 - p.y) / 2) * lado] as const;
+    for (const [a, b] of isolinea(dens, n, NIVEL_CONTORNO)) {
+      ctx.moveTo(...px(a));
+      ctx.lineTo(...px(b));
+    }
+    ctx.stroke();
     ctx.restore();
   });
 
@@ -69,7 +80,7 @@
     <circle class="linea" r="0.05" stroke={TINTA} />
     {#if !dens}
       {#each puntos as p, i (i)}
-        <circle class="impacto" cx={p.x} cy={-p.y} r="0.022" stroke={TINTA} />
+        <circle class="impacto" cx={p.x} cy={-p.y} r="0.025" fill={TINTA} />
       {/each}
     {/if}
     {#if centro}
@@ -104,9 +115,10 @@
     stroke-width: 0.004;
     stroke-opacity: 0.45;
   }
+  /* Como las flechas de Diana: tinta con borde blanco, visibles sobre cualquiera de los grises */
   .impacto {
-    fill: rgb(255 255 255 / 0.9);
-    stroke-width: 0.008;
+    stroke: #fff;
+    stroke-width: 0.01;
   }
   .centro {
     fill: none;
