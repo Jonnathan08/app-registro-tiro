@@ -20,11 +20,11 @@ const SALIDA = new URL('../src/estilos/paletas.css', import.meta.url);
 // Semillas: iguales que PALETAS en src/lib/tema.ts (lo vigila src/lib/paletas.test.ts)
 const PETROLEO = '#156683';
 const PALETAS = {
-  bosque: { semilla: '#2F6B3F', esquema: SchemeTonalSpot },
+  bosque: { semilla: '#2f6b3f', esquema: SchemeTonalSpot },
   // Terciario fijado en petróleo: el automático sería rosa rojizo, cerca del rojo de la diana
-  violeta: { semilla: '#6750A4', esquema: SchemeTonalSpot, terciario: PETROLEO },
+  violeta: { semilla: '#6750a4', esquema: SchemeTonalSpot, terciario: PETROLEO },
   // Esquema neutral (croma bajo): con tonal spot saldría azul. Terciario petróleo para distinguirlo del primario
-  grafito: { semilla: '#5D6168', esquema: SchemeNeutral, terciario: PETROLEO },
+  grafito: { semilla: '#5d6168', esquema: SchemeNeutral, terciario: PETROLEO },
 };
 
 // Clase de <html> → [oscuro, nivel de contraste]; los mismos nombres que exporta Material Theme Builder

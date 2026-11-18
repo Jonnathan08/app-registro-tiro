@@ -52,7 +52,7 @@ export function guardarAjustes(a: Ajustes): void {
 const media = () => matchMedia('(prefers-color-scheme: dark)');
 
 /**
- * Pone en <html> la clase exportada por Material Theme Builder (p. ej. "dark-medium-contrast") y la paleta
+ * Pone en <html> la clase de modo y contraste (p. ej. "dark-medium-contrast") y la paleta
  * en data-paleta. La paleta va en un atributo, nunca en la clase: hay CSS que depende de [class^='dark'].
  */
 export function aplicarTema(a: Ajustes): void {

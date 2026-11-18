@@ -71,7 +71,7 @@ describe('paletas generadas', () => {
   });
 
   it.each(LISTA.filter((p) => p !== 'petroleo'))('%s se generó con la semilla de PALETAS', (p) => {
-    expect(paletas).toContain(`/* ${p}: semilla ${PALETAS[p].semilla.toUpperCase()},`);
+    expect(paletas).toContain(`/* ${p}: semilla ${PALETAS[p].semilla},`);
   });
 
   it('la muestra de cada paleta (base.css) es su primary en claro estándar', () => {

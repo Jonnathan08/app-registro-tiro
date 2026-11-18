@@ -1,7 +1,7 @@
 /* Generado por scripts/generar-paletas.mjs (npm run paletas): no se edita a mano.
    Paletas elegibles en Ajustes; Petróleo, la predeterminada, es tema.css. Las aplica data-paleta en <html>. */
 
-/* bosque: semilla #2F6B3F, tonal spot */
+/* bosque: semilla #2f6b3f, tonal spot */
 :root[data-paleta='bosque'].light {
   --md-sys-color-primary: rgb(51 105 64);
   --md-sys-color-surface-tint: rgb(51 105 64);
@@ -309,7 +309,7 @@
   --md-sys-color-surface-container-highest: rgb(67 72 66);
 }
 
-/* violeta: semilla #6750A4, tonal spot, terciario #156683 */
+/* violeta: semilla #6750a4, tonal spot, terciario #156683 */
 :root[data-paleta='violeta'].light {
   --md-sys-color-primary: rgb(101 85 143);
   --md-sys-color-surface-tint: rgb(101 85 143);
@@ -617,7 +617,7 @@
   --md-sys-color-surface-container-highest: rgb(72 70 76);
 }
 
-/* grafito: semilla #5D6168, neutral, terciario #156683 */
+/* grafito: semilla #5d6168, neutral, terciario #156683 */
 :root[data-paleta='grafito'].light {
   --md-sys-color-primary: rgb(87 95 107);
   --md-sys-color-surface-tint: rgb(87 95 107);

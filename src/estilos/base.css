@@ -306,6 +306,11 @@ h2.sec {
   border: 2px solid currentColor;
   border-radius: var(--shape-full);
 }
+/* Elegida, punto lleno: en su color sobre primary se vería como un aro vacío, «no marcada».
+   !important porque Segmentado le pone el color con style: (en línea) */
+.seg button[aria-pressed='true'] .muestra {
+  background: currentColor !important;
+}
 .seg button,
 .chip {
   min-height: 48px;
