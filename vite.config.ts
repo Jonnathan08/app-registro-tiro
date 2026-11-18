@@ -60,5 +60,6 @@ export default defineConfig({
       workbox: { globPatterns: ['**/*.{js,css,html,svg,png,woff2}'] },
     }),
   ],
-  test: { include: ['src/**/*.test.ts'] },
+  // css: sin él, Vitest vacía los .css y paletas.test.ts no podría leerlos con ?raw
+  test: { include: ['src/**/*.test.ts'], css: true },
 });

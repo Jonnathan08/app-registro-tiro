@@ -18,6 +18,7 @@ App web instalable para registrar sesiones de tiro con arco recurvo. Funciona si
 - Notas personales y notas del entrenador; quedan bloqueadas al terminar la sesión.
 - Historial agrupado por mes, con el progreso en la franja de arriba (último promedio, diferencia con la sesión anterior y tendencia de las últimas 12 sesiones, por distancia); en cada sesión, puntos por ronda en barras y la ronda elegida resaltada en la diana (◀ ▶ para recorrerlas).
 - Ajustes muestra cuántas sesiones y flechas hay guardadas.
+- Color de la app a elegir en Ajustes: Petróleo (predeterminado), Bosque, Violeta o Grafito, en claro u oscuro y con tres niveles de contraste. Los colores de la diana no cambian.
 - Exportación a CSV completo con el menú de compartir del teléfono (Drive, correo…). Nombre: `tiro_<fecha>_<distancia>m_<id>.csv`.
 - Importación del mismo CSV en Ajustes, para recuperar el historial en otro teléfono; las sesiones que ya están no se duplican.
 
@@ -37,11 +38,13 @@ Requiere Node 24 (`nvm use`, lee `.nvmrc`).
 ```
 npm ci            # instala dependencias exactas
 npm run dev       # servidor de desarrollo
-npm test          # pruebas (puntuación, modelo, progreso, estado, botón atrás, ayuda, exportación e importación)
+npm test          # pruebas (puntuación, modelo, progreso, estado, botón atrás, ayuda, exportación e importación,
+                  #   ajustes de tema y contraste de cada paleta)
 npm run check     # chequeo de tipos
 npm run lint      # formato (Prettier) y lint (ESLint)
 npm run format    # aplica el formato de Prettier
 npm run build     # compila a dist/
+npm run paletas   # regenera src/estilos/paletas.css (solo al cambiar una semilla o añadir una paleta)
 ```
 
 ### Estructura
@@ -58,8 +61,12 @@ src/
     estado.svelte.ts    estado de la app y acciones (guarda en almacen.ts)
     almacen.ts          IndexedDB
     exportar.ts / importar.ts   CSV de ida y vuelta
-    formato.ts, tema.ts formatos de número/fecha y tema claro/oscuro
-  estilos/              tema.css (generado por Material Theme Builder), base.css (tokens del tablero y componentes) y fuentes.css
+    formato.ts, tema.ts formatos de número/fecha; tema: modo, contraste y paleta
+  estilos/              tema.css (Petróleo, generado por Material Theme Builder), paletas.css (las otras paletas,
+                        generado), base.css (tokens del tablero y componentes) y fuentes.css
+scripts/
+  generar-paletas.mjs   genera paletas.css con @material/material-color-utilities; antes comprueba que
+                        reproduce tema.css con la semilla de Petróleo (±1 por canal) y, si no, no escribe nada
 ```
 
 Cambios en el formato de los datos guardados: subir `VERSION_DATOS` en `modelo.ts` y añadir el paso en `migrar()`.

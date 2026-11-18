@@ -1,15 +1,16 @@
 # Contexto de programación — app de registro de tiro
 
 Memoria del agente `experto-programador`. Se actualiza en la misma rama que el cambio que la vuelve falsa.
-Última revisión: 2026-11-17 (versión 0.4.2).
+Última revisión: 2026-11-18 (versión 0.5.0).
 
 ## Pila
 
 - **Svelte 5** (runes) + **TypeScript** estricto + **Vite 8**, PWA con `vite-plugin-pwa` (Workbox, `autoUpdate`).
 - Dependencias de ejecución: **`idb`** (IndexedDB) y **`@fontsource/barlow-condensed`** 5.3.0 (fuente OFL: solo el subconjunto latin, pesos 600 y 700, woff2). Todo lo demás es de desarrollo.
 - La fuente se carga con `@font-face` propio en `src/estilos/fuentes.css` (Vite resuelve `url('@fontsource/…')`) y el precache incluye `woff2` (`globPatterns`).
-- Pruebas con **Vitest** (`src/**/*.test.ts`); tipos con `svelte-check`; **Prettier** (comillas simples, ancho 120, plugin Svelte) y **ESLint** (recomendado JS + TS + Svelte; `_` marca variables sin uso).
-- Node 24 vía nvm: `. ~/.nvm/nvm.sh && nvm use` (lee `.nvmrc`).
+- **`@material/material-color-utilities` 0.3.0**, solo de desarrollo, la usa únicamente `scripts/generar-paletas.mjs` (la 0.4.0 no carga en Node: importaciones relativas sin extensión).
+- Pruebas con **Vitest** (`src/**/*.test.ts`, con `css: true` para poder leer los `.css` con `?raw`); tipos con `svelte-check`; **Prettier** (comillas simples, ancho 120, plugin Svelte) y **ESLint** (recomendado JS + TS + Svelte; `_` marca variables sin uso).
+- Node 24 vía nvm: `. ~/.nvm/nvm.sh && nvm use` (lee `.nvmrc`). En el contenedor de la nube no hay `~/.nvm`: `export PATH=/opt/node24/bin:$PATH`.
 - Publicada en GitHub Pages con `base: '/app-registro-tiro/'`.
 
 ## Arquitectura
@@ -32,11 +33,16 @@ src/lib/                  lógica sin interfaz, con pruebas al lado
   estado.svelte.ts        clase Estado (singleton `estado`): estado global con $state y todas las acciones
   almacen.ts              IndexedDB 'registro-tiro' v1, store 'sesiones' (keyPath id, índice fecha)
   exportar.ts/importar.ts CSV RFC 4180 de ida y vuelta (una fila por flecha)
-  formato.ts, tema.ts     Intl en español; tema claro/oscuro y contraste en localStorage
+  formato.ts, tema.ts     Intl en español; tema: modo, contraste y paleta en localStorage (PALETAS; data-paleta en
+                          <html>, siempre presente; petroleo por defecto)
   atras.ts                botón atrás de Android por capas: una sola entrada propia en history, contador `ignorar`,
                           scrollRestoration='manual'; `capa(cerrar)` se usa como limpieza de un $effect
   ayuda.ts                contador en localStorage (`registro-tiro:marcas-diana`) de la ayuda de la diana
-src/estilos/              tema.css (generado, no tocar), base.css (tokens del tablero y componentes) y fuentes.css
+src/estilos/              tema.css (Petróleo, generado, no tocar), paletas.css (generado, no tocar: selectores
+                          :root[data-paleta='x'].<variante>, especificidad 0,3,0; se importa entre tema.css y
+                          base.css), base.css (tokens del tablero y componentes) y fuentes.css
+scripts/generar-paletas.mjs npm run paletas: antes de escribir comprueba que la semilla de Petróleo reproduce tema.css
+                          (±1 por canal); si no, no escribe nada
 ```
 
 Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las acciones mutan `$state` y luego `persistir()` guarda `$state.snapshot(...)` en `almacen`. No hay router ni store externo.
@@ -50,11 +56,18 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 - Cambios de formato de datos: subir `VERSION_DATOS` en `modelo.ts`, añadir el paso en `migrar()`, prueba en `modelo.test.ts`, actualizar la tabla del CSV en README.
 - Toda capa modal nueva (menú, diálogo, hoja inferior, pantalla de detalle) registra `capa(cerrar)` en un `$effect`.
 - `estado.avisar(texto, accion?)` admite una acción (p. ej. Deshacer); la acción valida que el estado sigue siendo el esperado (como `reabrirRonda`) y `marcar` retira los avisos con acción.
-- Claves de localStorage (entradas externas, siempre validadas y con try/catch): `registro-tiro:ultima-config`, `registro-tiro:ajustes`, `registro-tiro:marcas-diana`.
+- Claves de localStorage (entradas externas, siempre validadas y con try/catch): `registro-tiro:ultima-config`, `registro-tiro:ajustes` (`paleta` opcional: si falta o no se reconoce, Petróleo), `registro-tiro:marcas-diana`.
 - Perfil Libre se guarda con `rondas = 0` y `flechasPorRonda = 0`; usar `esLibre()` en vez de comparar a mano.
 - Capa de estado: `.estado::after` es solo la capa de hover/pulsación (hover solo en `@media (hover: hover)`); indicadores u otros adornos van en `::before` o en un elemento propio, nunca reutilizando `::after`.
 - Animaciones de entrada ligadas a una acción del usuario: clase CSS con `@keyframes` y un índice `$state` que se fija en la acción y se limpia en `animationend` (ver `nueva` en Registro); con `prefers-reduced-motion`, duración de 1 ms para que `animationend` llegue. Las transiciones `in:` de Svelte no admiten curvas CSS.
 - Tema oscuro en CSS de componente: `:global(html[class^='dark'])` (`aplicarTema` asigna `className` completo).
+- Paleta siempre en el atributo `data-paleta`, nunca en la clase de `<html>`. Al cambiar una semilla o añadir una paleta:
+  `PALETAS` en tema.ts y la constante del script, `npm run paletas`, `--paleta-muestra-*` en base.css, y todo en el
+  mismo commit (paletas.test.ts solo liga la semilla por el comentario del CSS). Si una paleta no da el contraste, se
+  corrige en base.css, nunca en lo generado. paletas.test.ts fija los umbrales en las 24 combinaciones: texto del
+  tablero ≥7:1; rótulo, tenue y oro ≥4,5:1; tablero oscuro (Y ≤ 0,063); on-primary, primary/surface, terciario y aviso.
+- `Segmentado`: props opcionales `columnas` (cuadrícula) y `muestra` por opción (color CSS, p. ej. `var(--…)`, puesto con
+  `style:`; por eso la regla de la muestra elegida lleva `!important`).
 - Estilo marcador: tokens `--tablero-fondo|texto|rotulo|acento|linea|tenue` (por defecto primary; en claro estándar y
   en oscuro, `on-primary-fixed-variant`), `--font-marcador`, `--alto-nav` (76 px; los desplazamientos sobre la
   navegación se calculan con él) y `--diana-fallo`. Los bloques de la franja llevan la clase `.tablero`; el borde
@@ -82,7 +95,7 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 
 ## Riesgos aceptados
 
-- `npm audit` completo: 12 moderados y 14 altas solo en herramientas de desarrollo y compilación (las altas por
+- `npm audit` completo: 9 moderados y 14 altas solo en herramientas de desarrollo y compilación (las altas por
   GHSA-fc5q-39xc-vjpf, `picomatch` <=4.0.7, sin versión corregida a 2026-11-17, vía vite, vitest, svelte-check y
   vite-plugin-pwa); `--omit=dev` da 0. Por decisión del usuario (2026-11-17) el CI solo bloquea por altas sin dev y por
   críticas en todo; las altas de desarrollo quedan como aviso. Una alta real en una herramienta de compilación ya no
@@ -93,6 +106,8 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 - Actualizar `picomatch` por vulnerabilidad (GHSA-fc5q-39xc-vjpf, ReDoS) en cuanto salga la 4.0.8 o posterior: `npm update`,
   comprobar que `npm audit --audit-level=high` queda limpio y preguntar al usuario si el CI vuelve a bloquear por la
   auditoría completa en alto.
+- La cabecera de `tema.css` cita `docs/material-theme.zip`, que no existe en el repositorio.
+- `background_color`/`theme_color` del manifiesto y la meta inicial quedan en Petróleo con cualquier paleta (aceptado).
 - Fechas importadas sin normalizar a ISO UTC (`importar.ts`): pueden alterar el orden del historial. La agrupación por mes ya usa un mapa y no duplica meses.
 
 ## Historial de revisiones
@@ -105,3 +120,4 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 - 2026-11-17 · fix/hoja-y-terminar · aprobado · botones de Rondas completas en columna, el ícono del botón no se encoge y el total con las flechas como nota bajo la cifra.
 - 2026-11-17 · fix/hoja-desborde · aprobado con cambios · .hoja posicionada para que los .oculto no ensanchen la página (diálogo y navegación descolocados en Chrome Android); el audit en alto falla por picomatch sin corrección publicada y bloquea la publicación en CI.
 - 2026-11-17 · fix/ci-audit · aprobado · el CI bloquea por altas sin dev y por críticas en todo; las altas de desarrollo, como aviso `::warning`; pendiente picomatch 4.0.8.
+- 2026-11-18 · feature/paleta-color · aprobado · 4 paletas (Petróleo predeterminada en tema.css; Bosque, Violeta y Grafito generadas por script calibrado ±1 contra tema.css) en data-paleta; contraste del tablero vigilado por pruebas en las 24 variantes.
