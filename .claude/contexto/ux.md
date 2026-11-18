@@ -1,7 +1,7 @@
 # Contexto UX — app de registro de tiro
 
 Memoria del agente `experto-ux`. Se actualiza en la misma rama que el cambio que la vuelve falsa.
-Última revisión: 2026-11-17 (versión 0.4.2).
+Última revisión: 2026-11-18 (versión 0.5.0).
 
 ## Usuario y uso
 
@@ -13,15 +13,17 @@ Memoria del agente `experto-ux`. Se actualiza en la misma rama que el cambio que
 ## Sistema visual
 
 - Estilo **«marcador deportivo»** sobre Material 3 hecho a mano (sin librería de componentes).
-- `src/estilos/tema.css`: tokens `--md-sys-color-*` exportados de Material Theme Builder (semilla azul petróleo, primary #156683). Generado: no se edita a mano.
+- `src/estilos/tema.css` = paleta **Petróleo** (predeterminada): tokens `--md-sys-color-*` exportados de Material Theme Builder (semilla #156683). Generado: no se edita a mano.
+- `src/estilos/paletas.css` (generado con material-color-utilities por `scripts/generar-paletas.mjs`; no se edita a mano): **Bosque** #2f6b3f, **Violeta** #6750a4 (terciario #156683) y **Grafito** #5d6168 (esquema Neutral, terciario #156683). Se aplica con `data-paleta` en `<html>` (también `petroleo`, sin CSS propio), nunca como clase. Nunca rojo ni amarillo en primario ni terciario.
+- `--paleta-muestra-*` en `base.css`: primary del claro estándar de cada paleta; única excepción de color fijo además de la diana.
 - Variantes por clase en `<html>` (las pone `src/lib/tema.ts`): `light|dark` + `''|-medium-contrast|-high-contrast`. **Por defecto: contraste medio**, modo según el sistema.
-- **Franja del tablero** (`.tablero`; tokens `--tablero-fondo|texto|rotulo|acento|linea|tenue` en `base.css`): fondo primary en claro medio y alto, `on-primary-fixed-variant` en claro estándar y en los tres oscuros; rótulos rgb(140 207 241) en todas las variantes; acento `--diana-oro`; foco amarillo dentro del tablero; en oscuro, el último bloque del tablero lleva borde inferior `outline-variant`. La forman bloques hermanos: `Barra.svelte` (título), `Marcador.svelte` (pares rótulo-valor en `<dl>`, dentro de un `role="group"`) y, en Registro, las pestañas.
+- **Franja del tablero** (`.tablero`; tokens `--tablero-fondo|texto|rotulo|acento|linea|tenue` en `base.css`): fondo primary en claro medio y alto, `on-primary-fixed-variant` en claro estándar y en los tres oscuros; rótulos `inverse-primary` (rgb(140 207 241) en Petróleo); las reglas del tablero valen por tono para las cuatro paletas sin ajustes propios y `paletas.test.ts` vigila sus contrastes en las 24 combinaciones; acento `--diana-oro`; foco amarillo dentro del tablero; en oscuro, el último bloque del tablero lleva borde inferior `outline-variant`. La forman bloques hermanos: `Barra.svelte` (título), `Marcador.svelte` (pares rótulo-valor en `<dl>`, dentro de un `role="group"`) y, en Registro, las pestañas.
 - **Fuente**: Barlow Condensed 600/700 incluida en la app (`fuentes.css`, desde @fontsource, precacheada) para cifras, rótulos, botones, pestañas y navegación; Roboto/sistema para el texto corrido. Las mayúsculas, solo con `text-transform` (el texto fuente va en minúscula para que el lector no deletree).
 - Tipografía: `t-cifra-xl`, `t-cifra-l`, `t-rotulo`, `t-seccion` (también `h2.sec`), `t-titulo-tablero`, `t-contexto`, más `t-title-m` y `t-body-s`. Ya no existen `t-display`, `t-headline`, `t-title-l`, `t-label`.
 - Forma: `--shape-s` (8 px) en botones, segmentados, casillas, teclas, tarjetas, hoja, campos, diálogos y aviso; `.icbtn` redondo.
 - `Marcador` admite `nota`: línea de 13 px bajo la cifra, leída junto al valor; con nota, las cifras secundarias se alinean con la cifra.
 - Botones: `.btn` de 48 px mínimo (Barlow 700 18, mayúsculas), `.grande` 56; el ícono no se encoge (`flex: none`); `.contorno` con 2px `on-surface`; `.lleno` (en claro, ícono en oro); `.lleno.peligro`; `.texto`.
-- Segmentado y chips: botones separados; lo elegido en **primary / on-primary**, sin ✓.
+- Segmentado y chips: botones separados; lo elegido en **primary / on-primary**, sin ✓. `Segmentado` admite `columnas` (cuadrícula) y `muestra` por opción (círculo decorativo de 18 px con borde `currentColor`, `aria-hidden`; la de la opción elegida va llena en `currentColor`, porque en su color se veía como un aro vacío).
 - Bordes: controles interactivos en `outline-variant`; divisores decorativos en `surface-container-highest`.
 - Colores de la diana World Archery fijos (`--diana-*`, clases `z-oro|rojo|azul|negro|blanco|fuera`): no dependen del tema. La M usa `--diana-fallo` #4c5458 (fijo, texto blanco).
 - Barra de estado del sistema: color de `--tablero-fondo`; durante Entrada (`body.entrando`), `surface`.
@@ -38,7 +40,7 @@ Navegación inferior fija de 76 px (`--alto-nav`) con 3 destinos, **Sesión**, *
   - Hoja: Resumen en caja con borde 2px, solo de rondas guardadas, rótulo «Total» y «N flechas» como nota bajo la cifra; hoja; notas; «Terminar sesión».
 - **Historial**: progreso en la franja (chips de distancia si hay varias, promedio de la última sesión, insignia ± frente a la anterior —nunca rojo/verde—, tendencia de las últimas 12 sesiones con puntos tocables que abren la sesión); lista por mes con el total en casilla primary («N puntos»), fecha, perfil · flechas · promedio y distancia.
 - **Detalle**: fila del título pegada arriba (volver, «d m · Perfil», fecha · hora · id, compartir); tablero TOTAL (con «N flechas» como nota) / X / 10+X / PROM.; diana por ronda con ◀ ▶ (Todas → R1 … Rn → Todas, anunciado); gráfico de barras (mínimo 24 px, desplazable de lado, la elegida en oro y llevada a la vista); fila elegida de la hoja en oro con marca primary y texto `on-surface`; notas en solo lectura; «Borrar sesión».
-- **Ajustes**: tablero SESIONES / FLECHAS y «Guardadas solo en este teléfono.»; modo, contraste, exportar/importar CSV, versión.
+- **Ajustes**: tablero SESIONES / FLECHAS y «Guardadas solo en este teléfono.»; Apariencia: Color (Segmentado 2×2 con muestra; «Los colores de la diana no cambian.»), Modo, Contraste; exportar/importar CSV, versión.
 - `Entrada.svelte`: animación de arranque (ver decisiones).
 
 ## Decisiones validadas por el usuario (no reabrir)
@@ -54,6 +56,7 @@ Navegación inferior fija de 76 px (`--alto-nav`) con 3 destinos, **Sesión**, *
 - En Anotar **no hay gráfico**; la diana, lo más grande posible. Se mantiene la barra Deshacer + Guardar ronda.
 - Detalle con gráfico de **barras**. Progreso del Historial **por distancia, últimas 12**, en la franja (sin tarjeta plegable).
 - Barra de estado **oscura** (color del tablero), clara durante Entrada. `--diana-fallo` aceptado.
+- **Color de la app** (2026-11-18): cuatro paletas exactas, Petróleo por defecto, sin rojo ni amarillo; Grafito con esquema Neutral; terciario #156683 en Violeta y Grafito; la diana, el ícono y el manifiesto no cambian con la paleta. Petróleo generado se acepta con ±1/255 por canal.
 - El ícono maskable lleva versión en el nombre (`icono-512-mask-v2`): Brave lo guarda en caché, así que cambiarlo implica un nombre nuevo (v3…).
 
 ## Criterios ya aplicados
@@ -78,6 +81,7 @@ Navegación inferior fija de 76 px (`--alto-nav`) con 3 destinos, **Sesión**, *
 - El gráfico de barras desplazable no indica que hay más barras.
 - Teclado en 360×640: con teclas de 56 px se desplazan unos 27 px (aceptado; no es el equipo del usuario).
 - El rediseño 0.4.0 se revisó leyendo código, sin verlo renderizado: validarlo en el Pixel 8.
+- Validar en el Pixel 8 Grafito frente a la M (tira y hoja) y el borde de la lupa sobre los anillos negro y azul.
 
 ## Historial de revisiones
 
@@ -86,3 +90,4 @@ Navegación inferior fija de 76 px (`--alto-nav`) con 3 destinos, **Sesión**, *
 - 2026-11-17 · feature/estilo-marcador · rediseño «marcador deportivo»; aprobado tras corregir el contraste de la fila elegida en oscuro y la altura de Anotar con la ayuda visible.
 - 2026-11-17 · fix/hoja-y-terminar (0.4.1) · aprobado: botones de «Rondas completas» en columna y nota de flechas bajo el total.
 - 2026-11-17 · fix/hoja-desborde (0.4.2) · aprobado: `.hoja` posicionada para que los `.oculto` de la cabecera no ensanchen la página; pendiente validar en el Pixel 8.
+- 2026-11-18 · feature/paleta-color (0.5.0) · cuatro paletas de color en Ajustes; aprobado tras rellenar la muestra elegida; pendiente Grafito frente a la M y la lupa en el Pixel 8.
