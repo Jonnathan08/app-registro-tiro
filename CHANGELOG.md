@@ -1,5 +1,10 @@
 # Cambios
 
+## 0.6.0 — 2026-11-18
+
+- Nueva pestaña **Estadísticas** en la navegación (la app sigue abriendo en Sesión). Con filtros de periodo y distancia muestra: sesiones, flechas y promedio por flecha; récords (mejor sesión y mejor ronda según el porcentaje del máximo, desde 36 y 3 flechas; más X y más 10+X en una sesión); un **mapa de calor** de la agrupación sobre una diana en grises, con los colores de la diana de negro a blanco (con menos de 30 flechas marcadas se ven los impactos), el centro del grupo y la zona con más impactos; puntos por zona; y flechas por semana de las últimas 12 semanas.
+- La navegación pasa a cuatro destinos; sus textos van a 13 px para que quepan.
+
 ## 0.5.0 — 2026-11-18
 
 - Ajustes: nuevo control **Color** para elegir el color de la app entre Petróleo (el de siempre, predeterminado), Bosque, Violeta y Grafito. Se combina con el modo y el contraste; la franja de arriba y la barra de estado toman el color elegido. Los colores de la diana, el ícono y la pantalla de bienvenida no cambian.

@@ -17,6 +17,7 @@ App web instalable para registrar sesiones de tiro con arco recurvo. Funciona si
 - Edición de rondas ya guardadas durante la sesión en curso (lápiz en la hoja): corregir el valor con el teclado (descarta la posición) o volver a marcar en la diana (reemplaza posición y valor).
 - Notas personales y notas del entrenador; quedan bloqueadas al terminar la sesión.
 - Historial agrupado por mes, con el progreso en la franja de arriba (último promedio, diferencia con la sesión anterior y tendencia de las últimas 12 sesiones, por distancia); en cada sesión, puntos por ronda en barras y la ronda elegida resaltada en la diana (◀ ▶ para recorrerlas).
+- Estadísticas, filtradas por periodo (30 días, 90 días, todo) y distancia: sesiones, flechas y promedio por flecha; récords (mejor sesión y mejor ronda por porcentaje del máximo, más X y más 10+X en una sesión); mapa de calor de la agrupación sobre la diana con los colores de la diana (o los impactos, con menos de 30 flechas marcadas); puntos por zona; y flechas por semana de las últimas 12 semanas.
 - Ajustes muestra cuántas sesiones y flechas hay guardadas.
 - Color de la app a elegir en Ajustes: Petróleo (predeterminado), Bosque, Violeta o Grafito, en claro u oscuro y con tres niveles de contraste. Los colores de la diana no cambian.
 - Exportación a CSV completo con el menú de compartir del teléfono (Drive, correo…). Nombre: `tiro_<fecha>_<distancia>m_<id>.csv`.
@@ -39,7 +40,7 @@ Requiere Node 24 (`nvm use`, lee `.nvmrc`).
 npm ci            # instala dependencias exactas
 npm run dev       # servidor de desarrollo
 npm test          # pruebas (puntuación, modelo, progreso, estado, botón atrás, ayuda, exportación e importación,
-                  #   ajustes de tema y contraste de cada paleta)
+                  #   ajustes de tema y contraste de cada paleta, estadísticas y mapa de calor)
 npm run check     # chequeo de tipos
 npm run lint      # formato (Prettier) y lint (ESLint)
 npm run format    # aplica el formato de Prettier
@@ -52,11 +53,13 @@ npm run paletas   # regenera src/estilos/paletas.css (solo al cambiar una semill
 ```
 src/
   main.ts, App.svelte   arranque, navegación inferior y pantalla de error de almacenamiento
-  pantallas/            una por destino: Configurar, Registro, Historial, Detalle, Ajustes
+  pantallas/            una por destino: Configurar, Registro, Historial, Detalle, Estadisticas, Ajustes
   componentes/          piezas reutilizables (Barra y Marcador: la franja oscura; Diana, Teclado, Hoja, Grafico, Dialogo…)
   lib/                  lógica sin interfaz, con pruebas *.test.ts al lado
     modelo.ts           tipos de datos, perfiles, validación, migración y cálculos
     progreso.ts         progreso del historial: grupos por distancia, diferencia y tendencia
+    estadisticas.ts     filtros, totales, récords, puntos por zona y flechas por semana
+    calor.ts            mapa de calor: posiciones por radio de diana, densidad, escala de color y descripción
     diana.ts            geometría y puntuación de las dianas World Archery
     estado.svelte.ts    estado de la app y acciones (guarda en almacen.ts)
     almacen.ts          IndexedDB

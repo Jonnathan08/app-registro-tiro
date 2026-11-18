@@ -7,7 +7,10 @@ const corta = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short' });
 const dia = new Intl.DateTimeFormat('es', { weekday: 'short', day: 'numeric', month: 'short' });
 const mes = new Intl.DateTimeFormat('es', { month: 'long' });
 const larga = new Intl.DateTimeFormat('es', { dateStyle: 'full' });
+const pct = new Intl.NumberFormat('es', { style: 'percent', minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
+/** Proporción como porcentaje con un decimal: 0,806 → «80,6 %» */
+export const porcentaje = (v: number) => pct.format(v);
 /** Número con dos decimales: 8,25 */
 export const dosDecimales = (v: number) => dec.format(v);
 /** Fecha ISO completa con hora: «domingo, 4 de octubre de 2026, 11:30» */

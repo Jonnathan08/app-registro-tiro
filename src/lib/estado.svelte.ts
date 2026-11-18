@@ -11,7 +11,7 @@ import {
   type Sesion,
 } from './modelo';
 
-export type Pantalla = 'sesion' | 'historial' | 'ajustes';
+export type Pantalla = 'sesion' | 'historial' | 'estadisticas' | 'ajustes';
 
 /** Mensaje breve en pantalla, con una acción opcional (p. ej. «Deshacer»). */
 export interface Aviso {
