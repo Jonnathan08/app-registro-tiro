@@ -1,7 +1,7 @@
 # Contexto de programación — app de registro de tiro
 
 Memoria del agente `experto-programador`. Se actualiza en la misma rama que el cambio que la vuelve falsa.
-Última revisión: 2026-11-18 (versión 0.5.0).
+Última revisión: 2026-11-18 (versión 0.6.0).
 
 ## Pila
 
@@ -17,7 +17,12 @@ Memoria del agente `experto-programador`. Se actualiza en la misma rama que el c
 
 ```
 src/main.ts, App.svelte   arranque, tema, navegación inferior, pantalla de error de almacenamiento
-src/pantallas/            una por destino: Configurar, Registro, Historial, Detalle, Ajustes
+src/pantallas/            una por destino: Configurar, Registro, Historial, Detalle, Estadisticas, Ajustes
+                          (Pantalla incluye 'estadisticas'; los filtros de Estadísticas se recuerdan en una
+                          variable de módulo mientras la app está abierta, sin localStorage; claveEfectiva
+                          derivada vuelve a Todas si la distancia elegida desaparece, sin efectos que escriban estado)
+                          MapaCalor: diana en grises (SVG) + canvas del mapa + SVG de líneas, centro e impactos
+                          (con menos de MIN_CALOR); recibe dens ya calculada; redibuja solo con datos o ancho
 src/componentes/          piezas reutilizables (Barra, Marcador, Diana, DianaRonda, Teclado, Hoja, Grafico, Dialogo…)
                           franja del tablero = bloques hermanos: Barra (variante pantalla|contexto, children opcional
                           para el título) + Marcador (cifras en <dl>, tipo Cifra) + pestañas de Registro; hermanos
@@ -38,6 +43,16 @@ src/lib/                  lógica sin interfaz, con pruebas al lado
   atras.ts                botón atrás de Android por capas: una sola entrada propia en history, contador `ignorar`,
                           scrollRestoration='manual'; `capa(cerrar)` se usa como limpieza de un $effect
   ayuda.ts                contador en localStorage (`registro-tiro:marcas-diana`) de la ayuda de la diana
+  estadisticas.ts         filtros (Periodo 30|90|'todo', clave = claveProgreso o null), totales ponderados por
+                          flecha, mejores() → Marca (proporción puntos/(flechas×10); sesión ≥36 flechas, ronda
+                          guardada ≥3; más X y más 10+X; empate: la más antigua), conteoZonas (12 filas X,10…1,M),
+                          flechasPorSemana (lunes a domingo en hora local, con setDate), promedioSemanal (semanas
+                          cerradas desde la primera sesión)
+  calor.ts                puntos normalizados por radio de diana (1 = borde del anillo 1); densidad n×n de -1 a 1
+                          con reparto bilineal + gaussiana separable (σ 0,065), sin M; colorCalor con PARADAS = hex
+                          de --diana-* (calor.test lo comprueba) y alfa en rampa suave desde UMBRAL_CALOR;
+                          MIN_CALOR = 30; isolinea (marching squares) + NIVEL_CONTORNO = 0,9 para el contorno
+                          oscuro; describir / describirLeido (sin «·») / direccion
 src/estilos/              tema.css (Petróleo, generado, no tocar), paletas.css (generado, no tocar: selectores
                           :root[data-paleta='x'].<variante>, especificidad 0,3,0; se importa entre tema.css y
                           base.css), base.css (tokens del tablero y componentes) y fuentes.css
@@ -66,6 +81,9 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
   mismo commit (paletas.test.ts solo liga la semilla por el comentario del CSS). Si una paleta no da el contraste, se
   corrige en base.css, nunca en lo generado. paletas.test.ts fija los umbrales en las 24 combinaciones: texto del
   tablero ≥7:1; rótulo, tenue y oro ≥4,5:1; tablero oscuro (Y ≤ 0,063); on-primary, primary/surface, terciario y aviso.
+- Navegación: 4 destinos, etiquetas a 13 px con interletra 0,8 y `nowrap`; atrás en un destino sale de la app.
+- `.chip-tablero` (base.css): chips de filtro sobre la franja, compartidos por Historial y Estadísticas.
+- `mediaPuntos` (modelo.ts) es la media de puntos; `centroGrupo` la usa.
 - `Segmentado`: props opcionales `columnas` (cuadrícula) y `muestra` por opción (color CSS, p. ej. `var(--…)`, puesto con
   `style:`; por eso la regla de la muestra elegida lleva `!important`).
 - Estilo marcador: tokens `--tablero-fondo|texto|rotulo|acento|linea|tenue` (por defecto primary; en claro estándar y
@@ -106,6 +124,8 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 - Actualizar `picomatch` por vulnerabilidad (GHSA-fc5q-39xc-vjpf, ReDoS) en cuanto salga la 4.0.8 o posterior: `npm update`,
   comprobar que `npm audit --audit-level=high` queda limpio y preguntar al usuario si el CI vuelve a bloquear por la
   auditoría completa en alto.
+- El gráfico de semanas de Estadísticas es propio (no usa Grafico): si aparece otro gráfico de barras desde cero,
+  valorar unificarlos. Paquete JS en 50,6 kB gzip (0.6.0); si sigue creciendo, cargar Estadísticas con `import()`.
 - La cabecera de `tema.css` cita `docs/material-theme.zip`, que no existe en el repositorio.
 - `background_color`/`theme_color` del manifiesto y la meta inicial quedan en Petróleo con cualquier paleta (aceptado).
 - Fechas importadas sin normalizar a ISO UTC (`importar.ts`): pueden alterar el orden del historial. La agrupación por mes ya usa un mapa y no duplica meses.
@@ -121,3 +141,5 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 - 2026-11-17 · fix/hoja-desborde · aprobado con cambios · .hoja posicionada para que los .oculto no ensanchen la página (diálogo y navegación descolocados en Chrome Android); el audit en alto falla por picomatch sin corrección publicada y bloquea la publicación en CI.
 - 2026-11-17 · fix/ci-audit · aprobado · el CI bloquea por altas sin dev y por críticas en todo; las altas de desarrollo, como aviso `::warning`; pendiente picomatch 4.0.8.
 - 2026-11-18 · feature/paleta-color · aprobado · 4 paletas (Petróleo predeterminada en tema.css; Bosque, Violeta y Grafito generadas por script calibrado ±1 contra tema.css) en data-paleta; contraste del tablero vigilado por pruebas en las 24 variantes.
+- 2026-11-18 · feature/estadisticas · aprobado · pestaña Estadísticas con densidad por reparto en celdas + gaussiana separable en canvas, semanas en hora local con setDate y récords por proporción; +5,9 kB gzip.
+- 2026-11-18 · feature/estadisticas (2.ª vuelta) · aprobado · contorno por isolínea en el canvas y clave efectiva derivada.

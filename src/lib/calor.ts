@@ -165,7 +165,8 @@ export const NIVEL_CONTORNO = 0.9;
 
 /**
  * Segmentos de la línea donde la densidad vale `nivel` (marching squares sobre los centros de las celdas),
- * en radios de diana; vacío si nada llega al nivel.
+ * en radios de diana; vacío si nada llega al nivel. Una zona que tocara el borde de la rejilla quedaría abierta:
+ * no pasa, porque el recorte circular de la diana cae dentro de ella.
  */
 export function isolinea(d: Float32Array, n: number, nivel: number): [Punto, Punto][] {
   const seg: [Punto, Punto][] = [];

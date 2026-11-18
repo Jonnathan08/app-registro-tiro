@@ -39,7 +39,7 @@
   // Si la distancia elegida ya no está (p. ej. se borró su última sesión), se ven todas
   const claveEfectiva = $derived(grupo ? clave : null);
   $effect(() => {
-    recordado = { periodo, clave };
+    recordado = { periodo, clave: claveEfectiva };
   });
 
   const PERIODOS: { p: Periodo; texto: string; largo: string }[] = [
@@ -227,7 +227,7 @@
                 </dd>
                 {#if k.linea}<dd class="t-body-s num">{k.linea(x)}</dd>{/if}
                 <dd class="t-body-s num">
-                  {x.sesion.distanciaM} m · {x.sesion.dianaCm} cm ·
+                  {x.sesion.distanciaM} m · {x.sesion.dianaCm} cm
                   <span class="sin-corte">{fechaCorta(x.sesion.fecha)}</span>
                 </dd>
               {:else}
@@ -323,7 +323,11 @@
               style:height="{w.flechas ? Math.max(2, (w.flechas / maxSemana) * ALTO) : 0}px"
             ></span>
             <span class="et"
-              >{i === semanas.length - 1 ? 'Esta sem.' : i % 4 === 0 ? fechaCorta(w.inicio.toISOString()) : ''}</span
+              >{i === semanas.length - 1
+                ? 'Esta sem.'
+                : i % 4 === 0 && i < semanas.length - 4
+                  ? fechaCorta(w.inicio.toISOString())
+                  : ''}</span
             >
           </div>
         {/each}
@@ -592,7 +596,9 @@
     white-space: nowrap;
     color: var(--md-sys-color-on-surface-variant);
   }
+  /* La fecha en su propia línea: nunca partida ni con un «·» colgando al final de la anterior */
   .sin-corte {
+    display: block;
     white-space: nowrap;
   }
   /* Contenedor posicionado de la tabla oculta: si no, ensancha la página */
