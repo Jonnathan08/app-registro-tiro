@@ -21,9 +21,9 @@ src/pantallas/            una por destino: Configurar, Registro, Historial, Deta
                           (Pantalla incluye 'estadisticas'; los filtros de Estadísticas se recuerdan en una
                           variable de módulo mientras la app está abierta, sin localStorage; claveEfectiva
                           derivada vuelve a Todas si la distancia elegida desaparece, sin efectos que escriban estado)
+src/componentes/          piezas reutilizables (Barra, Marcador, Diana, DianaRonda, Teclado, Hoja, Grafico, Dialogo…)
                           MapaCalor: diana en grises (SVG) + canvas del mapa + SVG de líneas, centro e impactos
                           (con menos de MIN_CALOR); recibe dens ya calculada; redibuja solo con datos o ancho
-src/componentes/          piezas reutilizables (Barra, Marcador, Diana, DianaRonda, Teclado, Hoja, Grafico, Dialogo…)
                           franja del tablero = bloques hermanos: Barra (variante pantalla|contexto, children opcional
                           para el título) + Marcador (cifras en <dl>, tipo Cifra) + pestañas de Registro; hermanos
                           porque las pestañas sticky deben ser hijas del flujo. Resumen: variantes caja|tablero.
@@ -82,6 +82,8 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
   corrige en base.css, nunca en lo generado. paletas.test.ts fija los umbrales en las 24 combinaciones: texto del
   tablero ≥7:1; rótulo, tenue y oro ≥4,5:1; tablero oscuro (Y ≤ 0,063); on-primary, primary/surface, terciario y aviso.
 - Navegación: 4 destinos, etiquetas a 13 px con interletra 0,8 y `nowrap`; atrás en un destino sale de la app.
+- Estadísticas: chips de distancia de todo el historial (no del periodo); semanas = últimas 12, con el filtro de distancia
+  pero sin el de periodo; récords no pulsables; diana del mapa en grises claros por zona (decisiones del usuario, 2026-11-18).
 - `.chip-tablero` (base.css): chips de filtro sobre la franja, compartidos por Historial y Estadísticas.
 - `mediaPuntos` (modelo.ts) es la media de puntos; `centroGrupo` la usa.
 - `Segmentado`: props opcionales `columnas` (cuadrícula) y `muestra` por opción (color CSS, p. ej. `var(--…)`, puesto con
