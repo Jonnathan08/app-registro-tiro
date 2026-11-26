@@ -41,7 +41,7 @@ src/lib/                  lógica sin interfaz, con pruebas al lado
   formato.ts, tema.ts     Intl en español; tema: modo, contraste y paleta en localStorage (PALETAS; data-paleta en
                           <html>, siempre presente; petroleo por defecto)
   atras.ts                botón atrás de Android por capas: una sola entrada propia en history, contador `ignorar`,
-                          scrollRestoration='manual'; `capa(cerrar)` se usa como limpieza de un $effect
+                          scrollRestoration='manual'; `capa(cerrar)` se usa como limpieza de un $effect;
                           `capa(cerrar, { fondo: true })` va al fondo de la pila (`unshift`) y se cierra la última;
                           App la registra fuera de Sesión para volver a Sesión, y depende de un `$derived` booleano
                           para no volver a registrarse al cambiar de pestaña
@@ -84,8 +84,9 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
   mismo commit (paletas.test.ts solo liga la semilla por el comentario del CSS). Si una paleta no da el contraste, se
   corrige en base.css, nunca en lo generado. paletas.test.ts fija los umbrales en las 24 combinaciones: texto del
   tablero ≥7:1; rótulo, tenue y oro ≥4,5:1; tablero oscuro (Y ≤ 0,063); on-primary, primary/surface, terciario y aviso.
-- Navegación: 4 destinos, etiquetas a 13 px con interletra 0,8 y `nowrap`; atrás en Historial, Estadísticas o Ajustes (sin capas) vuelve a Sesión y
-  pone el foco en su destino de la navegación; en Sesión sale de la app (decisión del usuario, 2026-11-26).
+- Navegación: 4 destinos, etiquetas a 13 px con interletra 0,8 y `nowrap`; atrás en Historial, Estadísticas o
+  Ajustes (sin capas) vuelve a Sesión y pone el foco en su destino de la navegación; en Sesión sale de la app
+  (decisión del usuario, 2026-11-26).
 - Estadísticas: chips de distancia de todo el historial (no del periodo); semanas = últimas 12, con el filtro de distancia
   pero sin el de periodo; récords no pulsables; diana del mapa en grises claros por zona (decisiones del usuario, 2026-11-18).
 - `.chip-tablero` (base.css): chips de filtro sobre la franja, compartidos por Historial y Estadísticas.
