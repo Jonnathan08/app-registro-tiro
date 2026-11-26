@@ -52,8 +52,7 @@ src/lib/                  lógica sin interfaz, con pruebas al lado
   exportar.ts/importar.ts CSV RFC 4180 de ida y vuelta (una fila por flecha); marcas en archivo aparte (COLUMNAS_MIRA,
                           marcasACSV); compartirVarios (compartir es su envoltorio); tipoCSV distingue los formatos
                           por sesion_id; deCSVMira y deArchivo; deCSV no cambia
-  formato.ts              también fechaMedia («26 nov 2026»)
-  formato.ts, tema.ts     Intl en español; tema: modo, contraste y paleta en localStorage (PALETAS; data-paleta en
+  formato.ts, tema.ts     Intl en español (fechaMedia: «26 nov 2026»); tema: modo, contraste y paleta en localStorage (PALETAS; data-paleta en
                           <html>, siempre presente; petroleo por defecto)
   atras.ts                botón atrás de Android por capas: una sola entrada propia en history, contador `ignorar`,
                           scrollRestoration='manual'; `capa(cerrar)` se usa como limpieza de un $effect;
@@ -71,9 +70,10 @@ src/lib/                  lógica sin interfaz, con pruebas al lado
                           de --diana-* (calor.test lo comprueba) y alfa en rampa suave desde UMBRAL_CALOR;
                           MIN_CALOR = 30; isolinea (marching squares) + NIVEL_CONTORNO = 0,9 para el contorno
                           oscuro; describir / describirLeido (sin «·») / direccion
-src/estilos/              (base.css incluye .hoja-inferior y .caja-cifra compartidas) tema.css (Petróleo, generado, no tocar), paletas.css (generado, no tocar: selectores
+src/estilos/              tema.css (Petróleo, generado, no tocar), paletas.css (generado, no tocar: selectores
                           :root[data-paleta='x'].<variante>, especificidad 0,3,0; se importa entre tema.css y
-                          base.css), base.css (tokens del tablero y componentes) y fuentes.css
+                          base.css), base.css (tokens del tablero y componentes; incluye .hoja-inferior y .caja-cifra
+                          compartidas) y fuentes.css
 scripts/generar-paletas.mjs npm run paletas: antes de escribir comprueba que la semilla de Petróleo reproduce tema.css
                           (±1 por canal); si no, no escribe nada
 ```
@@ -106,8 +106,8 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
   el estado; las marcas se guardan con su propio try/catch.
 - Botones de repetición (−/+ de la Perilla): el paso en `pointerdown` con una marca `pulsado` que consume el `click` de
   esa pulsación (y se limpia en `pointercancel`); con teclado o TalkBack el paso lo da el `click`, que anuncia el valor
-  en una región viva; en el límite `aria-disabled`, nunca `disabled`; `touch-action: none`, `-webkit-touch-callout:
-none` y sin menú contextual.
+  en una región viva; en el límite `aria-disabled`, nunca `disabled`; `touch-action: none`,
+  `-webkit-touch-callout: none` y sin menú contextual.
 - Libreta de mira (decisiones del usuario, 2026-11-26): guardado explícito; borrar con confirmación (`Dialogo`), sin
   Deshacer; se abre desde el menú ⋮ de Anotar; una marca por distancia; una nueva parte de la más cercana; al importar
   gana la más reciente; sección primera en Ajustes.
@@ -158,7 +158,7 @@ none` y sin menú contextual.
 - Actualizar `picomatch` por vulnerabilidad (GHSA-fc5q-39xc-vjpf, ReDoS) en cuanto salga la 4.0.8 o posterior: `npm update`,
   comprobar que `npm audit --audit-level=high` queda limpio y preguntar al usuario si el CI vuelve a bloquear por la
   auditoría completa en alto.
-- Paquete JS en 56,6 kB gzip (0.8.0): lo siguiente es cargar Estadísticas o la libreta con `import()`, en un cambio
+- Paquete JS en 56,9 kB gzip (0.8.0): lo siguiente es cargar Estadísticas o la libreta con `import()`, en un cambio
   aparte.
 - El gráfico de semanas de Estadísticas es propio (no usa Grafico): si aparece otro gráfico de barras desde cero,
   valorar unificarlos.
