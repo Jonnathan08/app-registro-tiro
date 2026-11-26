@@ -95,6 +95,7 @@ describe('marcas de mira en CSV', () => {
   });
   it('indica la línea de una marca no válida y rechaza cabeceras ajenas', () => {
     expect(() => deCSVMira('distancia_m,elevacion,nota,actualizada\n50,abc,,\n')).toThrow(/Línea 2/);
+    expect(() => deCSVMira('distancia_m,elevacion,nota,actualizada\n50,  ,,\n')).toThrow(/Línea 2/);
     expect(() => tipoCSV('a,b,c\n1,2,3\n')).toThrow(/No es un CSV/);
   });
 });

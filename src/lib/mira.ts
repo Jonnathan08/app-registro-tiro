@@ -16,6 +16,8 @@ export interface MarcaMira {
 /** Rango y paso de la elevación (decisión del usuario: 0 a 100 en pasos de 0,1). */
 export const ELEVACION = { min: 0, max: 100, paso: 0.1, decimales: 1 } as const;
 export const MAX_NOTA_MIRA = 200;
+/** Distancias de los atajos del editor. */
+export const DISTANCIAS_HABITUALES = [18, 30, 50, 60, 70];
 /** Perilla: 20 retenes por vuelta, 18° cada uno (una vuelta = 2,0). */
 export const GRADOS_POR_PASO = 18;
 
@@ -32,7 +34,7 @@ const elevacionValida = (e: unknown): e is number =>
 
 /**
  * Marca validada de una entrada externa (IndexedDB o CSV); null si la distancia o la elevación no sirven.
- * La nota se recorta y una fecha no válida pasa a ser la de ahora.
+ * La nota se recorta y una fecha no válida o futura pasa a ser la de ahora (una futura ganaría siempre al importar).
  */
 export function validarMarca(v: unknown, ahora = new Date()): MarcaMira | null {
   if (!v || typeof v !== 'object') return null;
@@ -44,8 +46,18 @@ export function validarMarca(v: unknown, ahora = new Date()): MarcaMira | null {
     distanciaM: o.distanciaM,
     elevacion: redondear(o.elevacion),
     nota: typeof o.nota === 'string' ? o.nota.slice(0, MAX_NOTA_MIRA) : '',
-    actualizada: new Date(Number.isNaN(t) ? ahora : t).toISOString(),
+    actualizada: new Date(Number.isNaN(t) || t > ahora.getTime() ? ahora : t).toISOString(),
   };
+}
+
+/** Una marca por distancia, la de fecha más reciente (p. ej. varias copias importadas a la vez). */
+export function unaPorDistancia(ms: MarcaMira[]): MarcaMira[] {
+  const porDistancia = new Map<number, MarcaMira>();
+  for (const m of ms) {
+    const previa = porDistancia.get(m.distanciaM);
+    if (!previa || Date.parse(m.actualizada) > Date.parse(previa.actualizada)) porDistancia.set(m.distanciaM, m);
+  }
+  return [...porDistancia.values()];
 }
 
 /** Marca nueva o editada, con la fecha de ahora. */
@@ -84,7 +96,7 @@ export function fusionar(
   let nuevas = 0,
     actualizadas = 0,
     iguales = 0;
-  for (const m of importadas) {
+  for (const m of unaPorDistancia(importadas)) {
     const a = marcaDe(actuales, m.distanciaM);
     if (!a) {
       nuevas++;

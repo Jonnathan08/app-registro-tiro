@@ -5,6 +5,7 @@
   import {
     acotar,
     crearMarca,
+    DISTANCIAS_HABITUALES,
     ELEVACION,
     leerElevacion,
     masCercana,
@@ -42,7 +43,6 @@
   } = $props();
 
   const D = LIMITES.distanciaM;
-  const DISTANCIAS = [18, 30, 50, 60, 70];
   const id = $props.id();
 
   const base = untrack(() => marca);
@@ -50,13 +50,9 @@
   let distancia = $state(untrack(() => marca?.distanciaM ?? distanciaInicial));
   let elevacion = $state(untrack(() => marca?.elevacion ?? partida?.elevacion ?? ELEVACION.min));
   let nota = $state(untrack(() => marca?.nota ?? ''));
-  // El campo de texto de la elevación: se reescribe al girar la perilla, salvo mientras se escribe en él
+  // El campo de texto de la elevación: se reescribe al girar la perilla (en su binding), salvo mientras se escribe
   let textoElev = $state(untrack(() => textoElevacion(elevacion)));
   let escribiendo = false;
-  $effect(() => {
-    const v = elevacion;
-    if (!escribiendo) textoElev = textoElevacion(v);
-  });
 
   const distanciaValida = $derived(Number.isInteger(distancia) && distancia >= D.min && distancia <= D.max);
   const repetida = $derived(
@@ -92,7 +88,11 @@
 
   let confirmarBorrar = $state(false);
   let titulo: HTMLHeadingElement;
-  $effect(() => titulo.focus());
+  // Después del showModal de la hoja, que pone el foco en el primer botón
+  $effect(() => {
+    const t = setTimeout(() => titulo.focus());
+    return () => clearTimeout(t);
+  });
   // El botón atrás de Android vuelve a la lista sin guardar
   $effect(() => {
     if (conCapa) return capa(() => alSalir(null));
@@ -129,7 +129,7 @@
   </p>
 {/if}
 <div class="chips" role="group" aria-label="Distancias habituales">
-  {#each DISTANCIAS as d (d)}
+  {#each DISTANCIAS_HABITUALES as d (d)}
     <button type="button" class="chip estado" aria-pressed={distancia === d} onclick={() => (distancia = d)}
       >{d} m</button
     >
@@ -159,12 +159,20 @@
     <p class="t-body-s centrado num">
       Guardada: {textoElevacion(base.elevacion)} · {diferencia > 0 ? '+' : '−'}{textoElevacion(Math.abs(diferencia))}
     </p>
-  {:else if partida}
+  {:else if partida && elevacion === partida.elevacion}
     <p class="t-body-s centrado">Parte de la marca de {partida.distanciaM} m.</p>
   {/if}
 </div>
 
-<Perilla bind:valor={elevacion} />
+<Perilla
+  bind:valor={
+    () => elevacion,
+    (v) => {
+      elevacion = v;
+      if (!escribiendo) textoElev = textoElevacion(v);
+    }
+  }
+/>
 
 <div class="campo">
   <textarea

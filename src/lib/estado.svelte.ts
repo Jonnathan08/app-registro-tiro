@@ -170,12 +170,14 @@ class Estado {
    */
   async importar(sesiones: Sesion[]): Promise<{ nuevas: number; repetidas: number }> {
     const ids = new Set([...this.historial.map((s) => s.id), this.activa?.id]);
-    const nuevas = sesiones.filter((s) => !ids.has(s.id));
+    // Varios archivos pueden traer la misma sesión (p. ej. la exportación completa y la de una sesión)
+    const unicas = [...new Map(sesiones.map((s) => [s.id, s])).values()];
+    const nuevas = unicas.filter((s) => !ids.has(s.id));
     if (nuevas.length) {
       await almacen.guardarVarias(nuevas);
       this.historial = [...this.historial, ...nuevas].sort((a, b) => b.fecha.localeCompare(a.fecha));
     }
-    return { nuevas: nuevas.length, repetidas: sesiones.length - nuevas.length };
+    return { nuevas: nuevas.length, repetidas: unicas.length - nuevas.length };
   }
 
   /**

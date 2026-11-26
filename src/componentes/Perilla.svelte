@@ -21,6 +21,7 @@
   let ultimo = 0;
   let acumulado = 0;
   let inicio = 0;
+  let enCentro = false;
 
   const vibrar = () => navigator.vibrate?.(5);
   function poner(v: number) {
@@ -36,6 +37,7 @@
     centro = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
     ultimo = Math.atan2(e.clientY - centro.y, e.clientX - centro.x);
     acumulado = 0;
+    enCentro = false;
     inicio = valor;
     girando = true;
   }
@@ -43,12 +45,27 @@
     if (!girando) return;
     const dx = e.clientX - centro.x,
       dy = e.clientY - centro.y;
-    // Cerca del centro el ángulo salta: se ignora
-    if (Math.hypot(dx, dy) < 24) return;
+    // Cerca del centro el ángulo salta: se ignora, y al salir se retoma desde ahí (sin sumar el salto)
+    if (Math.hypot(dx, dy) < 24) {
+      enCentro = true;
+      return;
+    }
     const a = Math.atan2(dy, dx);
+    if (enCentro) {
+      enCentro = false;
+      ultimo = a;
+      return;
+    }
     acumulado += deltaAngulo(ultimo, a);
     ultimo = a;
-    poner(aplicarPasos(inicio, pasosGirados(acumulado)));
+    const pasos = pasosGirados(acumulado);
+    poner(aplicarPasos(inicio, pasos));
+    // Pasado un límite, el giro de más no se acumula: al girar al revés, el valor se mueve al momento
+    const sinLimite = inicio + pasos * ELEVACION.paso;
+    if (sinLimite < ELEVACION.min || sinLimite > ELEVACION.max) {
+      inicio = valor;
+      acumulado = 0;
+    }
   }
   const soltar = () => (girando = false);
 
@@ -61,21 +78,43 @@
     e.preventDefault();
   }
 
-  // −/+: un paso al pulsar y, si se mantiene, repetición (tras 400 ms, cada 100 ms)
+  // −/+: el paso se da al pulsar con el dedo y, si se mantiene, se repite (tras 400 ms, cada 100 ms). Con teclado,
+  // TalkBack o Switch Access solo llega el clic: ahí se da el paso. Nunca `disabled` (perdería el foco y el
+  // pointerup que corta la repetición): en el límite se marca con aria-disabled y la repetición se para sola.
   let espera: ReturnType<typeof setTimeout> | undefined;
   let repite: ReturnType<typeof setInterval> | undefined;
+  let pulsado = false;
   let anunciado = $state('');
   let anuncio: ReturnType<typeof setTimeout> | undefined;
-  function boton(signo: 1 | -1) {
+  const enLimite = (signo: 1 | -1) => (signo < 0 ? valor <= ELEVACION.min : valor >= ELEVACION.max);
+  function paso(signo: 1 | -1) {
+    if (enLimite(signo)) return parar();
     poner(aplicarPasos(valor, signo));
-    espera = setTimeout(() => (repite = setInterval(() => poner(aplicarPasos(valor, signo)), 100)), 400);
+  }
+  function anunciar() {
+    clearTimeout(anuncio);
+    anuncio = setTimeout(() => (anunciado = `Elevación ${textoElevacion(valor)}`), 500);
+  }
+  function pulsar(signo: 1 | -1) {
+    clearTimeout(espera);
+    clearInterval(repite);
+    pulsado = true;
+    paso(signo);
+    espera = setTimeout(() => (repite = setInterval(() => paso(signo), 100)), 400);
   }
   function parar() {
     clearTimeout(espera);
     clearInterval(repite);
-    // Con −/+ el foco no está en la perilla: se anuncia el valor al terminar
-    clearTimeout(anuncio);
-    anuncio = setTimeout(() => (anunciado = `Elevación ${textoElevacion(valor)}`), 500);
+    anunciar();
+  }
+  function clic(signo: 1 | -1) {
+    // El paso ya lo dio el pointerdown
+    if (pulsado) {
+      pulsado = false;
+      return;
+    }
+    paso(signo);
+    anunciar();
   }
   $effect(() => () => {
     clearTimeout(espera);
@@ -89,13 +128,13 @@
     type="button"
     class="btn contorno estado pm"
     aria-label="Bajar 0,1"
-    disabled={valor <= ELEVACION.min}
-    onpointerdown={() => boton(-1)}
+    aria-disabled={valor <= ELEVACION.min}
+    onpointerdown={() => pulsar(-1)}
     onpointerup={parar}
     onpointerleave={parar}
     onpointercancel={parar}
-    onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), (valor = aplicarPasos(valor, -1)))}
-    ><Icono nombre="menos" /></button
+    onclick={() => clic(-1)}
+    oncontextmenu={(e) => e.preventDefault()}><Icono nombre="menos" /></button
   >
   <svg
     class="perilla"
@@ -129,13 +168,13 @@
     type="button"
     class="btn contorno estado pm"
     aria-label="Subir 0,1"
-    disabled={valor >= ELEVACION.max}
-    onpointerdown={() => boton(1)}
+    aria-disabled={valor >= ELEVACION.max}
+    onpointerdown={() => pulsar(1)}
     onpointerup={parar}
     onpointerleave={parar}
     onpointercancel={parar}
-    onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), (valor = aplicarPasos(valor, 1)))}
-    ><Icono nombre="sumar" /></button
+    onclick={() => clic(1)}
+    oncontextmenu={(e) => e.preventDefault()}><Icono nombre="sumar" /></button
   >
   <span class="oculto" aria-live="polite">{anunciado}</span>
 </div>
@@ -154,6 +193,13 @@
     min-height: 56px;
     padding: 0;
     flex: none;
+    /* Mantener pulsado con el dedo o con dactilera no debe abrir el menú contextual ni cancelar la repetición */
+    touch-action: none;
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+  .pm[aria-disabled='true'] {
+    opacity: 0.38;
   }
   .perilla {
     width: 168px;

@@ -11,7 +11,7 @@
     <li>
       <button type="button" class="estado" data-distancia={m.distanciaM} onclick={() => alElegir(m.distanciaM)}>
         <span class="dist t-cifra-l"
-          >{m.distanciaM}<small aria-hidden="true"> m</small><span class="oculto"> metros</span></span
+          >{m.distanciaM}<small aria-hidden="true">m</small><span class="oculto"> metros</span></span
         >
         <span class="medio">
           {#if m.nota}<span class="nota">{m.nota}</span>{/if}
@@ -55,6 +55,7 @@
     min-width: 58px;
   }
   .dist small {
+    margin-left: 2px;
     font-size: 16px;
   }
   .medio {

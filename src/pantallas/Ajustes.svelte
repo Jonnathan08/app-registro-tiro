@@ -79,9 +79,15 @@
         );
       }
       if (marcas.length) {
-        const { nuevas, actualizadas } = await estado.importarMarcas(marcas);
-        const n = nuevas + actualizadas;
-        partes.push(n ? `${n} ${n === 1 ? 'marca actualizada' : 'marcas actualizadas'}` : 'No hay marcas nuevas');
+        // Aparte: si las marcas fallan, las sesiones ya importadas se dicen igual
+        try {
+          const { nuevas, actualizadas } = await estado.importarMarcas(marcas);
+          const n = nuevas + actualizadas;
+          partes.push(n ? `${n} ${n === 1 ? 'marca actualizada' : 'marcas actualizadas'}` : 'No hay marcas nuevas');
+        } catch (e) {
+          console.error(e);
+          partes.push('las marcas no se pudieron guardar');
+        }
       }
       estado.avisar(partes.join(' · '));
     } catch (e) {

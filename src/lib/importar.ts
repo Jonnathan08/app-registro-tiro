@@ -1,7 +1,7 @@
 // Importación del CSV que genera exportar.ts, para restaurar sesiones (p. ej. en un teléfono nuevo).
 import { DIANAS } from './diana';
 import { COLUMNAS, COLUMNAS_MIRA } from './exportar';
-import { validarMarca, type MarcaMira } from './mira';
+import { unaPorDistancia, validarMarca, type MarcaMira } from './mira';
 import { PERFILES, VERSION_DATOS, type Flecha, type Perfil, type Sesion } from './modelo';
 
 /** Separa un CSV (RFC 4180) en filas y celdas. Admite comillas, comas y saltos de línea dentro de una celda. */
@@ -139,10 +139,10 @@ export function deCSVMira(texto: string): MarcaMira[] {
   const faltan = COLUMNAS_MIRA.filter((c) => !cabecera.includes(c));
   if (faltan.length) throw new Error(`Faltan las columnas ${faltan.join(', ')}.`);
   const i = (c: string) => cabecera.indexOf(c);
-  const porDistancia = new Map<number, MarcaMira>();
+  const marcas: MarcaMira[] = [];
   filas.forEach((fila, k) => {
     const n = k + 2;
-    const num = (c: string) => (fila[i(c)] === undefined || fila[i(c)] === '' ? NaN : Number(fila[i(c)]));
+    const num = (c: string) => ((fila[i(c)] ?? '').trim() === '' ? NaN : Number(fila[i(c)]));
     const m = validarMarca({
       distanciaM: num('distancia_m'),
       elevacion: num('elevacion'),
@@ -153,10 +153,9 @@ export function deCSVMira(texto: string): MarcaMira[] {
       throw new Error(
         `Línea ${n}: marca no válida (distancia «${fila[i('distancia_m')] ?? ''}», elevación «${fila[i('elevacion')] ?? ''}»).`,
       );
-    const previa = porDistancia.get(m.distanciaM);
-    if (!previa || Date.parse(m.actualizada) > Date.parse(previa.actualizada)) porDistancia.set(m.distanciaM, m);
+    marcas.push(m);
   });
-  return [...porDistancia.values()];
+  return unaPorDistancia(marcas);
 }
 
 /** Sesiones o marcas de un CSV exportado por la app, según su cabecera. */

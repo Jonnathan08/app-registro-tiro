@@ -3,7 +3,7 @@
   import { capa } from '../lib/atras';
   import { estado } from '../lib/estado.svelte';
   import { fechaMedia } from '../lib/formato';
-  import { marcaDe, textoElevacion } from '../lib/mira';
+  import { DISTANCIAS_HABITUALES, marcaDe, textoElevacion } from '../lib/mira';
   import EditarMarca from './EditarMarca.svelte';
   import Icono from './Icono.svelte';
   import ListaMarcas from './ListaMarcas.svelte';
@@ -22,9 +22,8 @@
     alCerrar: () => void;
   } = $props();
 
-  const DISTANCIAS = [18, 30, 50, 60, 70];
   /** Distancia de una marca nueva sin otra indicación: la primera habitual sin marca. */
-  const libre = () => DISTANCIAS.find((d) => !marcaDe(estado.marcas, d)) ?? DISTANCIAS[0];
+  const libre = () => DISTANCIAS_HABITUALES.find((d) => !marcaDe(estado.marcas, d)) ?? DISTANCIAS_HABITUALES[0];
 
   type Vista = { tipo: 'lista' } | { tipo: 'editor'; distancia: number | null; nueva: number };
   const soloEditor = untrack(() => editar !== undefined);
@@ -68,7 +67,19 @@
   }
 </script>
 
-<dialog bind:this={dlg} class="hoja-inferior" aria-label="Marcas de mira" onclose={alCerrar}>
+<dialog
+  bind:this={dlg}
+  class="hoja-inferior"
+  aria-label="Marcas de mira"
+  onclose={alCerrar}
+  oncancel={(e) => {
+    // Escape en el editor vuelve a la lista, como atrás
+    if (vista.tipo === 'editor' && !soloEditor) {
+      e.preventDefault();
+      void aLista(vista.distancia ?? null);
+    }
+  }}
+>
   {#if vista.tipo === 'editor'}
     {@const v = vista}
     {#key v.distancia ?? `nueva-${v.nueva}`}
@@ -91,9 +102,11 @@
     </div>
 
     {#if destacada !== undefined}
-      <section class="tarjeta destacada" aria-label="Marca de esta sesión, {destacada} metros">
+      <section class="tarjeta destacada" aria-labelledby="libreta-destacada">
         {#if principal}
-          <span class="t-rotulo">Esta sesión · {destacada} m</span>
+          <span class="t-rotulo" id="libreta-destacada"
+            >Esta sesión · {destacada}<span aria-hidden="true"> m</span><span class="oculto"> metros</span></span
+          >
           <span class="t-rotulo">Elevación</span>
           <span class="t-cifra-xl valor">{textoElevacion(principal.elevacion)}</span>
           {#if principal.nota}<p class="nota">{principal.nota}</p>{/if}
@@ -106,7 +119,7 @@
             ><Icono nombre="editar" />Ajustar</button
           >
         {:else}
-          <p class="t-title-m">Sin marca para {destacada} m</p>
+          <p class="t-title-m" id="libreta-destacada">Sin marca para {destacada} m</p>
           <button
             type="button"
             class="btn lleno grande estado"
@@ -137,10 +150,6 @@
 </dialog>
 
 <style>
-  .hoja-inferior {
-    /* Contenedor posicionado de los .oculto */
-    position: relative;
-  }
   .cab {
     display: flex;
     align-items: center;

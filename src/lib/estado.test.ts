@@ -148,6 +148,15 @@ describe('importar', () => {
   });
 });
 
+describe('importar varios archivos', () => {
+  it('una sesión repetida entre archivos cuenta una sola vez', async () => {
+    const s = { ...nuevaSesion(abierto), terminada: true };
+    const r = await estado.importar([s, structuredClone(s)]);
+    expect(r).toEqual({ nuevas: 1, repetidas: 0 });
+    expect(estado.historial.filter((h) => h.id === s.id)).toHaveLength(1);
+  });
+});
+
 describe('marcas de mira', () => {
   const marca = (distanciaM: number, elevacion: number, actualizada = '2026-11-01T10:00:00.000Z') => ({
     version: 1,

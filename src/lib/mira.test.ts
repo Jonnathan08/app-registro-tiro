@@ -45,6 +45,11 @@ describe('validarMarca', () => {
   ])('rechaza %j', (v) => {
     expect(validarMarca(v)).toBeNull();
   });
+  it('una fecha futura pasa a ser la de ahora', () => {
+    expect(
+      validarMarca({ distanciaM: 30, elevacion: 4, actualizada: '2030-01-01T00:00:00Z' }, AHORA)!.actualizada,
+    ).toBe(AHORA.toISOString());
+  });
   it('recorta la nota y pone la fecha de ahora si no es válida', () => {
     const r = validarMarca({ distanciaM: 30, elevacion: 4, nota: 'a'.repeat(300), actualizada: 'ayer' }, AHORA)!;
     expect(r.nota).toHaveLength(MAX_NOTA_MIRA);
@@ -77,6 +82,11 @@ describe('orden y distancia más cercana', () => {
 });
 
 describe('fusionar', () => {
+  it('dos importadas de la misma distancia cuentan una vez, la más reciente', () => {
+    const r = fusionar([], [m(50, 5, '2026-11-01T00:00:00Z'), m(50, 6, '2026-11-09T00:00:00Z')]);
+    expect(r).toMatchObject({ nuevas: 1, actualizadas: 0, iguales: 0 });
+    expect(r.guardar.map((x) => x.elevacion)).toEqual([6]);
+  });
   it('por distancia gana la más reciente', () => {
     const actuales = [m(30, 4, '2026-11-10T00:00:00Z'), m(50, 5, '2026-11-10T00:00:00Z')];
     const importadas = [
