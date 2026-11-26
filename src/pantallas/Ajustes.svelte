@@ -121,10 +121,10 @@
           >{nMarcas === 0 ? 'Sin marcas' : nMarcas === 1 ? '1 distancia' : `${nMarcas} distancias`}</span
         >
         {#if nMarcas === 0}
-          <span class="t-body-s linea">Guarda la elevación de cada distancia</span>
+          <span class="oculto">, </span><span class="t-body-s linea">Guarda la elevación de cada distancia</span>
         {:else}
           <span class="t-body-s linea" aria-hidden="true">{distancias.join(' · ')} m</span>
-          <span class="oculto">{listaY.format(distancias.map(String))} metros</span>
+          <span class="oculto">, {listaY.format(distancias.map(String))} metros</span>
         {/if}
       </span>
       <Icono nombre="flecha" />

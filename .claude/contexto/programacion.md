@@ -24,10 +24,11 @@ src/pantallas/            una por destino: Configurar, Registro, Historial, Deta
 src/componentes/          piezas reutilizables (Barra, Marcador, Diana, DianaRonda, Teclado, Hoja, Grafico, Dialogo…)
                           Perilla: slider SVG que gira con el atributo transform (no style: CSP), touch-action none,
                           arrastre en variables no reactivas, zona muerta central y reinicio en los límites.
-                          LibretaMira: hoja inferior con lista y editor (capa propia; Escape o atrás en el editor
-                          vuelve a la lista). EditarMarca: copia local, «Guardar» deshabilitado sin cambios (abrir y
-                          cerrar no cambia la fecha), texto de la elevación sincronizado con un binding de función.
-                          ListaMarcas.
+                          LibretaMira: hoja inferior que siempre abre en la lista (Registro con `destacada`; Ajustes, sin
+                          ella, desde una fila resumen con aria-haspopup="dialog"); capa propia; Escape o atrás en el
+                          editor vuelve a la lista. EditarMarca: copia local, «Guardar» deshabilitado sin cambios (abrir
+                          y cerrar no cambia la fecha), texto de la elevación con un binding de función; registra
+                          siempre su capa. ListaMarcas solo dentro de LibretaMira.
                           MapaCalor: diana en grises (SVG) + canvas del mapa + SVG de líneas, centro e impactos
                           (con menos de MIN_CALOR); recibe dens ya calculada; redibuja solo con datos o ancho
                           franja del tablero = bloques hermanos: Barra (variante pantalla|contexto, children opcional
@@ -110,7 +111,8 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
   `-webkit-touch-callout: none` y sin menú contextual.
 - Libreta de mira (decisiones del usuario, 2026-11-26): guardado explícito; borrar con confirmación (`Dialogo`), sin
   Deshacer; se abre desde el menú ⋮ de Anotar; una marca por distancia; una nueva parte de la más cercana; al importar
-  gana la más reciente; sección primera en Ajustes.
+  gana la más reciente; sección primera en Ajustes, que muestra una fila resumen (N distancias y cuáles) que abre la
+  libreta, no la lista.
 - Estadísticas: chips de distancia de todo el historial (no del periodo); semanas = últimas 12, con el filtro de distancia
   pero sin el de periodo; récords no pulsables; diana del mapa en grises claros por zona (decisiones del usuario, 2026-11-18).
 - `.chip-tablero` (base.css): chips de filtro sobre la franja, compartidos por Historial y Estadísticas.
@@ -181,3 +183,4 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 - 2026-11-18 · feature/estadisticas (2.ª vuelta) · aprobado · contorno por isolínea en el canvas y clave efectiva derivada.
 - 2026-11-26 · fix/atras-vuelve-a-sesion · aprobado · capa de fondo en `atras.ts` para que atrás vuelva a Sesión desde los otros destinos; el orden de la pila no depende del de los efectos (`terminar()` abre Detalle y cambia de pestaña a la vez).
 - 2026-11-26 · feature/libreta-mira · aprobado · libreta de marcas en IndexedDB v2 y CSV aparte, con perilla SVG; segunda vuelta: sesiones y distancias repetidas entre varios archivos importados, −/+ con pointerdown y clic accesible.
+- 2026-11-26 · feature/libreta-mira (fila resumen en Ajustes) · aprobado · Ajustes abre la misma libreta que la sesión desde una fila resumen; se quitan el modo de solo editor de LibretaMira y `conCapa` de EditarMarca.
