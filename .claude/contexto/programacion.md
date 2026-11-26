@@ -1,7 +1,7 @@
 # Contexto de programación — app de registro de tiro
 
 Memoria del agente `experto-programador`. Se actualiza en la misma rama que el cambio que la vuelve falsa.
-Última revisión: 2026-11-26 (versión 0.7.0).
+Última revisión: 2026-11-26 (versión 0.8.0).
 
 ## Pila
 
@@ -22,6 +22,12 @@ src/pantallas/            una por destino: Configurar, Registro, Historial, Deta
                           variable de módulo mientras la app está abierta, sin localStorage; claveEfectiva
                           derivada vuelve a Todas si la distancia elegida desaparece, sin efectos que escriban estado)
 src/componentes/          piezas reutilizables (Barra, Marcador, Diana, DianaRonda, Teclado, Hoja, Grafico, Dialogo…)
+                          Perilla: slider SVG que gira con el atributo transform (no style: CSP), touch-action none,
+                          arrastre en variables no reactivas, zona muerta central y reinicio en los límites.
+                          LibretaMira: hoja inferior con lista y editor (capa propia; Escape o atrás en el editor
+                          vuelve a la lista). EditarMarca: copia local, «Guardar» deshabilitado sin cambios (abrir y
+                          cerrar no cambia la fecha), texto de la elevación sincronizado con un binding de función.
+                          ListaMarcas.
                           MapaCalor: diana en grises (SVG) + canvas del mapa + SVG de líneas, centro e impactos
                           (con menos de MIN_CALOR); recibe dens ya calculada; redibuja solo con datos o ancho
                           franja del tablero = bloques hermanos: Barra (variante pantalla|contexto, children opcional
@@ -36,8 +42,17 @@ src/lib/                  lógica sin interfaz, con pruebas al lado
   progreso.ts             progreso del historial: gruposProgreso, diferencia, puntosTendencia, MAX_TENDENCIA = 12
   diana.ts                geometría y puntuación de dianas World Archery (mm desde el centro, y hacia arriba)
   estado.svelte.ts        clase Estado (singleton `estado`): estado global con $state y todas las acciones
-  almacen.ts              IndexedDB 'registro-tiro' v1, store 'sesiones' (keyPath id, índice fecha)
-  exportar.ts/importar.ts CSV RFC 4180 de ida y vuelta (una fila por flecha)
+  almacen.ts              IndexedDB 'registro-tiro' v2: 'sesiones' (keyPath id, índice fecha) y 'marcas' (keyPath
+                          distanciaM); la migración solo añade (`viejo < n`); blocking (cierra y db = null),
+                          blocked (console.error) y terminated
+  mira.ts                 MarcaMira con VERSION_MIRA propia (VERSION_DATOS sigue en 1); ELEVACION 0–100 paso 0,1;
+                          DISTANCIAS_HABITUALES; validarMarca (IndexedDB y CSV; fecha no válida o futura → ahora);
+                          crearMarca; unaPorDistancia (gana la más reciente) y fusionar; masCercana; perilla:
+                          deltaAngulo, pasosGirados, aplicarPasos (siempre desde el valor inicial: sin deriva)
+  exportar.ts/importar.ts CSV RFC 4180 de ida y vuelta (una fila por flecha); marcas en archivo aparte (COLUMNAS_MIRA,
+                          marcasACSV); compartirVarios (compartir es su envoltorio); tipoCSV distingue los formatos
+                          por sesion_id; deCSVMira y deArchivo; deCSV no cambia
+  formato.ts              también fechaMedia («26 nov 2026»)
   formato.ts, tema.ts     Intl en español; tema: modo, contraste y paleta en localStorage (PALETAS; data-paleta en
                           <html>, siempre presente; petroleo por defecto)
   atras.ts                botón atrás de Android por capas: una sola entrada propia en history, contador `ignorar`,
@@ -56,7 +71,7 @@ src/lib/                  lógica sin interfaz, con pruebas al lado
                           de --diana-* (calor.test lo comprueba) y alfa en rampa suave desde UMBRAL_CALOR;
                           MIN_CALOR = 30; isolinea (marching squares) + NIVEL_CONTORNO = 0,9 para el contorno
                           oscuro; describir / describirLeido (sin «·») / direccion
-src/estilos/              tema.css (Petróleo, generado, no tocar), paletas.css (generado, no tocar: selectores
+src/estilos/              (base.css incluye .hoja-inferior y .caja-cifra compartidas) tema.css (Petróleo, generado, no tocar), paletas.css (generado, no tocar: selectores
                           :root[data-paleta='x'].<variante>, especificidad 0,3,0; se importa entre tema.css y
                           base.css), base.css (tokens del tablero y componentes) y fuentes.css
 scripts/generar-paletas.mjs npm run paletas: antes de escribir comprueba que la semilla de Petróleo reproduce tema.css
@@ -87,6 +102,15 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 - Navegación: 4 destinos, etiquetas a 13 px con interletra 0,8 y `nowrap`; atrás en Historial, Estadísticas o
   Ajustes (sin capas) vuelve a Sesión y pone el foco en su destino de la navegación; en Sesión sale de la app
   (decisión del usuario, 2026-11-26).
+- La importación admite varios archivos: quitar los repetidos (por id de sesión y por distancia) antes de mezclarlos con
+  el estado; las marcas se guardan con su propio try/catch.
+- Botones de repetición (−/+ de la Perilla): el paso en `pointerdown` con una marca `pulsado` que consume el `click` de
+  esa pulsación (y se limpia en `pointercancel`); con teclado o TalkBack el paso lo da el `click`, que anuncia el valor
+  en una región viva; en el límite `aria-disabled`, nunca `disabled`; `touch-action: none`, `-webkit-touch-callout:
+none` y sin menú contextual.
+- Libreta de mira (decisiones del usuario, 2026-11-26): guardado explícito; borrar con confirmación (`Dialogo`), sin
+  Deshacer; se abre desde el menú ⋮ de Anotar; una marca por distancia; una nueva parte de la más cercana; al importar
+  gana la más reciente; sección primera en Ajustes.
 - Estadísticas: chips de distancia de todo el historial (no del periodo); semanas = últimas 12, con el filtro de distancia
   pero sin el de periodo; récords no pulsables; diana del mapa en grises claros por zona (decisiones del usuario, 2026-11-18).
 - `.chip-tablero` (base.css): chips de filtro sobre la franja, compartidos por Historial y Estadísticas.
@@ -134,8 +158,10 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 - Actualizar `picomatch` por vulnerabilidad (GHSA-fc5q-39xc-vjpf, ReDoS) en cuanto salga la 4.0.8 o posterior: `npm update`,
   comprobar que `npm audit --audit-level=high` queda limpio y preguntar al usuario si el CI vuelve a bloquear por la
   auditoría completa en alto.
+- Paquete JS en 56,6 kB gzip (0.8.0): lo siguiente es cargar Estadísticas o la libreta con `import()`, en un cambio
+  aparte.
 - El gráfico de semanas de Estadísticas es propio (no usa Grafico): si aparece otro gráfico de barras desde cero,
-  valorar unificarlos. Paquete JS en 50,6 kB gzip (0.6.0); si sigue creciendo, cargar Estadísticas con `import()`.
+  valorar unificarlos.
 - La cabecera de `tema.css` cita `docs/material-theme.zip`, que no existe en el repositorio.
 - `background_color`/`theme_color` del manifiesto y la meta inicial quedan en Petróleo con cualquier paleta (aceptado).
 - Fechas importadas sin normalizar a ISO UTC (`importar.ts`): pueden alterar el orden del historial. La agrupación por mes ya usa un mapa y no duplica meses.
@@ -154,3 +180,4 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 - 2026-11-18 · feature/estadisticas · aprobado · pestaña Estadísticas con densidad por reparto en celdas + gaussiana separable en canvas, semanas en hora local con setDate y récords por proporción; +5,9 kB gzip.
 - 2026-11-18 · feature/estadisticas (2.ª vuelta) · aprobado · contorno por isolínea en el canvas y clave efectiva derivada.
 - 2026-11-26 · fix/atras-vuelve-a-sesion · aprobado · capa de fondo en `atras.ts` para que atrás vuelva a Sesión desde los otros destinos; el orden de la pila no depende del de los efectos (`terminar()` abre Detalle y cambia de pestaña a la vez).
+- 2026-11-26 · feature/libreta-mira · aprobado · libreta de marcas en IndexedDB v2 y CSV aparte, con perilla SVG; segunda vuelta: sesiones y distancias repetidas entre varios archivos importados, −/+ con pointerdown y clic accesible.

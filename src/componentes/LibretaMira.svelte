@@ -26,6 +26,7 @@
   const libre = () => DISTANCIAS_HABITUALES.find((d) => !marcaDe(estado.marcas, d)) ?? DISTANCIAS_HABITUALES[0];
 
   type Vista = { tipo: 'lista' } | { tipo: 'editor'; distancia: number | null; nueva: number };
+  const id = $props.id();
   const soloEditor = untrack(() => editar !== undefined);
   let vista = $state<Vista>(
     untrack(() =>
@@ -102,9 +103,9 @@
     </div>
 
     {#if destacada !== undefined}
-      <section class="tarjeta destacada" aria-labelledby="libreta-destacada">
+      <section class="tarjeta destacada" aria-labelledby="{id}-destacada">
         {#if principal}
-          <span class="t-rotulo" id="libreta-destacada"
+          <span class="t-rotulo" id="{id}-destacada"
             >Esta sesión · {destacada}<span aria-hidden="true"> m</span><span class="oculto"> metros</span></span
           >
           <span class="t-rotulo">Elevación</span>
@@ -119,7 +120,7 @@
             ><Icono nombre="editar" />Ajustar</button
           >
         {:else}
-          <p class="t-title-m" id="libreta-destacada">Sin marca para {destacada} m</p>
+          <p class="t-title-m" id="{id}-destacada">Sin marca para {destacada} m</p>
           <button
             type="button"
             class="btn lleno grande estado"

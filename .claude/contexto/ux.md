@@ -1,7 +1,7 @@
 # Contexto UX — app de registro de tiro
 
 Memoria del agente `experto-ux`. Se actualiza en la misma rama que el cambio que la vuelve falsa.
-Última revisión: 2026-11-26 (versión 0.7.0).
+Última revisión: 2026-11-26 (versión 0.8.0).
 
 ## Usuario y uso
 
@@ -22,7 +22,9 @@ Memoria del agente `experto-ux`. Se actualiza en la misma rama que el cambio que
 - **Franja del tablero** (`.tablero`; tokens `--tablero-fondo|texto|rotulo|acento|linea|tenue` en `base.css`): fondo primary en claro medio y alto, `on-primary-fixed-variant` en claro estándar y en los tres oscuros; rótulos `inverse-primary` (rgb(140 207 241) en Petróleo); las reglas del tablero valen por tono para las cuatro paletas sin ajustes propios y `paletas.test.ts` vigila sus contrastes en las 24 combinaciones; acento `--diana-oro`; foco amarillo dentro del tablero; en oscuro, el último bloque del tablero lleva borde inferior `outline-variant`. La forman bloques hermanos: `Barra.svelte` (título), `Marcador.svelte` (pares rótulo-valor en `<dl>`, dentro de un `role="group"`) y, en Registro, las pestañas.
 - **Fuente**: Barlow Condensed 600/700 incluida en la app (`fuentes.css`, desde @fontsource, precacheada) para cifras, rótulos, botones, pestañas y navegación; Roboto/sistema para el texto corrido. Las mayúsculas, solo con `text-transform` (el texto fuente va en minúscula para que el lector no deletree).
 - Tipografía: `t-cifra-xl`, `t-cifra-l`, `t-rotulo`, `t-seccion` (también `h2.sec`), `t-titulo-tablero`, `t-contexto`, más `t-title-m` y `t-body-s`. Ya no existen `t-display`, `t-headline`, `t-title-l`, `t-label`.
-- Forma: `--shape-s` (8 px) en botones, segmentados, casillas, teclas, tarjetas, hoja, campos, diálogos y aviso; `.icbtn` redondo.
+- Forma: `--shape-s` (8 px) en botones, segmentados, casillas, teclas, tarjetas, hoja, campos, diálogos y aviso; `.icbtn` redondo. `.hoja-inferior` compartida en `base.css` (`--shape-m` arriba, tirador) para EditarRonda y la libreta; `.caja-cifra` compartida (distancia de Configurar y de la libreta).
+- **Perilla** (`Perilla.svelte`): SVG de 168 px, `role="slider"`; 20 retenes de 18° (paso 0,1, una vuelta = 2,0); rango 0–100; arrastre circular con `touch-action: none` (se ignora a menos de 24 px del centro; el giro de más en un límite no se acumula); índice fijo `on-surface`, aguja `primary`, muescas `on-surface-variant`; −/+ de 56 px con repetición (400/100 ms), `aria-disabled` (opacidad 0,38) en el límite, nunca `disabled`, sin menú contextual; teclado ←↓→↑, RePág/AvPág ±1, Inicio/Fin; vibración de 5 ms por retén, solo al tocar; región viva para −/+; sin transiciones.
+- Libreta: editor «Marca de N m» / «Nueva marca»; caja Distancia + chips; elevación en un campo grande (coma o punto) con «Guardada: x · ±d» o «Parte de la marca de N m.» (solo sin girar); nota en `.campo` «Nota (opcional)»; «Cambiada el …»; Borrar (con `Dialogo` de peligro) / Cancelar / Guardar. Lista: filas de 64 px, distancia en `t-cifra-l`, nota y fecha corta, elevación en `primary`. Escape, igual que atrás: en el editor vuelve a la lista; en la lista cierra la hoja. La tarjeta destacada se nombra con `aria-labelledby` a su rótulo.
 - `Marcador` admite `nota`: línea de 13 px bajo la cifra, leída junto al valor; con nota, las cifras secundarias se alinean con la cifra.
 - Botones: `.btn` de 48 px mínimo (Barlow 700 18, mayúsculas), `.grande` 56; el ícono no se encoge (`flex: none`); `.contorno` con 2px `on-surface`; `.lleno` (en claro, ícono en oro); `.lleno.peligro`; `.texto`.
 - Segmentado y chips: botones separados; lo elegido en **primary / on-primary**, sin ✓. `Segmentado` admite `columnas` (cuadrícula) y `muestra` por opción (círculo decorativo de 18 px con borde `currentColor`, `aria-hidden`; la de la opción elegida va llena en `currentColor`, porque en su color se veía como un aro vacío).
@@ -36,7 +38,7 @@ Memoria del agente `experto-ux`. Se actualiza en la misma rama que el cambio que
 Navegación inferior fija de 76 px (`--alto-nav`) con 4 destinos, **Sesión**, **Historial**, **Estadísticas**, **Ajustes**; el activo en un recuadro primary; etiqueta 13 px, interletra 0,8 px, sin corte a 360 px. La app abre en Sesión. Atrás desde otra pestaña vuelve a Sesión.
 
 - **Configurar**: tablero FORMATO / FLECHAS / MÁXIMO (en Libre: FORMATO / DISTANCIA / DIANA), al día con lo elegido. Perfil, caja de distancia (cifra grande, error en línea), atajos de distancia, diana 122/80/40 cm, rondas y flechas (solo Abierto). «Empezar sesión» pegado sobre la navegación.
-- **Registro**: barra de contexto «Perfil · d m · Diana cm» (« cm» oculto); marcador RONDA n/N (leído « de N»; en Libre sin /N; con todo guardado se queda en N) / ESTA RONDA (amarillo; «–» con todo guardado) / SESIÓN (solo rondas guardadas). Pestañas **Anotar** y **Hoja** dentro del tablero, pegadas arriba, indicador amarillo de 4 px en `::before`; Hoja se lee «Hoja, N rondas guardadas»; también se cambia deslizando.
+- **Registro**: barra de contexto «Perfil · d m · Diana cm» (« cm» oculto); marcador RONDA n/N (leído « de N»; en Libre sin /N; con todo guardado se queda en N) / ESTA RONDA (amarillo; «–» con todo guardado) / SESIÓN (solo rondas guardadas). Pestañas **Anotar** y **Hoja** dentro del tablero, pegadas arriba, indicador amarillo de 4 px en `::before`; Hoja se lee «Hoja, N rondas guardadas»; también se cambia deslizando. Menú ⋮ con «Marcas de mira» como primer ítem (antes de «Terminar sesión ahora» y «Descartar sesión»): abre la hoja de la libreta con la marca de la distancia de la sesión destacada (tarjeta con borde 2px `primary`, elevación en `t-cifra-xl`, «Ajustar») o «Sin marca para N m» con «Agregar marca de N m», «Otras distancias» y «Agregar marca»; al cerrar, el foco vuelve al ⋮; la barra y `--resto` no cambian.
   - Anotar: tira de casillas cuadradas de 50 px (borde 2px `on-surface`, cifra 30 px; el siguiente hueco con borde primary), sin caja tonal ni suma (está en el tablero), con «pop» de la flecha nueva; en Libre, fila desplazable con máscara a la izquierda solo cuando está desplazada. Diana o teclado 3×4 (teclas de 56 a 76 px), dimensionados con `--resto` y `--ayuda` para no desplazar. Barra fija Deshacer (contorno) / Guardar ronda (lleno) en proporción 1 : 1,35. ⓘ ayuda de la diana, alternar teclado/diana y menú ⋮ («Terminar sesión ahora», «Descartar sesión» en error).
   - Rondas completas: tarjeta con «Terminar y guardar» (`.lleno.grande`) y debajo «Ir a las notas» (`.contorno`), a todo el ancho.
   - Hoja: Resumen en caja con borde 2px, solo de rondas guardadas, rótulo «Total» y «N flechas» como nota bajo la cifra; hoja; notas; «Terminar sesión».
@@ -48,7 +50,7 @@ Navegación inferior fija de 76 px (`--alto-nav`) con 4 destinos, **Sesión**, *
   - Puntos por zona: 12 filas fijas con fichas `z-*`, todas las flechas.
   - Flechas por semana: últimas 12 (lunes a domingo), según la distancia y no el periodo; actual en oro; promedio de las semanas cerradas desde la primera sesión con su rótulo en un margen derecho propio; etiquetas cada 4 semanas, omitidas a menos de 4 de la actual; tabla `.oculto` y resumen en texto («Tu semana con más flechas de las últimas 12.» solo si hay semanas anteriores con flechas).
   - Vacíos: «Todavía no hay estadísticas…»; filtro sin sesiones: «Sin sesiones…» y «Ver todo el periodo» (foco al chip «Todo»).
-- **Ajustes**: tablero SESIONES / FLECHAS y «Guardadas solo en este teléfono.»; Apariencia: Color (Segmentado 2×2 con muestra; «Los colores de la diana no cambian.»), Modo, Contraste; exportar/importar CSV, versión.
+- **Ajustes**: tablero SESIONES / FLECHAS y «Guardadas solo en este teléfono.»; primera sección **Marcas de mira** (lista + «Agregar marca»; el editor en una hoja inferior; vacío: «Todavía no hay marcas…»); Datos: «Exportar sesiones y marcas» / «Importar copia (CSV)», varios archivos a la vez sin duplicar sesiones ni distancias, de las marcas gana la más reciente, aviso «N marcas actualizadas» (o «…, las marcas no se pudieron guardar»); Apariencia: Color (Segmentado 2×2 con muestra; «Los colores de la diana no cambian.»), Modo, Contraste; exportar/importar CSV, versión.
 - `Entrada.svelte`: animación de arranque (ver decisiones).
 
 ## Decisiones validadas por el usuario (no reabrir)
@@ -64,6 +66,7 @@ Navegación inferior fija de 76 px (`--alto-nav`) con 4 destinos, **Sesión**, *
 - En Anotar **no hay gráfico**; la diana, lo más grande posible. Se mantiene la barra Deshacer + Guardar ronda.
 - Detalle con gráfico de **barras**. Progreso del Historial **por distancia, últimas 12**, en la franja (sin tarjeta plegable).
 - Barra de estado **oscura** (color del tablero), clara durante Entrada. `--diana-fallo` aceptado.
+- **Libreta de marcas de mira** (2026-11-26): independiente de las sesiones; una marca por distancia (elevación con perilla de 0 a 100 en pasos de 0,1 + nota libre; sin deriva estructurada); en el menú ⋮ de Registro (no un cuarto botón, para no cortar el título) y como primera sección de Ajustes; una nueva parte de la marca más cercana; guardar explícito; borrar con confirmación; fecha del último cambio; en la copia de seguridad gana la más reciente.
 - **Atrás** (2026-11-26): desde Historial, Estadísticas o Ajustes sin capas vuelve a Sesión; desde Sesión sale de la app; las capas se cierran primero.
 - **Estadísticas** (2026-11-18): pestaña propia (no Inicio), la app sigue abriendo en Sesión; contenido y orden: franja con filtros y cifras, Récords, Agrupación, Puntos por zona, Flechas por semana. Descartado «Camino a 70 m». Récords por proporción con los mínimos de arriba; chips de distancia de todo el historial; diana del mapa en grises claros por zona; escala hasta blanco con contorno oscuro (frente a bajar la opacidad); umbral de 30; récords no pulsables; semanas independientes del periodo.
 - **Color de la app** (2026-11-18): cuatro paletas exactas, Petróleo por defecto, sin rojo ni amarillo; Grafito con esquema Neutral; terciario #156683 en Violeta y Grafito; la diana, el ícono y el manifiesto no cambian con la paleta. Petróleo generado se acepta con ±1/255 por canal.
@@ -81,6 +84,9 @@ Navegación inferior fija de 76 px (`--alto-nav`) con 4 destinos, **Sesión**, *
 - Todas las casillas y teclas llevan borde 2px `on-surface` (separa la negra del fondo oscuro y la M del resto).
 - Fila elegida de la hoja con texto `on-surface` (con `--diana-tinta` en oscuro no llegaba a AA).
 - `prefers-reduced-motion` respetado en `Entrada`, `Aviso` y el pop de la tira.
+- Una capa con vistas internas (lista → editor) registra una `capa()` por vista: atrás retrocede una vista antes de cerrar.
+- Nunca `position: relative|static` en un `<dialog>` modal: en la capa superior se vuelve `absolute` y se descoloca con la página desplazada; el modal ya está posicionado.
+- Botones con repetición: el paso se da en `click` cuando no lo dio el puntero (teclado y lectores) y se repite con el puntero; no se deshabilitan mientras se mantienen pulsados.
 - Todo gráfico tiene un equivalente textual visible o una tabla `.oculto` dentro de un contenedor posicionado.
 - Capa de estado: `:hover` solo dentro de `@media (hover: hover)` (en táctil se quedaba pegado); el indicador de pestaña va en `::before`, separado de la capa `::after`.
 - Todo contenedor con `overflow` que contenga `.oculto` debe ser posicionado (`position: relative`, como `.hoja` y `.grafico`); si no, el texto oculto escapa, ensancha la página y en Android agranda el viewport y descoloca los diálogos y la navegación fija.
@@ -93,6 +99,7 @@ Navegación inferior fija de 76 px (`--alto-nav`) con 4 destinos, **Sesión**, *
 - El rediseño 0.4.0 se revisó leyendo código, sin verlo renderizado: validarlo en el Pixel 8.
 - Validar en el Pixel 8 Grafito frente a la M (tira y hoja) y el borde de la lupa sobre los anillos negro y azul.
 - Validar en el Pixel 8, al sol, el mapa de calor (contorno y blanco de la zona de más impactos).
+- Validar en el Pixel 8, con Brave y dactilera, la perilla (vibración, arrastre circular a pleno sol) y la repetición de −/+.
 
 ## Historial de revisiones
 
@@ -104,3 +111,4 @@ Navegación inferior fija de 76 px (`--alto-nav`) con 4 destinos, **Sesión**, *
 - 2026-11-18 · feature/paleta-color (0.5.0) · cuatro paletas de color en Ajustes; aprobado tras rellenar la muestra elegida; pendiente Grafito frente a la M y la lupa en el Pixel 8.
 - 2026-11-18 · feature/estadisticas (0.6.0) · pestaña Estadísticas (4 destinos); aprobado con cambios (impactos en tinta, fecha sin partir, lista de dianas, semana récord, rótulo del promedio); re-revisión aprobada: contorno oscuro de la zona de más impactos (decisión del usuario).
 - 2026-11-26 · fix/atras-vuelve-a-sesion (0.7.0) · atrás desde otra pestaña vuelve a Sesión (decisión del usuario), capa de fondo y foco en el destino; aprobado; corrige el pendiente que lo daba por hecho.
+- 2026-11-26 · feature/libreta-mira (0.8.0) · libreta de marcas de mira en el ⋮ de Registro y en Ajustes; aprobado con cambios tras corregir la posición del diálogo y el clic y la repetición de −/+.
