@@ -107,6 +107,11 @@
     clearInterval(repite);
     anunciar();
   }
+  // Un toque cancelado no termina en clic: el siguiente clic (teclado, lector) sí debe dar el paso
+  function cancelar() {
+    pulsado = false;
+    parar();
+  }
   function clic(signo: 1 | -1) {
     // El paso ya lo dio el pointerdown
     if (pulsado) {
@@ -132,7 +137,7 @@
     onpointerdown={() => pulsar(-1)}
     onpointerup={parar}
     onpointerleave={parar}
-    onpointercancel={parar}
+    onpointercancel={cancelar}
     onclick={() => clic(-1)}
     oncontextmenu={(e) => e.preventDefault()}><Icono nombre="menos" /></button
   >
@@ -172,7 +177,7 @@
     onpointerdown={() => pulsar(1)}
     onpointerup={parar}
     onpointerleave={parar}
-    onpointercancel={parar}
+    onpointercancel={cancelar}
     onclick={() => clic(1)}
     oncontextmenu={(e) => e.preventDefault()}><Icono nombre="sumar" /></button
   >
