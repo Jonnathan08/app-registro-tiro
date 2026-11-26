@@ -2,7 +2,7 @@
 
 ## 0.8.0 — 2026-11-26
 
-- **Libreta de marcas de mira**: la elevación de la mira y una nota para cada distancia, aparte de las sesiones. Se ajusta con una **perilla** (se gira con el dedo; también con − y + o escribiendo el valor), de 0 a 100 en pasos de 0,1. Durante la sesión se abre desde el menú ⋮ de Anotar, con la marca de la distancia en curso arriba; también está en Ajustes. Borrar una marca pide confirmación.
+- **Libreta de marcas de mira**: la elevación de la mira y una nota para cada distancia, aparte de las sesiones. Se ajusta con una **perilla** (se gira con el dedo; también con − y + o escribiendo el valor), de 0 a 100 en pasos de 0,1. Durante la sesión se abre desde el menú ⋮ de Anotar, con la marca de la distancia en curso arriba; también se abre desde Ajustes, que muestra solo un resumen (cuántas distancias y cuáles). Borrar una marca pide confirmación.
 - Ajustes: «Exportar sesiones y marcas» entrega también un CSV de marcas, e «Importar copia» acepta los dos archivos; de cada distancia se queda la marca más reciente.
 
 ## 0.7.0 — 2026-11-26

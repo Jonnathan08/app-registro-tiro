@@ -2,12 +2,10 @@
   import Barra from '../componentes/Barra.svelte';
   import Icono from '../componentes/Icono.svelte';
   import LibretaMira from '../componentes/LibretaMira.svelte';
-  import ListaMarcas from '../componentes/ListaMarcas.svelte';
   import Marcador from '../componentes/Marcador.svelte';
   import Segmentado from '../componentes/Segmentado.svelte';
   import { estado } from '../lib/estado.svelte';
   import { totalesHistorial } from '../lib/modelo';
-  import { tick } from 'svelte';
   import { aCSV, compartirVarios, marcasACSV, nombreArchivoMira } from '../lib/exportar';
   import { deArchivo } from '../lib/importar';
   import type { MarcaMira } from '../lib/mira';
@@ -34,15 +32,11 @@
     aplicarTema(ajustes);
   }
 
-  // ---- Marcas de mira: el editor se abre en una hoja inferior ----
-  let editando = $state<number | 'nueva' | null>(null);
-  let agregar: HTMLButtonElement;
-  async function cerrarLibreta() {
-    editando = null;
-    // El diálogo devuelve el foco a quien lo abrió; si era una marca ya borrada, a «Agregar marca»
-    await tick();
-    if (document.activeElement === document.body) agregar?.focus();
-  }
+  // ---- Marcas de mira: un resumen; la libreta completa se abre en la misma hoja que en la sesión ----
+  let libreta = $state(false);
+  const nMarcas = $derived(estado.marcas.length);
+  const distancias = $derived(estado.marcas.map((m) => m.distanciaM));
+  const listaY = new Intl.ListFormat('es', { type: 'conjunction' });
 
   async function exportarTodo() {
     const hoy = new Date().toISOString().slice(0, 10);
@@ -114,17 +108,27 @@
 
 <div class="cuerpo">
   <section class="grupo">
-    <h2 class="sec">Marcas de mira</h2>
-    {#if estado.marcas.length}
-      <ListaMarcas marcas={estado.marcas} alElegir={(d) => (editando = d)} />
-    {:else}
-      <p class="t-body-s">
-        Todavía no hay marcas. Guarda la elevación de tu mira para cada distancia y tenla a mano durante la sesión.
-      </p>
-    {/if}
-    <button type="button" class="btn contorno estado ancho" bind:this={agregar} onclick={() => (editando = 'nueva')}
-      ><Icono nombre="sumar" />Agregar marca</button
+    <h2 class="sec" id="titulo-marcas">Marcas de mira</h2>
+    <button
+      type="button"
+      class="resumen estado"
+      aria-haspopup="dialog"
+      aria-labelledby="titulo-marcas resumen-marcas"
+      onclick={() => (libreta = true)}
     >
+      <span class="txt" id="resumen-marcas">
+        <span class="t-title-m"
+          >{nMarcas === 0 ? 'Sin marcas' : nMarcas === 1 ? '1 distancia' : `${nMarcas} distancias`}</span
+        >
+        {#if nMarcas === 0}
+          <span class="t-body-s linea">Guarda la elevación de cada distancia</span>
+        {:else}
+          <span class="t-body-s linea" aria-hidden="true">{distancias.join(' · ')} m</span>
+          <span class="oculto">{listaY.format(distancias.map(String))} metros</span>
+        {/if}
+      </span>
+      <Icono nombre="flecha" />
+    </button>
   </section>
 
   <section class="grupo">
@@ -182,11 +186,41 @@
   <p class="t-rotulo version">Versión {__VERSION__}</p>
 </div>
 
-{#if editando !== null}
-  <LibretaMira editar={editando} alCerrar={cerrarLibreta} />
+{#if libreta}
+  <LibretaMira alCerrar={() => (libreta = false)} />
 {/if}
 
 <style>
+  /* Resumen de las marcas de mira: como una fila de la libreta, con chevron */
+  .resumen {
+    position: relative;
+    width: 100%;
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 14px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--shape-s);
+    background: var(--md-sys-color-surface-container-lowest);
+    color: var(--md-sys-color-on-surface);
+    text-align: left;
+    cursor: pointer;
+  }
+  .resumen .txt {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .resumen .linea {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .resumen :global(svg) {
+    color: var(--md-sys-color-on-surface-variant);
+  }
   .cuerpo {
     display: flex;
     flex-direction: column;

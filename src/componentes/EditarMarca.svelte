@@ -24,7 +24,6 @@
     marca,
     distanciaInicial,
     marcas,
-    conCapa,
     alGuardar,
     alBorrar,
     alSalir,
@@ -35,8 +34,6 @@
     distanciaInicial: number;
     /** Todas las marcas: para la distancia repetida y para partir de la más cercana. */
     marcas: MarcaMira[];
-    /** Registra su propia capa (atrás vuelve a la lista sin guardar). */
-    conCapa: boolean;
     alGuardar: (m: MarcaMira, distanciaAnterior?: number) => Promise<boolean>;
     alBorrar: (distanciaM: number) => Promise<boolean>;
     alSalir: (hecho: 'guardada' | 'borrada' | null) => void;
@@ -94,9 +91,7 @@
     return () => clearTimeout(t);
   });
   // El botón atrás de Android vuelve a la lista sin guardar
-  $effect(() => {
-    if (conCapa) return capa(() => alSalir(null));
-  });
+  $effect(() => capa(() => alSalir(null)));
 </script>
 
 <div class="cab">

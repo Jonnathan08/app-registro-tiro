@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { tick, untrack } from 'svelte';
+  import { tick } from 'svelte';
   import { capa } from '../lib/atras';
   import { estado } from '../lib/estado.svelte';
   import { fechaMedia } from '../lib/formato';
@@ -8,17 +8,14 @@
   import Icono from './Icono.svelte';
   import ListaMarcas from './ListaMarcas.svelte';
 
-  // Libreta de marcas de mira en una hoja inferior. Desde Registro abre la lista, con la marca de la distancia de
-  // la sesión destacada; desde Ajustes abre directamente el editor de una marca (o de una nueva).
+  // Libreta de marcas de mira en una hoja inferior; siempre abre en la lista. Desde Registro, con la marca de la
+  // distancia de la sesión destacada arriba; desde Ajustes, sin ella.
   let {
     destacada,
-    editar,
     alCerrar,
   }: {
     /** Distancia de la sesión en curso: su marca va arriba. */
     destacada?: number;
-    /** Abre solo el editor: la distancia de una marca o «nueva». */
-    editar?: number | 'nueva';
     alCerrar: () => void;
   } = $props();
 
@@ -27,16 +24,7 @@
 
   type Vista = { tipo: 'lista' } | { tipo: 'editor'; distancia: number | null; nueva: number };
   const id = $props.id();
-  const soloEditor = untrack(() => editar !== undefined);
-  let vista = $state<Vista>(
-    untrack(() =>
-      editar === undefined
-        ? { tipo: 'lista' }
-        : editar === 'nueva'
-          ? { tipo: 'editor', distancia: null, nueva: libre() }
-          : { tipo: 'editor', distancia: editar, nueva: editar },
-    ),
-  );
+  let vista = $state<Vista>({ tipo: 'lista' });
 
   const principal = $derived(destacada !== undefined ? marcaDe(estado.marcas, destacada) : undefined);
   const otras = $derived(estado.marcas.filter((m) => m.distanciaM !== destacada));
@@ -63,8 +51,7 @@
 
   function salir(hecho: 'guardada' | 'borrada' | null, distancia: number | null) {
     if (hecho) estado.avisar(hecho === 'guardada' ? 'Marca guardada' : 'Marca borrada');
-    if (soloEditor) dlg.close();
-    else void aLista(hecho === 'borrada' ? null : distancia);
+    void aLista(hecho === 'borrada' ? null : distancia);
   }
 </script>
 
@@ -75,7 +62,7 @@
   onclose={alCerrar}
   oncancel={(e) => {
     // Escape en el editor vuelve a la lista, como atrás
-    if (vista.tipo === 'editor' && !soloEditor) {
+    if (vista.tipo === 'editor') {
       e.preventDefault();
       void aLista(vista.distancia ?? null);
     }
@@ -88,7 +75,6 @@
         marca={v.distancia === null ? undefined : marcaDe(estado.marcas, v.distancia)}
         distanciaInicial={v.nueva}
         marcas={estado.marcas}
-        conCapa={!soloEditor}
         alGuardar={(m, anterior) => estado.guardarMarca(m, anterior)}
         alBorrar={(d) => estado.borrarMarca(d)}
         alSalir={(hecho) => salir(hecho, v.distancia ?? v.nueva)}
@@ -137,7 +123,9 @@
       <ListaMarcas marcas={otras} alElegir={(d) => (vista = { tipo: 'editor', distancia: d, nueva: d })} />
     {:else}
       <p class="t-body-s">
-        {destacada !== undefined ? 'No hay marcas de otras distancias.' : 'Todavía no hay marcas.'}
+        {destacada !== undefined
+          ? 'No hay marcas de otras distancias.'
+          : 'Todavía no hay marcas. Guarda la elevación de tu mira para cada distancia y tenla a mano durante la sesión.'}
       </p>
     {/if}
     <button

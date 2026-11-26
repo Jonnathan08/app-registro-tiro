@@ -22,7 +22,7 @@ App web instalable para registrar sesiones de tiro con arco recurvo. Funciona si
 - Color de la app a elegir en Ajustes: Petróleo (predeterminado), Bosque, Violeta o Grafito, en claro u oscuro y con tres niveles de contraste. Los colores de la diana no cambian.
 - Exportación a CSV completo con el menú de compartir del teléfono (Drive, correo…). Nombre: `tiro_<fecha>_<distancia>m_<id>.csv`.
 - Importación de esos CSV en Ajustes, para recuperar el historial y las marcas de mira en otro teléfono; las sesiones que ya están no se duplican y de cada distancia se queda la marca más reciente.
-- Libreta de marcas de mira: la elevación de la mira (0 a 100, con una perilla que se gira con el dedo o con −/+) y una nota por distancia, independiente de las sesiones. Se consulta y ajusta durante la sesión desde el menú ⋮ de Anotar, con la marca de la distancia en curso destacada, y en Ajustes. Exportar en Ajustes entrega también un CSV de marcas (`tiro_marcas_<fecha>.csv`).
+- Libreta de marcas de mira: la elevación de la mira (0 a 100, con una perilla que se gira con el dedo o con −/+) y una nota por distancia, independiente de las sesiones. Se consulta y ajusta durante la sesión desde el menú ⋮ de Anotar, con la marca de la distancia en curso destacada, y desde Ajustes, que abre la misma libreta. Exportar en Ajustes entrega también un CSV de marcas (`tiro_marcas_<fecha>.csv`).
 
 ## Seguridad
 
