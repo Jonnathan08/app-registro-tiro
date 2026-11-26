@@ -1,7 +1,7 @@
 # Contexto UX — app de registro de tiro
 
 Memoria del agente `experto-ux`. Se actualiza en la misma rama que el cambio que la vuelve falsa.
-Última revisión: 2026-11-18 (versión 0.6.0).
+Última revisión: 2026-11-26 (versión 0.7.0).
 
 ## Usuario y uso
 
@@ -33,7 +33,7 @@ Memoria del agente `experto-ux`. Se actualiza en la misma rama que el cambio que
 
 ## Navegación y pantallas
 
-Navegación inferior fija de 76 px (`--alto-nav`) con 4 destinos, **Sesión**, **Historial**, **Estadísticas**, **Ajustes**; el activo en un recuadro primary; etiqueta 13 px, interletra 0,8 px, sin corte a 360 px. La app abre en Sesión.
+Navegación inferior fija de 76 px (`--alto-nav`) con 4 destinos, **Sesión**, **Historial**, **Estadísticas**, **Ajustes**; el activo en un recuadro primary; etiqueta 13 px, interletra 0,8 px, sin corte a 360 px. La app abre en Sesión. Atrás desde otra pestaña vuelve a Sesión.
 
 - **Configurar**: tablero FORMATO / FLECHAS / MÁXIMO (en Libre: FORMATO / DISTANCIA / DIANA), al día con lo elegido. Perfil, caja de distancia (cifra grande, error en línea), atajos de distancia, diana 122/80/40 cm, rondas y flechas (solo Abierto). «Empezar sesión» pegado sobre la navegación.
 - **Registro**: barra de contexto «Perfil · d m · Diana cm» (« cm» oculto); marcador RONDA n/N (leído « de N»; en Libre sin /N; con todo guardado se queda en N) / ESTA RONDA (amarillo; «–» con todo guardado) / SESIÓN (solo rondas guardadas). Pestañas **Anotar** y **Hoja** dentro del tablero, pegadas arriba, indicador amarillo de 4 px en `::before`; Hoja se lee «Hoja, N rondas guardadas»; también se cambia deslizando.
@@ -64,6 +64,7 @@ Navegación inferior fija de 76 px (`--alto-nav`) con 4 destinos, **Sesión**, *
 - En Anotar **no hay gráfico**; la diana, lo más grande posible. Se mantiene la barra Deshacer + Guardar ronda.
 - Detalle con gráfico de **barras**. Progreso del Historial **por distancia, últimas 12**, en la franja (sin tarjeta plegable).
 - Barra de estado **oscura** (color del tablero), clara durante Entrada. `--diana-fallo` aceptado.
+- **Atrás** (2026-11-26): desde Historial, Estadísticas o Ajustes sin capas vuelve a Sesión; desde Sesión sale de la app; las capas se cierran primero.
 - **Estadísticas** (2026-11-18): pestaña propia (no Inicio), la app sigue abriendo en Sesión; contenido y orden: franja con filtros y cifras, Récords, Agrupación, Puntos por zona, Flechas por semana. Descartado «Camino a 70 m». Récords por proporción con los mínimos de arriba; chips de distancia de todo el historial; diana del mapa en grises claros por zona; escala hasta blanco con contorno oscuro (frente a bajar la opacidad); umbral de 30; récords no pulsables; semanas independientes del periodo.
 - **Color de la app** (2026-11-18): cuatro paletas exactas, Petróleo por defecto, sin rojo ni amarillo; Grafito con esquema Neutral; terciario #156683 en Violeta y Grafito; la diana, el ícono y el manifiesto no cambian con la paleta. Petróleo generado se acepta con ±1/255 por canal.
 - El ícono maskable lleva versión en el nombre (`icono-512-mask-v2`): Brave lo guarda en caché, así que cambiarlo implica un nombre nuevo (v3…).
@@ -72,7 +73,7 @@ Navegación inferior fija de 76 px (`--alto-nav`) con 4 destinos, **Sesión**, *
 
 - Objetivos táctiles de 48 px mínimo; filas de la hoja tocables enteras con un botón de 48 px en la primera celda; chips de distancia del Historial de 36 px visibles con zona táctil de 48.
 - Menús se cierran al tocar fuera, con Escape o con atrás, y devuelven el foco al ⋮ (también los diálogos abiertos desde el menú, con `devolverFoco`).
-- **Atrás de Android** (`src/lib/atras.ts`): cada capa (menú, diálogo, editor, Detalle) registra `capa()` en un `$effect`; una sola entrada de historial; sin capas, atrás sale de la app. Toda capa nueva debe usarlo.
+- **Atrás de Android** (`src/lib/atras.ts`): cada capa (menú, diálogo, editor, Detalle) registra `capa()` en un `$effect`; la pestaña distinta de Sesión es la capa del fondo (`capa(…, { fondo: true })`, registrada en `App.svelte`) y atrás vuelve a Sesión con `ir('sesion')`, arriba y con el foco en el destino «Sesión»; no hay historial de pestañas; una sola entrada de historial; desde Sesión sin capas, atrás sale de la app (sin «pulsa otra vez para salir»: la sesión activa se guarda en cada flecha). Toda capa nueva debe usarlo.
 - Avisos (`Aviso.svelte`) tipo snackbar. Con acción («Deshacer» tras guardar una ronda): 5 s, pausa con foco o dedo encima, botón de 48 px fuera de la región viva, solo el botón recibe toques, se retira al marcar una flecha nueva y sube sobre la barra fija.
 - Abreviaturas visuales con texto oculto (`.oculto`): «/6» → « de 6», ▲▼ → sube/baja, R / Pts / Acum. de la hoja, «Prom.» (`rotuloLeido`), fecha completa en las filas del historial, total del historial leído «N puntos». Teclas X («X, 10 puntos») y M («Fallo») con `aria-label`.
 - `scroll-padding-bottom` con la barra fija de acciones. Al volver de Detalle se restauran el scroll y el foco en la fila.
@@ -87,13 +88,11 @@ Navegación inferior fija de 76 px (`--alto-nav`) con 4 destinos, **Sesión**, *
 ## Pendientes y deuda conocida
 
 - Blanco sobre `--diana-rojo` ≈ 4:1, por debajo de AA en texto pequeño: limitación aceptada (los colores de la diana no se tocan), compensada con peso 700 y tamaño grande.
-- Atrás desde Historial/Ajustes vuelve a Sesión: lo decide el usuario.
 - El gráfico de barras desplazable no indica que hay más barras.
 - Teclado en 360×640: con teclas de 56 px se desplazan unos 27 px (aceptado; no es el equipo del usuario).
 - El rediseño 0.4.0 se revisó leyendo código, sin verlo renderizado: validarlo en el Pixel 8.
 - Validar en el Pixel 8 Grafito frente a la M (tira y hoja) y el borde de la lupa sobre los anillos negro y azul.
 - Validar en el Pixel 8, al sol, el mapa de calor (contorno y blanco de la zona de más impactos).
-- Atrás desde Estadísticas vuelve a Sesión, como desde Historial y Ajustes: sigue pendiente de decisión del usuario.
 
 ## Historial de revisiones
 
@@ -104,3 +103,4 @@ Navegación inferior fija de 76 px (`--alto-nav`) con 4 destinos, **Sesión**, *
 - 2026-11-17 · fix/hoja-desborde (0.4.2) · aprobado: `.hoja` posicionada para que los `.oculto` de la cabecera no ensanchen la página; pendiente validar en el Pixel 8.
 - 2026-11-18 · feature/paleta-color (0.5.0) · cuatro paletas de color en Ajustes; aprobado tras rellenar la muestra elegida; pendiente Grafito frente a la M y la lupa en el Pixel 8.
 - 2026-11-18 · feature/estadisticas (0.6.0) · pestaña Estadísticas (4 destinos); aprobado con cambios (impactos en tinta, fecha sin partir, lista de dianas, semana récord, rótulo del promedio); re-revisión aprobada: contorno oscuro de la zona de más impactos (decisión del usuario).
+- 2026-11-26 · fix/atras-vuelve-a-sesion (0.7.0) · atrás desde otra pestaña vuelve a Sesión (decisión del usuario), capa de fondo y foco en el destino; aprobado; corrige el pendiente que lo daba por hecho.

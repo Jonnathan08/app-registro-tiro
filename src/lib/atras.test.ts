@@ -94,3 +94,58 @@ describe('capa', () => {
     expect(historia.back).toHaveBeenCalledOnce(); // solo el del usuario
   });
 });
+
+describe('capa de fondo (el destino de la navegación)', () => {
+  it('registrada después de una normal queda debajo: se cierra la última', async () => {
+    const detalle = vi.fn(),
+      destino = vi.fn();
+    capa(detalle);
+    capa(destino, { fondo: true });
+    expect(entradas).toBe(1);
+    atras();
+    await esperar();
+    expect(detalle).toHaveBeenCalledOnce();
+    expect(destino).not.toHaveBeenCalled();
+    expect(entradas).toBe(1);
+    atras();
+    await esperar();
+    expect(destino).toHaveBeenCalledOnce();
+    expect(entradas).toBe(0);
+  });
+
+  it('sola, atrás la cierra; su limpieza posterior no retrocede otra vez', async () => {
+    const destino = vi.fn();
+    const quitar = capa(destino, { fondo: true });
+    atras();
+    await esperar();
+    expect(destino).toHaveBeenCalledOnce();
+    expect(entradas).toBe(0);
+    quitar();
+    await esperar();
+    expect(historia.back).toHaveBeenCalledOnce(); // solo el del usuario
+  });
+
+  it('quitarla desde la interfaz (tocar Sesión) retira la entrada sin llamar a cerrar', async () => {
+    const destino = vi.fn();
+    const quitar = capa(destino, { fondo: true });
+    quitar();
+    await esperar();
+    await esperar();
+    expect(entradas).toBe(0);
+    expect(destino).not.toHaveBeenCalled();
+  });
+
+  it('abrir y cerrar una capa encima desde la interfaz conserva la entrada', async () => {
+    const destino = vi.fn();
+    capa(destino, { fondo: true });
+    const quitarDialogo = capa(vi.fn());
+    quitarDialogo();
+    await esperar();
+    await esperar();
+    expect(historia.back).not.toHaveBeenCalled();
+    expect(entradas).toBe(1);
+    atras();
+    await esperar();
+    expect(destino).toHaveBeenCalledOnce();
+  });
+});

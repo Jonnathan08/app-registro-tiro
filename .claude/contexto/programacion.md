@@ -1,7 +1,7 @@
 # Contexto de programación — app de registro de tiro
 
 Memoria del agente `experto-programador`. Se actualiza en la misma rama que el cambio que la vuelve falsa.
-Última revisión: 2026-11-18 (versión 0.6.0).
+Última revisión: 2026-11-26 (versión 0.7.0).
 
 ## Pila
 
@@ -41,7 +41,10 @@ src/lib/                  lógica sin interfaz, con pruebas al lado
   formato.ts, tema.ts     Intl en español; tema: modo, contraste y paleta en localStorage (PALETAS; data-paleta en
                           <html>, siempre presente; petroleo por defecto)
   atras.ts                botón atrás de Android por capas: una sola entrada propia en history, contador `ignorar`,
-                          scrollRestoration='manual'; `capa(cerrar)` se usa como limpieza de un $effect
+                          scrollRestoration='manual'; `capa(cerrar)` se usa como limpieza de un $effect;
+                          `capa(cerrar, { fondo: true })` va al fondo de la pila (`unshift`) y se cierra la última;
+                          App la registra fuera de Sesión para volver a Sesión, y depende de un `$derived` booleano
+                          para no volver a registrarse al cambiar de pestaña
   ayuda.ts                contador en localStorage (`registro-tiro:marcas-diana`) de la ayuda de la diana
   estadisticas.ts         filtros (Periodo 30|90|'todo', clave = claveProgreso o null), totales ponderados por
                           flecha, mejores() → Marca (proporción puntos/(flechas×10); sesión ≥36 flechas, ronda
@@ -69,7 +72,7 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 - Errores de almacenamiento: `console.error` + `estado.avisar(...)` y devolver `false`; nunca perder lo que está en pantalla. La sesión no pasa al historial si no se pudo guardar.
 - Entradas externas siempre validadas: `validarConfig`, `leerAjustes`, `importar.ts` (cada campo inválido toma el defecto o se rechaza la fila).
 - Cambios de formato de datos: subir `VERSION_DATOS` en `modelo.ts`, añadir el paso en `migrar()`, prueba en `modelo.test.ts`, actualizar la tabla del CSV en README.
-- Toda capa modal nueva (menú, diálogo, hoja inferior, pantalla de detalle) registra `capa(cerrar)` en un `$effect`.
+- Toda capa modal nueva (menú, diálogo, hoja inferior, pantalla de detalle) registra `capa(cerrar)` en un `$effect`; nunca con `fondo`, que es solo para el destino.
 - `estado.avisar(texto, accion?)` admite una acción (p. ej. Deshacer); la acción valida que el estado sigue siendo el esperado (como `reabrirRonda`) y `marcar` retira los avisos con acción.
 - Claves de localStorage (entradas externas, siempre validadas y con try/catch): `registro-tiro:ultima-config`, `registro-tiro:ajustes` (`paleta` opcional: si falta o no se reconoce, Petróleo), `registro-tiro:marcas-diana`.
 - Perfil Libre se guarda con `rondas = 0` y `flechasPorRonda = 0`; usar `esLibre()` en vez de comparar a mano.
@@ -81,7 +84,9 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
   mismo commit (paletas.test.ts solo liga la semilla por el comentario del CSS). Si una paleta no da el contraste, se
   corrige en base.css, nunca en lo generado. paletas.test.ts fija los umbrales en las 24 combinaciones: texto del
   tablero ≥7:1; rótulo, tenue y oro ≥4,5:1; tablero oscuro (Y ≤ 0,063); on-primary, primary/surface, terciario y aviso.
-- Navegación: 4 destinos, etiquetas a 13 px con interletra 0,8 y `nowrap`; atrás en un destino sale de la app.
+- Navegación: 4 destinos, etiquetas a 13 px con interletra 0,8 y `nowrap`; atrás en Historial, Estadísticas o
+  Ajustes (sin capas) vuelve a Sesión y pone el foco en su destino de la navegación; en Sesión sale de la app
+  (decisión del usuario, 2026-11-26).
 - Estadísticas: chips de distancia de todo el historial (no del periodo); semanas = últimas 12, con el filtro de distancia
   pero sin el de periodo; récords no pulsables; diana del mapa en grises claros por zona (decisiones del usuario, 2026-11-18).
 - `.chip-tablero` (base.css): chips de filtro sobre la franja, compartidos por Historial y Estadísticas.
@@ -115,6 +120,9 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 
 ## Riesgos aceptados
 
+- Carrera de `revisar()`: si se toca Sesión y otro destino, o se pulsa atrás, antes de que llegue el `popstate` del
+  `back()` interno (unos pocos ms), atrás puede quedarse una vez en Sesión en vez de salir. Comprobado en Chromium:
+  solo ocurre a 0 ms (2026-11-26).
 - `npm audit` completo: 9 moderados y 14 altas solo en herramientas de desarrollo y compilación (las altas por
   GHSA-fc5q-39xc-vjpf, `picomatch` <=4.0.7, sin versión corregida a 2026-11-17, vía vite, vitest, svelte-check y
   vite-plugin-pwa); `--omit=dev` da 0. Por decisión del usuario (2026-11-17) el CI solo bloquea por altas sin dev y por
@@ -145,3 +153,4 @@ Flujo de datos: las pantallas leen `estado` y llaman a sus acciones; las accione
 - 2026-11-18 · feature/paleta-color · aprobado · 4 paletas (Petróleo predeterminada en tema.css; Bosque, Violeta y Grafito generadas por script calibrado ±1 contra tema.css) en data-paleta; contraste del tablero vigilado por pruebas en las 24 variantes.
 - 2026-11-18 · feature/estadisticas · aprobado · pestaña Estadísticas con densidad por reparto en celdas + gaussiana separable en canvas, semanas en hora local con setDate y récords por proporción; +5,9 kB gzip.
 - 2026-11-18 · feature/estadisticas (2.ª vuelta) · aprobado · contorno por isolínea en el canvas y clave efectiva derivada.
+- 2026-11-26 · fix/atras-vuelve-a-sesion · aprobado · capa de fondo en `atras.ts` para que atrás vuelva a Sesión desde los otros destinos; el orden de la pila no depende del de los efectos (`terminar()` abre Detalle y cambia de pestaña a la vez).

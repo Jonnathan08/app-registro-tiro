@@ -1,5 +1,9 @@
 # Cambios
 
+## 0.7.0 — 2026-11-26
+
+- Botón atrás de Android: desde Historial, Estadísticas o Ajustes vuelve a Sesión en vez de salir de la app; solo sale desde Sesión. Los menús, diálogos y el detalle de una sesión se siguen cerrando primero.
+
 ## 0.6.0 — 2026-11-18
 
 - Nueva pestaña **Estadísticas** en la navegación (la app sigue abriendo en Sesión). Con filtros de periodo y distancia muestra: sesiones, flechas y promedio por flecha; récords (mejor sesión y mejor ronda según el porcentaje del máximo, desde 36 y 3 flechas; más X y más 10+X en una sesión); un **mapa de calor** de la agrupación sobre una diana en grises, con los colores de la diana de negro a blanco (con menos de 30 flechas marcadas se ven los impactos), el centro del grupo y la zona con más impactos; puntos por zona; y flechas por semana de las últimas 12 semanas.
