@@ -108,36 +108,6 @@
 </dialog>
 
 <style>
-  .hoja-inferior {
-    margin: auto auto 0;
-    width: 100%;
-    max-width: 600px;
-    max-height: 92dvh;
-    overflow-y: auto;
-    border: 0;
-    border-radius: var(--shape-m) var(--shape-m) 0 0;
-    padding: 8px 16px calc(16px + env(safe-area-inset-bottom, 0px));
-    background: var(--md-sys-color-surface-container-low);
-    color: var(--md-sys-color-on-surface);
-  }
-  .hoja-inferior[open] {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  .hoja-inferior::backdrop {
-    background: rgb(0 0 0 / 0.32);
-  }
-  .hoja-inferior::before {
-    content: '';
-    align-self: center;
-    width: 32px;
-    height: 4px;
-    border-radius: 2px;
-    margin-top: 8px;
-    background: var(--md-sys-color-on-surface-variant);
-    opacity: 0.4;
-  }
   .cab {
     display: flex;
     align-items: center;

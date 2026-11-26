@@ -21,7 +21,8 @@ App web instalable para registrar sesiones de tiro con arco recurvo. Funciona si
 - Ajustes muestra cuántas sesiones y flechas hay guardadas.
 - Color de la app a elegir en Ajustes: Petróleo (predeterminado), Bosque, Violeta o Grafito, en claro u oscuro y con tres niveles de contraste. Los colores de la diana no cambian.
 - Exportación a CSV completo con el menú de compartir del teléfono (Drive, correo…). Nombre: `tiro_<fecha>_<distancia>m_<id>.csv`.
-- Importación del mismo CSV en Ajustes, para recuperar el historial en otro teléfono; las sesiones que ya están no se duplican.
+- Importación de esos CSV en Ajustes, para recuperar el historial y las marcas de mira en otro teléfono; las sesiones que ya están no se duplican y de cada distancia se queda la marca más reciente.
+- Libreta de marcas de mira: la elevación de la mira (0 a 100, con una perilla que se gira con el dedo o con −/+) y una nota por distancia, independiente de las sesiones. Se consulta y ajusta durante la sesión desde el menú ⋮ de Anotar, con la marca de la distancia en curso destacada, y en Ajustes. Exportar en Ajustes entrega también un CSV de marcas (`tiro_marcas_<fecha>.csv`).
 
 ## Seguridad
 
@@ -40,7 +41,7 @@ Requiere Node 24 (`nvm use`, lee `.nvmrc`).
 npm ci            # instala dependencias exactas
 npm run dev       # servidor de desarrollo
 npm test          # pruebas (puntuación, modelo, progreso, estado, botón atrás, ayuda, exportación e importación,
-                  #   ajustes de tema y contraste de cada paleta, estadísticas y mapa de calor)
+                  #   ajustes de tema y contraste de cada paleta, estadísticas, mapa de calor y marcas de mira)
 npm run check     # chequeo de tipos
 npm run lint      # formato (Prettier) y lint (ESLint)
 npm run format    # aplica el formato de Prettier
@@ -62,7 +63,8 @@ src/
     calor.ts            mapa de calor: posiciones por radio de diana, densidad, escala de color y descripción
     diana.ts            geometría y puntuación de las dianas World Archery
     estado.svelte.ts    estado de la app y acciones (guarda en almacen.ts)
-    almacen.ts          IndexedDB
+    almacen.ts          IndexedDB (v2: sesiones y marcas de mira)
+    mira.ts             marcas de mira: validación, fusión al importar y lógica de la perilla
     exportar.ts / importar.ts   CSV de ida y vuelta
     formato.ts, tema.ts formatos de número/fecha; tema: modo, contraste y paleta
   estilos/              tema.css (Petróleo, generado por Material Theme Builder), paletas.css (las otras paletas,
@@ -89,6 +91,17 @@ Una fila por flecha; los datos de la sesión y las notas se repiten en cada fila
 | `notas_personales`, `notas_entrenador`                    | Notas de la sesión                                                                                         |
 
 Se usa CSV porque los navegadores basados en Chromium (Chrome, Brave) no permiten compartir archivos `.json`.
+
+### CSV de marcas de mira
+
+Archivo aparte (`tiro_marcas_<fecha>.csv`), para no cambiar el de sesiones; al importar se reconoce por su cabecera (no tiene `sesion_id`). Una fila por distancia:
+
+| Columna       | Contenido                                           |
+| ------------- | --------------------------------------------------- |
+| `distancia_m` | Distancia en metros (entero)                        |
+| `elevacion`   | Elevación de la mira, de 0 a 100, con punto decimal |
+| `nota`        | Nota libre (deriva, viento…)                        |
+| `actualizada` | Fecha y hora ISO del último cambio                  |
 
 ## Flujo de trabajo
 

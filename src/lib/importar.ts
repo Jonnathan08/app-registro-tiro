@@ -1,6 +1,7 @@
 // Importación del CSV que genera exportar.ts, para restaurar sesiones (p. ej. en un teléfono nuevo).
 import { DIANAS } from './diana';
-import { COLUMNAS } from './exportar';
+import { COLUMNAS, COLUMNAS_MIRA } from './exportar';
+import { validarMarca, type MarcaMira } from './mira';
 import { PERFILES, VERSION_DATOS, type Flecha, type Perfil, type Sesion } from './modelo';
 
 /** Separa un CSV (RFC 4180) en filas y celdas. Admite comillas, comas y saltos de línea dentro de una celda. */
@@ -117,4 +118,50 @@ export function deCSV(texto: string): Sesion[] {
     ...s,
     registro: ordenar(rondas).map((fl) => ({ flechas: ordenar(fl) })),
   }));
+}
+
+/** Qué exportación es un CSV, por su cabecera: las dos tienen distancia_m, solo la de sesiones sesion_id. */
+export function tipoCSV(texto: string): 'sesiones' | 'marcas' {
+  const [cabecera] = leerCSV(texto);
+  if (!cabecera) throw new Error('El archivo está vacío.');
+  if (cabecera.includes('sesion_id')) return 'sesiones';
+  if (COLUMNAS_MIRA.every((c) => cabecera.includes(c))) return 'marcas';
+  throw new Error('No es un CSV exportado por la app.');
+}
+
+/**
+ * Marcas de mira de un CSV exportado por la app. Lanza un Error con la línea si una fila no es válida.
+ * Si una distancia se repite, gana la de fecha más reciente.
+ */
+export function deCSVMira(texto: string): MarcaMira[] {
+  const [cabecera, ...filas] = leerCSV(texto);
+  if (!cabecera) throw new Error('El archivo está vacío.');
+  const faltan = COLUMNAS_MIRA.filter((c) => !cabecera.includes(c));
+  if (faltan.length) throw new Error(`Faltan las columnas ${faltan.join(', ')}.`);
+  const i = (c: string) => cabecera.indexOf(c);
+  const porDistancia = new Map<number, MarcaMira>();
+  filas.forEach((fila, k) => {
+    const n = k + 2;
+    const num = (c: string) => (fila[i(c)] === undefined || fila[i(c)] === '' ? NaN : Number(fila[i(c)]));
+    const m = validarMarca({
+      distanciaM: num('distancia_m'),
+      elevacion: num('elevacion'),
+      nota: fila[i('nota')] ?? '',
+      actualizada: fila[i('actualizada')] ?? '',
+    });
+    if (!m)
+      throw new Error(
+        `Línea ${n}: marca no válida (distancia «${fila[i('distancia_m')] ?? ''}», elevación «${fila[i('elevacion')] ?? ''}»).`,
+      );
+    const previa = porDistancia.get(m.distanciaM);
+    if (!previa || Date.parse(m.actualizada) > Date.parse(previa.actualizada)) porDistancia.set(m.distanciaM, m);
+  });
+  return [...porDistancia.values()];
+}
+
+/** Sesiones o marcas de un CSV exportado por la app, según su cabecera. */
+export function deArchivo(texto: string): { sesiones: Sesion[]; marcas: MarcaMira[] } {
+  return tipoCSV(texto) === 'marcas'
+    ? { sesiones: [], marcas: deCSVMira(texto) }
+    : { sesiones: deCSV(texto), marcas: [] };
 }

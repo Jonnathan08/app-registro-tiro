@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { aCSV } from './exportar';
-import { deCSV, leerCSV } from './importar';
-import { nuevaSesion, type Flecha } from './modelo';
+import { aCSV, marcasACSV } from './exportar';
+import { deArchivo, deCSV, deCSVMira, leerCSV, tipoCSV } from './importar';
+import { CONFIG_DEFECTO, nuevaSesion, type Flecha } from './modelo';
 
 const f = (puntaje: number, x = false, pos: Flecha['pos'] = null): Flecha => ({ puntaje, x, pos });
 const fecha = new Date('2026-10-04T09:30:00Z');
@@ -61,5 +61,40 @@ describe('deCSV', () => {
     s.registro.push({ flechas: [f(9)] });
     const malo = aCSV(s).replace(',9,0,,,0,', ',11,0,,,0,');
     expect(() => deCSV(malo)).toThrow(/Línea 2: valor no válido en puntaje/);
+  });
+});
+
+describe('marcas de mira en CSV', () => {
+  const ms = [
+    {
+      version: 1,
+      distanciaM: 18,
+      elevacion: 2.8,
+      nota: 'sala, "aluminio"\nfrío',
+      actualizada: '2026-10-03T09:00:00.000Z',
+    },
+    { version: 1, distanciaM: 70, elevacion: 6.4, nota: '', actualizada: '2026-11-22T09:00:00.000Z' },
+  ];
+  it('ida y vuelta, con comas, comillas y saltos de línea en la nota', () => {
+    const csv = marcasACSV(ms);
+    expect(csv.split('\n')[0]).toBe('distancia_m,elevacion,nota,actualizada');
+    expect(csv).toContain('70,6.4,,2026-11-22');
+    expect(deCSVMira(csv)).toEqual(ms);
+  });
+  it('deArchivo reconoce cada tipo; los CSV de sesiones siguen igual', () => {
+    expect(deArchivo(marcasACSV(ms))).toEqual({ sesiones: [], marcas: ms });
+    const s = nuevaSesion({ ...CONFIG_DEFECTO });
+    s.registro.push({ flechas: [{ puntaje: 9, x: false, pos: null }] });
+    const r = deArchivo(aCSV(s));
+    expect(r.marcas).toEqual([]);
+    expect(r.sesiones).toHaveLength(1);
+  });
+  it('una distancia repetida se queda con la más reciente', () => {
+    const csv = 'distancia_m,elevacion,nota,actualizada\n50,5.6,,2026-11-01T00:00:00Z\n50,5.8,,2026-11-09T00:00:00Z\n';
+    expect(deCSVMira(csv).map((m) => m.elevacion)).toEqual([5.8]);
+  });
+  it('indica la línea de una marca no válida y rechaza cabeceras ajenas', () => {
+    expect(() => deCSVMira('distancia_m,elevacion,nota,actualizada\n50,abc,,\n')).toThrow(/Línea 2/);
+    expect(() => tipoCSV('a,b,c\n1,2,3\n')).toThrow(/No es un CSV/);
   });
 });

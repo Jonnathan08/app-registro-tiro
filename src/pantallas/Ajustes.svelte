@@ -1,12 +1,17 @@
 <script lang="ts">
   import Barra from '../componentes/Barra.svelte';
   import Icono from '../componentes/Icono.svelte';
+  import LibretaMira from '../componentes/LibretaMira.svelte';
+  import ListaMarcas from '../componentes/ListaMarcas.svelte';
   import Marcador from '../componentes/Marcador.svelte';
   import Segmentado from '../componentes/Segmentado.svelte';
   import { estado } from '../lib/estado.svelte';
   import { totalesHistorial } from '../lib/modelo';
-  import { aCSV, compartir } from '../lib/exportar';
-  import { deCSV } from '../lib/importar';
+  import { tick } from 'svelte';
+  import { aCSV, compartirVarios, marcasACSV, nombreArchivoMira } from '../lib/exportar';
+  import { deArchivo } from '../lib/importar';
+  import type { MarcaMira } from '../lib/mira';
+  import type { Sesion } from '../lib/modelo';
   import {
     aplicarTema,
     guardarAjustes,
@@ -29,26 +34,56 @@
     aplicarTema(ajustes);
   }
 
+  // ---- Marcas de mira: el editor se abre en una hoja inferior ----
+  let editando = $state<number | 'nueva' | null>(null);
+  let agregar: HTMLButtonElement;
+  async function cerrarLibreta() {
+    editando = null;
+    // El diálogo devuelve el foco a quien lo abrió; si era una marca ya borrada, a «Agregar marca»
+    await tick();
+    if (document.activeElement === document.body) agregar?.focus();
+  }
+
   async function exportarTodo() {
-    const r = await compartir(aCSV(estado.historial), `tiro_todo_${new Date().toISOString().slice(0, 10)}.csv`);
-    if (r === 'descargado') estado.avisar('Archivo descargado');
+    const hoy = new Date().toISOString().slice(0, 10);
+    const archivos = [];
+    if (estado.historial.length) archivos.push({ contenido: aCSV(estado.historial), nombre: `tiro_todo_${hoy}.csv` });
+    if (estado.marcas.length) archivos.push({ contenido: marcasACSV(estado.marcas), nombre: nombreArchivoMira() });
+    const r = await compartirVarios(archivos);
+    if (r === 'descargado') estado.avisar(archivos.length > 1 ? 'Archivos descargados' : 'Archivo descargado');
   }
 
   let archivo: HTMLInputElement;
   let importando = $state(false);
   async function importar() {
-    const a = archivo.files?.[0];
+    const lista = [...(archivo.files ?? [])];
     archivo.value = ''; // permite volver a elegir el mismo archivo
-    if (!a) return;
+    if (!lista.length) return;
     importando = true;
     try {
-      const { nuevas, repetidas } = await estado.importar(deCSV(await a.text()));
-      const ya = repetidas ? ` (${repetidas} ya estaba${repetidas === 1 ? '' : 'n'})` : '';
-      estado.avisar(
-        nuevas
-          ? `${nuevas} ${nuevas === 1 ? 'sesión importada' : 'sesiones importadas'}${ya}`
-          : `No hay sesiones nuevas${ya}`,
-      );
+      const sesiones: Sesion[] = [],
+        marcas: MarcaMira[] = [];
+      for (const a of lista) {
+        const r = deArchivo(await a.text());
+        sesiones.push(...r.sesiones);
+        marcas.push(...r.marcas);
+      }
+      const partes: string[] = [];
+      if (sesiones.length || !marcas.length) {
+        const { nuevas, repetidas } = await estado.importar(sesiones);
+        const ya = repetidas ? ` (${repetidas} ya estaba${repetidas === 1 ? '' : 'n'})` : '';
+        partes.push(
+          nuevas
+            ? `${nuevas} ${nuevas === 1 ? 'sesión importada' : 'sesiones importadas'}${ya}`
+            : `No hay sesiones nuevas${ya}`,
+        );
+      }
+      if (marcas.length) {
+        const { nuevas, actualizadas } = await estado.importarMarcas(marcas);
+        const n = nuevas + actualizadas;
+        partes.push(n ? `${n} ${n === 1 ? 'marca actualizada' : 'marcas actualizadas'}` : 'No hay marcas nuevas');
+      }
+      estado.avisar(partes.join(' · '));
     } catch (e) {
       console.error(e);
       estado.avisar(
@@ -72,6 +107,20 @@
 </Marcador>
 
 <div class="cuerpo">
+  <section class="grupo">
+    <h2 class="sec">Marcas de mira</h2>
+    {#if estado.marcas.length}
+      <ListaMarcas marcas={estado.marcas} alElegir={(d) => (editando = d)} />
+    {:else}
+      <p class="t-body-s">
+        Todavía no hay marcas. Guarda la elevación de tu mira para cada distancia y tenla a mano durante la sesión.
+      </p>
+    {/if}
+    <button type="button" class="btn contorno estado ancho" bind:this={agregar} onclick={() => (editando = 'nueva')}
+      ><Icono nombre="sumar" />Agregar marca</button
+    >
+  </section>
+
   <section class="grupo">
     <h2 class="sec">Apariencia</h2>
     <span class="rotulo" aria-hidden="true">Color</span>
@@ -104,25 +153,32 @@
 
   <section class="grupo">
     <h2 class="sec">Datos</h2>
-    <button type="button" class="btn contorno estado ancho" disabled={!estado.historial.length} onclick={exportarTodo}
-      ><Icono nombre="compartir" />Exportar todas las sesiones</button
+    <button
+      type="button"
+      class="btn contorno estado ancho"
+      disabled={!estado.historial.length && !estado.marcas.length}
+      onclick={exportarTodo}><Icono nombre="compartir" />Exportar sesiones y marcas</button
     >
     <button type="button" class="btn contorno estado ancho" disabled={importando} onclick={() => archivo.click()}
-      ><Icono nombre="importar" />Importar sesiones (CSV)</button
+      ><Icono nombre="importar" />Importar copia (CSV)</button
     >
-    <input bind:this={archivo} type="file" accept=".csv,text/csv" hidden onchange={importar} />
+    <input bind:this={archivo} type="file" accept=".csv,text/csv" multiple hidden onchange={importar} />
     <p class="t-body-s">
       La app no se conecta a ningún servidor: para llevar tus sesiones a Drive, compártelas desde aquí o desde cada
       sesión.
     </p>
     <p class="t-body-s">
       Para recuperarlas (por ejemplo, en un teléfono nuevo), importa un CSV exportado por la app. Las sesiones que ya
-      están no se duplican.
+      están no se duplican; de las marcas se queda la más reciente de cada distancia.
     </p>
   </section>
 
   <p class="t-rotulo version">Versión {__VERSION__}</p>
 </div>
+
+{#if editando !== null}
+  <LibretaMira editar={editando} alCerrar={cerrarLibreta} />
+{/if}
 
 <style>
   .cuerpo {

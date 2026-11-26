@@ -1,4 +1,5 @@
 import { etiqueta } from './diana';
+import type { MarcaMira } from './mira';
 import { esLibre, resumen, type Sesion } from './modelo';
 
 const r1 = (n: number) => Math.round(n * 10) / 10;
@@ -82,25 +83,44 @@ export function aCSV(sesiones: Sesion | Sesion[]): string {
   return [COLUMNAS.join(','), ...lista.flatMap(filas)].join('\n') + '\n';
 }
 
+/** Columnas del CSV de marcas de mira (archivo aparte: el de sesiones no cambia). */
+export const COLUMNAS_MIRA = ['distancia_m', 'elevacion', 'nota', 'actualizada'];
+
+/** Marcas de mira en CSV, una fila por distancia; la elevación con punto decimal, como x_mm. */
+export function marcasACSV(marcas: MarcaMira[]): string {
+  const filas = marcas.map((m) => [m.distanciaM, m.elevacion, m.nota, m.actualizada].map(celda).join(','));
+  return [COLUMNAS_MIRA.join(','), ...filas].join('\n') + '\n';
+}
+
+/** Nombre de archivo: tiro_marcas_2026-11-26.csv */
+export const nombreArchivoMira = (fecha = new Date()) => `tiro_marcas_${fecha.toISOString().slice(0, 10)}.csv`;
+
 /**
- * Comparte el archivo con el menú del sistema (Drive, correo, etc.).
- * Si el navegador no permite compartir archivos, lo descarga.
+ * Comparte uno o varios archivos con el menú del sistema (Drive, correo, etc.).
+ * Si el navegador no permite compartirlos, los descarga.
  */
-export async function compartir(contenido: string, nombre: string): Promise<'compartido' | 'descargado' | 'cancelado'> {
-  const archivo = new File([contenido], nombre, { type: 'text/csv' });
-  if (navigator.canShare?.({ files: [archivo] })) {
+export async function compartirVarios(
+  archivos: { contenido: string; nombre: string }[],
+): Promise<'compartido' | 'descargado' | 'cancelado'> {
+  const files = archivos.map((a) => new File([a.contenido], a.nombre, { type: 'text/csv' }));
+  if (navigator.canShare?.({ files })) {
     try {
-      await navigator.share({ files: [archivo], title: nombre });
+      await navigator.share({ files, title: archivos[0].nombre });
       return 'compartido';
     } catch (e) {
       if ((e as DOMException).name === 'AbortError') return 'cancelado';
     }
   }
-  const url = URL.createObjectURL(archivo);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = nombre;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  for (const f of files) {
+    const url = URL.createObjectURL(f);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = f.name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
   return 'descargado';
 }
+
+/** Comparte un archivo (ver compartirVarios). */
+export const compartir = (contenido: string, nombre: string) => compartirVarios([{ contenido, nombre }]);
