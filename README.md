@@ -12,7 +12,7 @@ App web instalable para registrar sesiones de tiro con arco recurvo. Funciona si
 - Registro flecha a flecha tocando la diana (con lupa y regla de la línea) o con teclado manual; se cambia con el ícono de la barra superior. Deshacer y Guardar ronda quedan fijos sobre la navegación, y la diana se ve entera sin desplazar.
 - Al guardar una ronda, el aviso ofrece **Deshacer** para devolverla a la ronda en curso y corregirla.
 - Hoja de puntuación, total, X, 10+X, promedio y centro del grupo. La sesión en curso tiene dos pestañas: **Anotar** y **Hoja** (hoja y notas).
-- El botón atrás de Android cierra primero el menú, los diálogos, el editor de ronda o el detalle de una sesión; solo sale de la app si no queda nada abierto.
+- El botón atrás de Android cierra primero el menú, los diálogos, el editor de ronda o el detalle de una sesión; desde Historial, Estadísticas o Ajustes vuelve a Sesión, y solo sale de la app desde Sesión.
 - Zoom con dos dedos sobre la diana y lupa fija en una esquina para afinar el impacto.
 - Edición de rondas ya guardadas durante la sesión en curso (lápiz en la hoja): corregir el valor con el teclado (descarta la posición) o volver a marcar en la diana (reemplaza posición y valor).
 - Notas personales y notas del entrenador; quedan bloqueadas al terminar la sesión.
@@ -39,7 +39,7 @@ Requiere Node 24 (`nvm use`, lee `.nvmrc`).
 ```
 npm ci            # instala dependencias exactas
 npm run dev       # servidor de desarrollo
-npm test          # pruebas (puntuación, modelo, progreso, estado, botón atrás, ayuda, exportación e importación,
+npm test          # pruebas (puntuación, modelo, progreso, estado, botón atrás y su vuelta a Sesión, ayuda, exportación e importación,
                   #   ajustes de tema y contraste de cada paleta, estadísticas y mapa de calor)
 npm run check     # chequeo de tipos
 npm run lint      # formato (Prettier) y lint (ESLint)

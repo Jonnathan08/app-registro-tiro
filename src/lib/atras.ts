@@ -1,6 +1,7 @@
 // Botón «atrás» de Android: cierra la capa abierta (menú, diálogo, editor, detalle) en vez de salir de la app.
 // Mientras haya capas se mantiene una sola entrada propia en el historial; al pulsar atrás se consume,
-// se cierra la capa de arriba y, si quedan más, se vuelve a poner. Sin capas, atrás sale de la app.
+// se cierra la capa de arriba y, si quedan más, se vuelve a poner. La pestaña distinta de Sesión es la capa del
+// fondo (la registra App): atrás vuelve a Sesión. Sin capas, atrás sale de la app.
 
 interface Capa {
   cerrar: () => void;
@@ -53,11 +54,14 @@ function revisar() {
 /**
  * Registra una capa abierta; `cerrar` se llama si el usuario pulsa atrás.
  * Devuelve la función que la da por cerrada (pensada como limpieza de un `$effect`).
+ * Con `fondo`, va debajo de todas las demás y se cierra la última, aunque se registre después (el destino de la
+ * navegación: menús, diálogos y Detalle se cierran antes de volver a Sesión).
  */
-export function capa(cerrar: () => void): () => void {
+export function capa(cerrar: () => void, opciones?: { fondo?: boolean }): () => void {
   iniciar();
   const c: Capa = { cerrar };
-  pila.push(c);
+  if (opciones?.fondo) pila.unshift(c);
+  else pila.push(c);
   if (!enHistorial) poner();
   return () => {
     const i = pila.indexOf(c);
