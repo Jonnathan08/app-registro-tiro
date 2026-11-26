@@ -39,7 +39,7 @@ Requiere Node 24 (`nvm use`, lee `.nvmrc`).
 ```
 npm ci            # instala dependencias exactas
 npm run dev       # servidor de desarrollo
-npm test          # pruebas (puntuación, modelo, progreso, estado, botón atrás y su vuelta a Sesión, ayuda, exportación e importación,
+npm test          # pruebas (puntuación, modelo, progreso, estado, botón atrás, ayuda, exportación e importación,
                   #   ajustes de tema y contraste de cada paleta, estadísticas y mapa de calor)
 npm run check     # chequeo de tipos
 npm run lint      # formato (Prettier) y lint (ESLint)

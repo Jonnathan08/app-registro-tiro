@@ -2,7 +2,7 @@
 
 ## 0.7.0 — 2026-11-26
 
-- Botón atrás de Android: desde Historial, Estadísticas o Ajustes vuelve a Sesión en vez de cerrar la app; solo sale de la app desde Sesión. Los menús, diálogos y el detalle de una sesión se siguen cerrando primero.
+- Botón atrás de Android: desde Historial, Estadísticas o Ajustes vuelve a Sesión en vez de salir de la app; solo sale desde Sesión. Los menús, diálogos y el detalle de una sesión se siguen cerrando primero.
 
 ## 0.6.0 — 2026-11-18
 

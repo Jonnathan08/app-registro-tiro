@@ -25,22 +25,20 @@
     scrollTo(0, 0);
   }
 
+  /** Atrás desde otra pestaña: a Sesión, arriba, con el foco en su destino (la pantalla que se cierra se lo lleva). */
+  function volverASesion() {
+    ir('sesion');
+    void tick().then(() =>
+      document.querySelector<HTMLElement>('nav .destino[aria-current="page"]')?.focus({ preventScroll: true }),
+    );
+  }
+
   // Atrás desde Historial, Estadísticas o Ajustes vuelve a Sesión; desde Sesión sale de la app. Es la capa del
   // fondo, para que menús, diálogos y Detalle se cierren antes. Depende de un booleano y no de la pantalla:
   // así no se vuelve a registrar (y a subir en la pila) al cambiar entre pestañas.
   const fueraDeSesion = $derived(estado.pantalla !== 'sesion');
   $effect(() => {
-    if (!fueraDeSesion) return;
-    return capa(
-      () => {
-        ir('sesion');
-        // La pantalla que se cierra se lleva el foco: queda en el destino, como al tocarlo en la barra
-        void tick().then(() =>
-          document.querySelector<HTMLElement>('nav .destino[aria-current="page"]')?.focus({ preventScroll: true }),
-        );
-      },
-      { fondo: true },
-    );
+    if (fueraDeSesion) return capa(volverASesion, { fondo: true });
   });
 </script>
 
