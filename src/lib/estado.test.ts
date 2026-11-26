@@ -9,6 +9,10 @@ vi.mock('./almacen', () => ({
   listar: vi.fn(async () => []),
   borrar: vi.fn(async () => {}),
   pedirPersistencia: vi.fn(async () => true),
+  listarMarcas: vi.fn(async () => []),
+  guardarMarca: vi.fn(async () => {}),
+  guardarMarcas: vi.fn(async () => {}),
+  borrarMarca: vi.fn(async () => {}),
 }));
 
 const f = (puntaje: number): Flecha => ({ puntaje, x: false, pos: null });
@@ -20,6 +24,7 @@ beforeEach(async () => {
   estado.historial = [];
   estado.detalle = null;
   estado.aviso = null;
+  estado.marcas = [];
   await estado.cargar();
 });
 
@@ -140,5 +145,72 @@ describe('importar', () => {
     expect(r).toEqual({ nuevas: 1, repetidas: 1 });
     expect(vi.mocked(almacen.guardarVarias)).toHaveBeenCalledWith([vieja]);
     expect(estado.historial.map((s) => s.id)).toEqual([nueva.id, vieja.id]);
+  });
+});
+
+describe('importar varios archivos', () => {
+  it('una sesión repetida entre archivos cuenta una sola vez', async () => {
+    const s = { ...nuevaSesion(abierto), terminada: true };
+    const r = await estado.importar([s, structuredClone(s)]);
+    expect(r).toEqual({ nuevas: 1, repetidas: 0 });
+    expect(estado.historial.filter((h) => h.id === s.id)).toHaveLength(1);
+  });
+});
+
+describe('marcas de mira', () => {
+  const marca = (distanciaM: number, elevacion: number, actualizada = '2026-11-01T10:00:00.000Z') => ({
+    version: 1,
+    distanciaM,
+    elevacion,
+    nota: '',
+    actualizada,
+  });
+
+  it('cargar las trae ordenadas por distancia', async () => {
+    vi.mocked(almacen.listarMarcas).mockResolvedValueOnce([marca(70, 6.4), marca(18, 2.8)]);
+    await estado.cargar();
+    expect(estado.marcas.map((m) => m.distanciaM)).toEqual([18, 70]);
+  });
+
+  it('guardar añade o sustituye y mantiene el orden; con distancia anterior, la quita', async () => {
+    expect(await estado.guardarMarca(marca(50, 5.6))).toBe(true);
+    expect(await estado.guardarMarca(marca(18, 2.8))).toBe(true);
+    expect(await estado.guardarMarca(marca(60, 5.9), 50)).toBe(true);
+    expect(estado.marcas.map((m) => m.distanciaM)).toEqual([18, 60]);
+    expect(vi.mocked(almacen.guardarMarca).mock.lastCall![1]).toBe(50);
+  });
+
+  it('si no se puede guardar, avisa, devuelve false y no cambia la libreta', async () => {
+    vi.mocked(almacen.guardarMarca).mockRejectedValueOnce(new Error('cuota'));
+    expect(await estado.guardarMarca(marca(50, 5.6))).toBe(false);
+    expect(estado.marcas).toEqual([]);
+    expect(estado.aviso?.texto).toMatch(/No se pudo guardar la marca/);
+  });
+
+  it('rechaza una marca no válida sin tocar el almacenamiento', async () => {
+    expect(await estado.guardarMarca(marca(50, 500))).toBe(false);
+    expect(almacen.guardarMarca).not.toHaveBeenCalled();
+  });
+
+  it('borrar quita la marca; si falla, avisa y la conserva', async () => {
+    await estado.guardarMarca(marca(50, 5.6));
+    vi.mocked(almacen.borrarMarca).mockRejectedValueOnce(new Error('x'));
+    expect(await estado.borrarMarca(50)).toBe(false);
+    expect(estado.marcas).toHaveLength(1);
+    expect(await estado.borrarMarca(50)).toBe(true);
+    expect(estado.marcas).toEqual([]);
+  });
+
+  it('importar: por distancia gana la más reciente, con recuentos', async () => {
+    await estado.guardarMarca(marca(30, 4, '2026-11-10T00:00:00.000Z'));
+    const r = await estado.importarMarcas([
+      marca(18, 2, '2026-01-01T00:00:00.000Z'),
+      marca(30, 4.5, '2026-11-20T00:00:00.000Z'),
+    ]);
+    expect(r).toEqual({ nuevas: 1, actualizadas: 1, iguales: 0 });
+    expect(estado.marcas.map((m) => [m.distanciaM, m.elevacion])).toEqual([
+      [18, 2],
+      [30, 4.5],
+    ]);
   });
 });

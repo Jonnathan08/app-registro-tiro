@@ -89,7 +89,7 @@
 
   <section class="grupo">
     <h2 class="sec">Distancia</h2>
-    <label class="distancia" class:error={!distanciaValida}>
+    <label class="caja-cifra" class:error={!distanciaValida}>
       <span class="texto">Distancia de tiro<span class="oculto"> en metros</span></span>
       <input
         id="distancia"
@@ -178,51 +178,6 @@
   }
   .grupo h2 {
     margin: 0;
-  }
-  /* Distancia: una caja con el texto a la izquierda y la cifra grande a la derecha */
-  .distancia {
-    height: 60px;
-    padding: 0 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border: 2px solid var(--md-sys-color-outline-variant);
-    border-radius: var(--shape-s);
-    background: var(--md-sys-color-surface-container-lowest);
-    cursor: text;
-  }
-  .distancia:focus-within {
-    border-color: var(--md-sys-color-primary);
-  }
-  .distancia.error {
-    border-color: var(--md-sys-color-error);
-  }
-  .distancia .texto {
-    flex: 1;
-    font-size: 14px;
-    color: var(--md-sys-color-on-surface-variant);
-  }
-  .distancia input {
-    width: 72px;
-    border: 0;
-    background: none;
-    text-align: right;
-    font-family: var(--font-marcador);
-    font-size: 34px;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    color: var(--md-sys-color-on-surface);
-    padding: 0;
-  }
-  .distancia input:focus {
-    outline: none;
-  }
-  .unidad {
-    font-family: var(--font-marcador);
-    font-size: 20px;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--md-sys-color-on-surface-variant);
   }
   .error-texto {
     color: var(--md-sys-color-error);

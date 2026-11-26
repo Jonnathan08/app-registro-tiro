@@ -437,6 +437,84 @@ h2.sec {
   color: var(--diana-tinta);
 }
 
+/* Hoja inferior modal (EditarRonda, libreta de mira) */
+.hoja-inferior {
+  margin: auto auto 0;
+  width: 100%;
+  max-width: 600px;
+  max-height: 92dvh;
+  overflow-y: auto;
+  border: 0;
+  border-radius: var(--shape-m) var(--shape-m) 0 0;
+  padding: 8px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  background: var(--md-sys-color-surface-container-low);
+  color: var(--md-sys-color-on-surface);
+}
+.hoja-inferior[open] {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.hoja-inferior::backdrop {
+  background: rgb(0 0 0 / 0.32);
+}
+.hoja-inferior::before {
+  content: '';
+  align-self: center;
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
+  margin-top: 8px;
+  background: var(--md-sys-color-on-surface-variant);
+  opacity: 0.4;
+}
+
+/* Caja de cifra (distancia en Configurar y en la libreta de mira): una caja con el texto a la izquierda y la cifra grande a la derecha */
+.caja-cifra {
+  height: 60px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 2px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--shape-s);
+  background: var(--md-sys-color-surface-container-lowest);
+  cursor: text;
+}
+.caja-cifra:focus-within {
+  border-color: var(--md-sys-color-primary);
+}
+.caja-cifra.error {
+  border-color: var(--md-sys-color-error);
+}
+.caja-cifra .texto {
+  flex: 1;
+  font-size: 14px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.caja-cifra input {
+  width: 72px;
+  border: 0;
+  background: none;
+  text-align: right;
+  font-family: var(--font-marcador);
+  font-size: 34px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--md-sys-color-on-surface);
+  padding: 0;
+}
+.caja-cifra input:focus {
+  outline: none;
+}
+.caja-cifra .unidad {
+  font-family: var(--font-marcador);
+  font-size: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
 /* Fichas de flecha (color del anillo). Blanco sobre rojo da 4:1: se usan en negrita y a tamaño grande */
 .z-oro {
   background: var(--diana-oro);

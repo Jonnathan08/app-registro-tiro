@@ -1,4 +1,5 @@
 import * as almacen from './almacen';
+import { fusionar, ordenarMarcas, validarMarca, type MarcaMira } from './mira';
 import {
   nuevaSesion,
   rondaGuardable,
@@ -36,6 +37,8 @@ class Estado {
   activa = $state<Sesion | null>(null);
   historial = $state<Sesion[]>([]);
   detalle = $state<Sesion | null>(null); // sesión abierta desde el historial
+  /** Libreta de marcas de mira, ordenada por distancia; independiente de las sesiones. */
+  marcas = $state<MarcaMira[]>([]);
   aviso = $state<Aviso | null>(null);
   config = $state<Configuracion>(leerConfig());
   cargado = $state(false);
@@ -45,7 +48,8 @@ class Estado {
   async cargar() {
     this.error = null;
     try {
-      const todas = await almacen.listar();
+      const [todas, marcas] = await Promise.all([almacen.listar(), almacen.listarMarcas()]);
+      this.marcas = ordenarMarcas(marcas);
       this.activa = todas.find((s) => !s.terminada) ?? null;
       this.historial = todas.filter((s) => s.terminada);
       this.cargado = true;
@@ -166,12 +170,60 @@ class Estado {
    */
   async importar(sesiones: Sesion[]): Promise<{ nuevas: number; repetidas: number }> {
     const ids = new Set([...this.historial.map((s) => s.id), this.activa?.id]);
-    const nuevas = sesiones.filter((s) => !ids.has(s.id));
+    // Varios archivos pueden traer la misma sesión (p. ej. la exportación completa y la de una sesión)
+    const unicas = [...new Map(sesiones.map((s) => [s.id, s])).values()];
+    const nuevas = unicas.filter((s) => !ids.has(s.id));
     if (nuevas.length) {
       await almacen.guardarVarias(nuevas);
       this.historial = [...this.historial, ...nuevas].sort((a, b) => b.fecha.localeCompare(a.fecha));
     }
-    return { nuevas: nuevas.length, repetidas: sesiones.length - nuevas.length };
+    return { nuevas: nuevas.length, repetidas: unicas.length - nuevas.length };
+  }
+
+  /**
+   * Guarda una marca de mira (con distanciaAnterior, si se le cambió la distancia). Si falla, avisa y devuelve
+   * false: quien edita conserva su copia y no se pierde nada.
+   */
+  async guardarMarca(m: MarcaMira, distanciaAnterior?: number): Promise<boolean> {
+    const v = validarMarca(m);
+    if (!v) return false;
+    try {
+      await almacen.guardarMarca(v, distanciaAnterior);
+    } catch (e) {
+      console.error(e);
+      this.avisar('No se pudo guardar la marca. Revisa el espacio libre del teléfono.');
+      return false;
+    }
+    const resto = this.marcas.filter((x) => x.distanciaM !== v.distanciaM && x.distanciaM !== distanciaAnterior);
+    this.marcas = ordenarMarcas([...resto, v]);
+    return true;
+  }
+
+  /** Borra la marca de una distancia; si falla, avisa y devuelve false. */
+  async borrarMarca(distanciaM: number): Promise<boolean> {
+    try {
+      await almacen.borrarMarca(distanciaM);
+    } catch (e) {
+      console.error(e);
+      this.avisar('No se pudo borrar la marca. Inténtalo de nuevo.');
+      return false;
+    }
+    this.marcas = this.marcas.filter((m) => m.distanciaM !== distanciaM);
+    return true;
+  }
+
+  /**
+   * Une las marcas importadas con las del teléfono (por distancia gana la más reciente). Devuelve los
+   * recuentos. Si no se pueden guardar, lanza el error.
+   */
+  async importarMarcas(ms: MarcaMira[]): Promise<{ nuevas: number; actualizadas: number; iguales: number }> {
+    const { guardar, ...cuentas } = fusionar(this.marcas, ms);
+    if (guardar.length) {
+      await almacen.guardarMarcas(guardar);
+      const d = new Set(guardar.map((m) => m.distanciaM));
+      this.marcas = ordenarMarcas([...this.marcas.filter((m) => !d.has(m.distanciaM)), ...guardar]);
+    }
+    return cuentas;
   }
 
   /** Borra una sesión del almacenamiento; si falla, avisa y devuelve false. */

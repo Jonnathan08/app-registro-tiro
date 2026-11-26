@@ -3,6 +3,7 @@
   import Diana from '../componentes/Diana.svelte';
   import Dialogo from '../componentes/Dialogo.svelte';
   import EditarRonda from '../componentes/EditarRonda.svelte';
+  import LibretaMira from '../componentes/LibretaMira.svelte';
   import Hoja from '../componentes/Hoja.svelte';
   import Icono from '../componentes/Icono.svelte';
   import Marcador, { type Cifra } from '../componentes/Marcador.svelte';
@@ -39,6 +40,7 @@
 
   let entrada = $state<'diana' | 'manual'>('diana');
   let menu = $state(false);
+  let libreta = $state(false);
   let anclaMenu = $state<HTMLElement>();
 
   // El menú se cierra al tocar fuera de él, con Escape o con el botón atrás de Android.
@@ -171,6 +173,15 @@
       >
       {#if menu}
         <div class="menu" role="menu">
+          <button
+            type="button"
+            role="menuitem"
+            class="estado"
+            onclick={() => {
+              menu = false;
+              libreta = true;
+            }}>Marcas de mira</button
+          >
           <button
             type="button"
             role="menuitem"
@@ -359,6 +370,17 @@
       alCerrar={() => (editando = null)}
     />
   {/key}
+{/if}
+
+{#if libreta}
+  <LibretaMira
+    destacada={sesion.distanciaM}
+    alCerrar={() => {
+      libreta = false;
+      // El ítem del menú que la abrió ya no existe: el foco vuelve al ⋮
+      void tick().then(() => document.activeElement === document.body && focoMenu());
+    }}
+  />
 {/if}
 
 <Dialogo

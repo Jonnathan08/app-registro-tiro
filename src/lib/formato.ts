@@ -7,6 +7,7 @@ const corta = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short' });
 const dia = new Intl.DateTimeFormat('es', { weekday: 'short', day: 'numeric', month: 'short' });
 const mes = new Intl.DateTimeFormat('es', { month: 'long' });
 const larga = new Intl.DateTimeFormat('es', { dateStyle: 'full' });
+const media = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', year: 'numeric' });
 const pct = new Intl.NumberFormat('es', { style: 'percent', minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
 /** Proporción como porcentaje con un decimal: 0,806 → «80,6 %» */
@@ -21,6 +22,8 @@ export const fechaLista = (iso: string) => lista.format(new Date(iso));
 export const fechaCorta = (iso: string) => corta.format(new Date(iso));
 /** Fecha ISO sin año, para listas agrupadas por mes: «mié, 11 nov» */
 export const fechaDia = (iso: string) => dia.format(new Date(iso));
+/** Fecha ISO con año, sin día de la semana: «26 nov 2026» */
+export const fechaMedia = (iso: string) => media.format(new Date(iso));
 /** Fecha ISO completa, para el lector de pantalla: «miércoles, 11 de noviembre de 2026» */
 export const fechaLarga = (iso: string) => larga.format(new Date(iso));
 /** Mes y año de una fecha ISO, para separadores: «Noviembre 2026» */
